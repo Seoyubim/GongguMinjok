@@ -14,10 +14,9 @@
 
 ## 🖼️ 예상 서비스 화면
 
-<img src="./docs/images/예상서비스화면1.png" width="700"/>
-<img src="./docs/images/예상서비스화면2.png" width="700"/>
-<img src="./docs/images/예상서비스화면3.png" width="700"/>
-
+<img src="images/예상서비스화면1.png" width="700"/>
+<img src="images/예상서비스화면2.png" width="700"/>
+<img src="images/예상서비스화면3.png" width="700"/>
 ---
 
 ## 📌 프로젝트 개요
