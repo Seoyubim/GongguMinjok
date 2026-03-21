@@ -28,7 +28,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String nickname;
 
     @Column(nullable = false, unique = true)
@@ -41,11 +41,11 @@ public class User {
     private String profileImage; // 프로필 사진 URL
 
     @Column(nullable = false)
-    private int mannerScore = 100;  // 매너지수 기본값 100점
+    private int mannerScore = 50;  // 매너지수 기본값 100점
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private MannerGrade mannerGrade = MannerGrade.NEW;  // 매너등급
+    private MannerGrade mannerGrade = MannerGrade.SOSO;  // 매너등급
 
     @Column(nullable = false)
     private boolean isActive = true;  // 계정 활성화 여부
@@ -60,10 +60,10 @@ public class User {
 
     // 매너등급 enum
     public enum MannerGrade {
-        NEW,          // 새로운 이웃 (0~49점)
-        GOOD,         // 좋은 이웃 (50~69점)
-        TRUST,        // 믿음직한 이웃 (70~89점)
-        GREAT,        // 씩씩한 이웃 (90~99점)
-        LEGEND        // 전설의 이웃 (100점 이상)
+        BAD,    // 0~49: 노쇼 등 부정적 평가 반영 시
+        SOSO,   // 50~69: 기본 시작 등급
+        GOOD,   // 70~89: 긍정 평가 누적 시
+        GREAT,  // 90~99: 높은 신뢰도
+        LEGEND // 100: 최상위 등급
     }
 }
