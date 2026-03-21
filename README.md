@@ -14,9 +14,11 @@
 
 ## 🖼️ 예상 서비스 화면
 
-<img src="images/예상서비스화면1.png" width="700"/>
-<img src="images/예상서비스화면2.png" width="700"/>
-<img src="images/예상서비스화면3.png" width="700"/>
+## 🖼️ 예상 서비스 화면
+
+<img src="images/예상서비스화면1.png" width="700" alt="메인 페이지 및 지도 화면"/>
+<img src="images/예상서비스화면2.png" width="700" alt="공동구매 상세 정보 화면"/>
+<img src="images/예상서비스화면3.png" width="700" alt="마이페이지 및 신뢰도 확인 화면"/>
 
 ---
 
