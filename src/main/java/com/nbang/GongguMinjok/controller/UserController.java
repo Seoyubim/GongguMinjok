@@ -6,7 +6,7 @@ import com.nbang.GongguMinjok.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-//수정
+//최종이길
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
