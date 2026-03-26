@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>공구 상세 - 공구의 민족</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/detail.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">
+          <div class="logo-mark">공</div>
+          <h1 class="logo-text">공구의 민족</h1>
+        </div>
+
+        <div class="header-actions">
+          <a href="write.html" class="btn btn-primary">➕ 공구 만들기</a>
+          <a href="mypage.html" class="btn btn-outline">👤 마이페이지</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div id="detailPage" class="detail-page"></div>
+
+    <div class="fixed-bottom">
+      <div class="container detail-bottom-container">
+        <button id="joinBtn" class="btn btn-primary btn-full detail-join-btn">
+          공동구매 참여하기
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/detail.js"></script>
+</body>
+</html>
