@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>공구의 민족 - 동네 이웃 간 공동구매 플랫폼</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">
+          <div class="logo-mark">공</div>
+          <h1 class="logo-text">공구의 민족</h1>
+        </div>
+
+        <div class="header-actions">
+          <a href="write.html" class="btn btn-primary">➕ 공구 만들기</a>
+          <a href="mypage.html" class="btn btn-outline">👤 마이페이지</a>
+          <button class="btn btn-outline hidden">🚪 로그아웃</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="map-section">
+      <div class="map-container">
+        <div class="map-fallback">
+          <div class="map-grid"></div>
+
+          <div class="map-overlay">
+            <p id="mapTitle" class="map-title"></p>
+            <p id="mapSubTitle" class="map-subtitle"></p>
+          </div>
+
+          <div id="mapMarkers"></div>
+
+          <button class="btn btn-outline btn-sm location-btn">📍 내 위치</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="list-section">
+      <div class="section-header">
+        <h2 class="section-title">내 주변 공동구매</h2>
+        <p id="groupCount" class="section-count"></p>
+      </div>
+
+      <div id="categoryFilter" class="category-filter"></div>
+
+      <div class="tabs">
+        <div class="tabs-list">
+          <button class="tab-trigger active" data-status="all">전체</button>
+          <button class="tab-trigger" data-status="recruiting">모집중</button>
+          <button class="tab-trigger" data-status="closing">마감임박</button>
+        </div>
+
+        <div class="tab-content active">
+          <div id="groupbuyGrid" class="groupbuy-grid"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item active">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">홈</span>
+    </a>
+    <a href="write.html" class="nav-item">
+      <span class="nav-icon">➕</span>
+      <span class="nav-label">만들기</span>
+    </a>
+    <a href="mypage.html" class="nav-item">
+      <span class="nav-icon">👤</span>
+      <span class="nav-label">마이</span>
+    </a>
+  </nav>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/index.js"></script>
+</body>
+</html>
