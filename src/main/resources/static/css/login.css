@@ -28,7 +28,7 @@ body {
   width: 72px;
   height: 72px;
   background: linear-gradient(135deg, #7ED321, #5fb812);
-  border-radius: 20px; /* 👉 둥근 사각형 (요즘 스타일) */
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -123,3 +123,4 @@ body {
   text-decoration: none;
   font-weight: bold;
 }
+
