@@ -41,7 +41,7 @@ public class User {
     private String profileImage; // 프로필 사진 URL
 
     @Column(nullable = false)
-    private int mannerScore = 50;  // 매너지수 기본값 100점
+    private int mannerScore = 50;  // 매너지수 기본값 50점
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
