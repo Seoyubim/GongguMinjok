@@ -18,6 +18,12 @@ body {
   padding: 0 24px;
 }
 
+.header .container {
+  max-width: 100%;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
 .header {
   background: white;
   border-bottom: 1px solid #e5e7eb;
