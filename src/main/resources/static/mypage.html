@@ -11,15 +11,14 @@
   <header class="header">
     <div class="container">
       <div class="header-content">
-        <div class="logo">
-          <div class="logo-mark">공</div>
+        <a href="index.html" class="logo">
+          <img src="images/logo.jpg" alt="공구의 민족 로고" class="logo-image">
           <h1 class="logo-text">공구의 민족</h1>
-        </div>
+        </a>
 
         <div class="header-actions">
-          <a href="write.html" class="btn btn-primary">➕ 공구 만들기</a>
-          <a href="index.html" class="btn btn-outline">🏠 홈</a>
-          <button class="btn btn-outline">🚪 로그아웃</button>
+          <a href="write.html" class="btn btn-primary">공구 만들기</a>
+          <button class="btn btn-outline">로그아웃</button>
         </div>
       </div>
     </div>
@@ -41,24 +40,11 @@
     </div>
   </main>
 
-  <nav class="bottom-nav">
-    <a href="index.html" class="nav-item">
-      <span class="nav-icon">🏠</span>
-      <span class="nav-label">홈</span>
-    </a>
-    <a href="write.html" class="nav-item">
-      <span class="nav-icon">➕</span>
-      <span class="nav-label">만들기</span>
-    </a>
-    <a href="mypage.html" class="nav-item active">
-      <span class="nav-icon">👤</span>
-      <span class="nav-label">마이</span>
-    </a>
-  </nav>
-
   <div id="toast" class="toast"></div>
 
-  <script src="js/data.js"></script>
-  <script src="js/mypage.js"></script>
+  <script src="js/mock/data.js"></script>
+  <script src="js/api/userApi.js"></script>
+  <script src="js/utils/storage.js"></script>
+  <script src="js/pages/mypage.js"></script>
 </body>
 </html>
