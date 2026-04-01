@@ -21,14 +21,6 @@ let selectedStatus = "all";
 const ITEMS_PER_PAGE = 20;
 let visibleCount = ITEMS_PER_PAGE;
 
-function showToast(message) {
-  toast.textContent = message;
-  toast.classList.add("show");
-  setTimeout(() => {
-    toast.classList.remove("show");
-  }, 2000);
-}
-
 function renderAuthButtons() {
   const loggedIn = getLoginState();
 
