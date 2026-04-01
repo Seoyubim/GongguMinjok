@@ -27,96 +27,91 @@
   <div class="detail-page">
 
     <div class="detail-hero">
-      <div class="detail-hero-icon">🧴</div>
+      <div class="detail-hero-icon">🛍️</div>
     </div>
 
     <div class="card">
-      <h2 class="detail-title">코스트코 세제 소분 나눔</h2>
+      <h2 class="detail-title">공동구매 제목</h2>
       <div class="detail-meta">
-        <span>👤 최성훈</span>
-        <span>⭐ 4.9</span>
+        <span>👤 작성자</span>
+        <span>⭐ 0.0</span>
       </div>
-      <p class="medium-note">코스트코에서 세제 대용량 구매 후 소분 나눔합니다 🙂</p>
+      <p class="medium-note">공동구매 설명이 표시됩니다.</p>
 
       <h3 class="section-title">📄 공동구매 정보</h3>
-      <div class="split-row small-note"><span>1인 금액</span><strong>8,000원</strong></div>
-      <div class="split-row small-note"><span>모집 인원</span><span>최대 5명</span></div>
-      <div class="split-row small-note"><span>픽업 장소</span><span>광주 북구 용봉동 GS25 편의점 앞</span></div>
-      <div class="split-row small-note"><span>픽업 날짜</span><span>2025년 3월 23일</span></div>
+      <div class="split-row small-note">
+        <span>1인 금액</span>
+        <strong>0원</strong>
+      </div>
+      <div class="split-row small-note">
+        <span>모집 인원</span>
+        <span>최대 0명</span>
+      </div>
+      <div class="split-row small-note">
+        <span>픽업 장소</span>
+        <span>픽업 장소 정보</span>
+      </div>
+      <div class="split-row small-note">
+        <span>픽업 날짜</span>
+        <span>날짜 정보</span>
+      </div>
 
       <div class="pickup-map-box">
         <span>🗺️ 픽업 장소 지도로 보기</span>
-        <button class="btn-map-view">지도 보기 →</button>
+        <button class="btn-map-view" type="button">지도 보기 →</button>
       </div>
     </div>
 
     <div class="card">
       <h3 class="section-title">👥 모집 현황</h3>
-      <div class="split-row small-note"><span></span><span><strong class="text-lime">3</strong> / 5명</span></div>
-      <div class="progress-bar"><div class="progress-fill" style="width: 60%;"></div></div>
-      <div class="split-row small-note" style="margin-top:8px;"><span>마감일</span><span style="color:#ff4d4f;">2025년 3월 22일</span></div>
+      <div class="split-row small-note">
+        <span></span>
+        <span><strong class="text-lime">0</strong> / 0명</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%;"></div>
+      </div>
+      <div class="split-row small-note" style="margin-top: 8px;">
+        <span>마감일</span>
+        <span style="color:#ff4d4f;">날짜 정보</span>
+      </div>
     </div>
 
     <div class="card">
       <h3 class="section-title">참여자</h3>
-      <div class="inline-info-row"><div class="avatar-circle-md">김</div><span class="small-note">⭐ 4.9 · 방금 전</span></div>
-      <div class="inline-info-row"><div class="avatar-circle-md">이</div><span class="small-note">⭐ 4.7 · 1시간 전</span></div>
-      <div class="inline-info-row"><div class="avatar-circle-md">박</div><span class="small-note">⭐ 5.0 · 방금 전</span></div>
     </div>
 
     <div class="card">
       <h3 class="section-title">💬 댓글</h3>
-      <div class="comment-list" id="commentList">
-        <div class="comment-item">
-          <div class="avatar-circle-md">김</div>
-          <div class="comment-content">
-            <div class="comment-meta"><strong>김민수</strong><span class="small-note">방금 전</span></div>
-            <p class="comment-text">혹시 18시에 픽업 가능할까요?</p>
-            <button class="reply-btn">답글</button>
-            <div class="reply-list">
-              <div class="comment-item reply">
-                <div class="avatar-circle-md">최</div>
-                <div class="comment-content">
-                  <div class="comment-meta"><strong>최성훈</strong><span class="small-note">방금 전</span></div>
-                  <p class="comment-text">네 가능합니다 🙂</p>
-                </div>
-              </div>
-            </div>
-            <div class="reply-input-box hidden">
-              <input type="text" placeholder="답글을 입력하세요..." />
-              <button class="btn btn-primary">등록</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div class="comment-list" id="commentList"></div>
+
       <div class="comment-input-box">
         <input type="text" id="commentInput" placeholder="댓글을 입력하세요..." />
         <label class="private-check">
           <input type="checkbox" id="privateCheck" />
           🔒 비공개
         </label>
-        <button id="submitComment" class="btn btn-primary">등록</button>
+        <button id="submitComment" class="btn btn-primary" type="button">등록</button>
       </div>
     </div>
 
     <div class="card">
       <h3 class="section-title">🕒 픽업 시간 선택</h3>
-      <div class="time-grid">
-        <button class="time-box active" data-time="17:00"><div class="time">17:00</div><div class="count">0명 선택</div></button>
-        <button class="time-box" data-time="18:00"><div class="time">18:00</div><div class="count">2명 선택</div></button>
-        <button class="time-box" data-time="19:00"><div class="time">19:00</div><div class="count">1명 선택</div></button>
-        <button class="time-box" data-time="20:00"><div class="time">20:00</div><div class="count">0명 선택</div></button>
-      </div>
+      <div class="time-grid"></div>
       <p class="time-notice">* 참여 시 원하는 시간대를 선택해 주세요</p>
-      <p class="time-warning"><strong>⚠️ 노쇼 주의!</strong><br>픽업 불참 시 매너 점수가 차감됩니다.<br>취소는 픽업 24시간 전까지만 가능합니다.</p>
+      <p class="time-warning">
+        <strong>⚠️ 노쇼 주의!</strong><br />
+        픽업 불참 시 매너 점수가 차감됩니다.<br />
+        취소는 픽업 24시간 전까지만 가능합니다.
+      </p>
     </div>
 
   </div>
 
   <div class="fixed-bottom">
     <div class="container detail-bottom-container">
-      <div class="price">1인 부담금 8,000원</div>
-      <button id="openModal" class="btn btn-primary btn-full">참여하기</button>
+      <div class="price">1인 부담금 0원</div>
+      <button id="openModal" class="btn btn-primary btn-full" type="button">참여하기</button>
     </div>
   </div>
 </main>
@@ -125,24 +120,34 @@
   <div class="modal-content">
     <div class="modal-header">
       <h3>공동구매 참여하기</h3>
-      <button id="closeModal">✕</button>
+      <button id="closeModal" type="button">✕</button>
     </div>
     <p class="modal-desc">픽업 시간을 선택하고 참여를 확정해 주세요.</p>
-    <div class="modal-section"><strong>📍 픽업 장소</strong><p>광주 북구 중흥동 GS25 편의점 앞</p></div>
-    <div class="modal-section"><strong>⏰ 픽업 시간 선택</strong>
-      <div class="time-grid">
-        <button class="time-box active">17:00</button>
-        <button class="time-box">18:00</button>
-        <button class="time-box">19:00</button>
-        <button class="time-box">20:00</button>
-      </div>
+
+    <div class="modal-section">
+      <strong>📍 픽업 장소</strong>
+      <p>픽업 장소 정보</p>
     </div>
-    <div class="modal-price"><strong>8,000원</strong><p>* 픽업 시 현장결제</p></div>
-    <button class="btn btn-primary btn-full">참여 확정하기</button>
+
+    <div class="modal-section">
+      <strong>⏰ 픽업 시간 선택</strong>
+      <div class="time-grid"></div>
+    </div>
+
+    <div class="modal-price">
+      <strong>0원</strong>
+      <p>* 픽업 시 현장결제</p>
+    </div>
+
+    <button class="btn btn-primary btn-full" type="button">참여 확정하기</button>
   </div>
 </div>
 
 <div id="toast" class="toast"></div>
-<script src="js/detail.js"></script>
+
+<script src="js/mock/data.js"></script>
+<script src="js/utils/format.js"></script>
+<script src="js/utils/ui.js"></script>
+<script src="js/pages/detail.js"></script>
 </body>
 </html>
