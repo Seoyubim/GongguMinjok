@@ -27,18 +27,24 @@
   </header>
 
   <main class="main-content">
+    <div class="search-section">
+      <h2 class="search-title">이웃과 함께, 더 저렴하게 🌿</h2>
+      <p class="search-subtitle">동네 이웃과 공동구매하고 배송비·가격 모두 절약하세요</p>
+      <div class="search-box">
+        <input type="text" placeholder="상품명 또는 키워드 검색">
+        <button type="button">검색</button>
+      </div>
+    </div>
+
     <div class="map-section">
       <div class="map-container">
         <div class="map-fallback">
           <div class="map-grid"></div>
-
           <div class="map-overlay">
             <p id="mapTitle" class="map-title"></p>
             <p id="mapSubTitle" class="map-subtitle"></p>
           </div>
-
           <div id="mapMarkers"></div>
-
           <button class="btn btn-outline btn-sm location-btn" type="button">내 위치</button>
         </div>
       </div>
@@ -78,6 +84,5 @@
   <script src="js/utils/format.js"></script>
   <script src="js/utils/ui.js"></script>
   <script src="js/pages/index.js"></script>
-
 </body>
 </html>
