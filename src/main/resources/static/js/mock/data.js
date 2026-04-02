@@ -118,6 +118,8 @@ window.APP_DATA = {
       imageUrl: `https://picsum.photos/400/300?random=${id}`,
       participants,
       comments,
+      lat: 35.149,
+      lng: 126.9223,
       markerTop,
       markerLeft
     };
