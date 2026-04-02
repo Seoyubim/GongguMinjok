@@ -507,7 +507,7 @@
     privateCheck.addEventListener("change", () => {
         privateCheck.checked = false;
 
-        showToast("비공개 댓글 기능은 나중에 추가 예정입니단");
+        showToast("비공개 댓글 기능은 나중에 추가 예정입니다");
     });
   }
 

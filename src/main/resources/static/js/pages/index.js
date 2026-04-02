@@ -1,10 +1,9 @@
+import { initMap } from "../utils/map.js";
+
 const data = window.APP_DATA;
 const groupbuyGrid = document.getElementById("groupbuyGrid");
 const categoryFilter = document.getElementById("categoryFilter");
 const groupCount = document.getElementById("groupCount");
-const mapTitle = document.getElementById("mapTitle");
-const mapSubTitle = document.getElementById("mapSubTitle");
-const mapMarkers = document.getElementById("mapMarkers");
 const tabButtons = document.querySelectorAll(".tab-trigger");
 
 const loginBtn = document.getElementById("loginBtn");
@@ -41,46 +40,20 @@ function handleLogout() {
   showToast("로그아웃되었습니다.");
 }
 
-async function renderMap() {
-  const groupBuys = await getGroupBuys();
-
-  mapTitle.textContent = `${data.map.locationName} 기준 주변 공동구매`;
-  mapSubTitle.textContent = `총 ${groupBuys.length}개의 공동구매 진행 중`;
-
-  const markerItems = groupBuys.filter((item) => {
-    if (item.markerTop === undefined || item.markerLeft === undefined) {
-      return false;
-    }
-
-    const isInsideOverlayArea =
-      item.markerTop < 90 && item.markerLeft < 230;
-
-    return !isInsideOverlayArea;
-  });
-
-  mapMarkers.innerHTML = markerItems.map((item) => {
-    return `
-      <div
-        class="map-marker ${getMarkerClassByStatus(item.status)}"
-        style="top:${item.markerTop}px; left:${item.markerLeft}px;"
-        title="${item.title}"
-      >
-        👥
-      </div>
-    `;
-  }).join("");
-}
-
 function renderCategories() {
-  categoryFilter.innerHTML = data.categories.map((category) => `
-    <button
-      class="category-btn ${category === selectedCategory ? "active" : ""}"
-      data-category="${category}"
-      type="button"
-    >
-      ${category}
-    </button>
-  `).join("");
+  categoryFilter.innerHTML = data.categories
+    .map(
+      (category) => `
+        <button
+          class="category-btn ${category === selectedCategory ? "active" : ""}"
+          data-category="${category}"
+          type="button"
+        >
+          ${category}
+        </button>
+      `
+    )
+    .join("");
 
   document.querySelectorAll(".category-btn").forEach((button) => {
     button.addEventListener("click", () => {
@@ -202,7 +175,7 @@ logoutBtn.addEventListener("click", handleLogout);
 async function initPage() {
   renderAuthButtons();
   renderCategories();
-  await renderMap();
+  await initMap();
   await renderGroupBuys();
 }
 
