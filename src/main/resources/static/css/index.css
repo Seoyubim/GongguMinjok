@@ -332,3 +332,48 @@
 .load-more-btn:hover {
   background: #65a30d;
 }
+
+.search-section {
+  width: 100%;
+  padding: 1rem 24px;
+  text-align: center;
+  background-color: #0baa26;
+}
+
+.search-section .search-box {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.search-section input {
+  flex: 1;
+  max-width: 400px;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: 1px solid #d1d5db;
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.search-section input:focus {
+  border-color: #84cc16;
+  box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.2);
+}
+
+.search-section button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: 1px solid #84cc16;
+  background-color: #84cc16;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.search-section button:hover {
+  background-color: #65a30d;
+  border-color: #65a30d;
+}
