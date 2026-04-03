@@ -89,17 +89,18 @@
   }
 
   function renderHero(groupBuy) {
-    const heroIcon = document.querySelector(".detail-hero-icon");
-    if (!heroIcon) return;
+    const imageEl = document.getElementById("detailImage");
+    if (!imageEl) return;
 
-    const emojiMap = {
-      농산물: "🥬",
-      식품: "🍽️",
-      생활용품: "🧴",
-      음료: "🥤"
+    if (groupBuy.imageUrl) {
+      imageEl.src = groupBuy.imageUrl;
+    } else {
+      imageEl.src = "images/default.jpg";
+    }
+
+    imageEl.onerror = () => {
+      imageEl.src = "images/default.jpg";
     };
-
-    heroIcon.textContent = emojiMap[groupBuy.category] || "🛍️";
   }
 
   function renderBasicInfo(groupBuy) {
