@@ -44,11 +44,13 @@
           <div id="map" class="kakao-map"></div>
 
           <div class="map-overlay">
-            <p id="mapTitle" class="map-title"></p>
+            <p id="mapTitle" class="map-title">내 주변 공동구매</p>
             <p id="mapSubTitle" class="map-subtitle"></p>
           </div>
 
-          <button class="btn btn-outline btn-sm location-btn" type="button">내 위치</button>
+          <button id="mainLocationBtn" class="btn btn-outline btn-sm location-btn" type="button">
+            내 위치
+          </button>
         </div>
       </div>
     </div>
@@ -81,10 +83,14 @@
 
   <div id="toast" class="toast"></div>
 
-  <!-- 큰 지도 모달 -->
   <div id="mapModal" class="map-modal hidden">
     <div class="map-modal-content">
       <button id="closeMapModalBtn" class="map-modal-close" type="button" aria-label="지도 닫기">×</button>
+
+      <button id="modalLocationBtn" class="btn btn-outline btn-sm location-btn modal-location-btn" type="button">
+        내 위치
+      </button>
+
       <div id="modalMap" class="modal-map"></div>
     </div>
   </div>
@@ -95,7 +101,10 @@
   <script src="js/utils/format.js"></script>
   <script src="js/utils/ui.js"></script>
 
-  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=4e2629de2f371f4282d3552c56fed7ef"></script>
+  <script
+    type="text/javascript"
+    src="//dapi.kakao.com/v2/maps/sdk.js?appkey=4e2629de2f371f4282d3552c56fed7ef&libraries=services"
+  ></script>
   <script type="module" src="js/pages/index.js"></script>
 </body>
 </html>
