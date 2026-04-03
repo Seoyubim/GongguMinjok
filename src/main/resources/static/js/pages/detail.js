@@ -454,6 +454,15 @@
 
     if (openModalBtn && modal) {
       openModalBtn.addEventListener("click", () => {
+        const isLoggedIn =
+          typeof getLoginState === "function" ? getLoginState() : false;
+
+        if (!isLoggedIn) {
+          showToast("로그인이 필요합니다.");
+          window.location.href = "login.html";
+          return;
+        }
+
         modal.classList.remove("hidden");
       });
     }
@@ -474,6 +483,15 @@
 
     if (modalConfirmBtn) {
       modalConfirmBtn.addEventListener("click", () => {
+        const isLoggedIn =
+          typeof getLoginState === "function" ? getLoginState() : false;
+
+        if (!isLoggedIn) {
+          showToast("로그인이 필요합니다.");
+          window.location.href = "login.html";
+          return;
+        }
+
         if (!state.selectedTime) {
           showToast("픽업 시간을 선택해 주세요.");
           return;
