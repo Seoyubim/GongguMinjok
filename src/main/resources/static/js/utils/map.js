@@ -105,28 +105,61 @@ function bindModalEvents() {
 
   if (!mapElement || !mapModal || !closeMapModalBtn || !modalMapElement) return;
 
-  mapElement.addEventListener("mousedown", async () => {
-    mapModal.classList.remove("hidden");
+  let isMouseDown = false;
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
 
-    const groupBuys = await getSafeGroupBuys();
+  mapElement.addEventListener("mousedown", (e) => {
+    isMouseDown = true;
+    isDragging = false;
+    startX = e.clientX;
+    startY = e.clientY;
+  });
 
-    if (!modalMap) {
-      modalMap = new kakao.maps.Map(modalMapElement, {
-        center: new kakao.maps.LatLng(35.1469, 126.9229),
-        level: 4
-      });
+  mapElement.addEventListener("mousemove", (e) => {
+    if (!isMouseDown) return;
 
-      modalMap.setZoomable(true);
-      modalMap.setDraggable(true);
+    const moveX = Math.abs(e.clientX - startX);
+    const moveY = Math.abs(e.clientY - startY);
 
-      const zoomControl = new kakao.maps.ZoomControl();
-      modalMap.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+    if (moveX > 5 || moveY > 5) {
+      isDragging = true;
+    }
+  });
+
+  mapElement.addEventListener("mouseup", async () => {
+    if (!isDragging) {
+      mapModal.classList.remove("hidden");
+
+      const groupBuys = await getSafeGroupBuys();
+
+      if (!modalMap) {
+        modalMap = new kakao.maps.Map(modalMapElement, {
+          center: new kakao.maps.LatLng(35.1469, 126.9229),
+          level: 4
+        });
+
+        modalMap.setZoomable(true);
+        modalMap.setDraggable(true);
+
+        const zoomControl = new kakao.maps.ZoomControl();
+        modalMap.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+      }
+
+      setTimeout(() => {
+        modalMap.relayout();
+        addMarkersToMap(modalMap, modalMarkers, groupBuys);
+      }, 0);
     }
 
-    setTimeout(() => {
-      modalMap.relayout();
-      addMarkersToMap(modalMap, modalMarkers, groupBuys);
-    }, 0);
+    isMouseDown = false;
+    isDragging = false;
+  });
+
+  mapElement.addEventListener("mouseleave", () => {
+    isMouseDown = false;
+    isDragging = false;
   });
 
   closeMapModalBtn.addEventListener("click", () => {
