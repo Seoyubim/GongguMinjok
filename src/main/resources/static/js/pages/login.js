@@ -9,7 +9,7 @@ function showToast(message) {
   }, 2000);
 }
 
-loginForm.addEventListener("submit", (event) => {
+loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const email = document.getElementById("email").value.trim();
@@ -20,10 +20,29 @@ loginForm.addEventListener("submit", (event) => {
     return;
   }
 
-  localStorage.setItem("isLoggedIn", "true");
-  showToast("로그인되었습니다.");
+  try {
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
 
-  setTimeout(() => {
-    window.location.href = "index.html";
-  }, 800);
+    if (!response.ok) {
+      const errorText = await response.text();
+      showToast("로그인 실패: " + (errorText || "이메일 또는 비밀번호를 확인해주세요."));
+      return;
+    }
+
+    const data = await response.json();
+    localStorage.setItem("token", data.accessToken);
+    localStorage.setItem("isLoggedIn", "true");
+    showToast("로그인되었습니다.");
+
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 800);
+
+  } catch (e) {
+    showToast("서버 연결 오류가 발생했습니다.");
+  }
 });
