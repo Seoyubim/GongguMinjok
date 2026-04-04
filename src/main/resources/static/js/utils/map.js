@@ -216,6 +216,13 @@ function bindLocationEvents() {
   }
 }
 
+function bindResizeEvents() {
+  window.addEventListener("resize", () => {
+    if (!map) return;
+    map.relayout();
+  });
+}
+
 function bindModalEvents() {
   const mapElement = document.getElementById("map");
   const mapModal = document.getElementById("mapModal");
@@ -249,6 +256,8 @@ function bindModalEvents() {
 
   mapElement.addEventListener("mouseup", async () => {
     if (!isDragging) {
+      if (!map) return;
+
       const currentCenter = map.getCenter();
       const currentLevel = map.getLevel();
 
@@ -305,12 +314,12 @@ function bindMapEvents() {
   });
 }
 
-export async function initMap() {
+async function setupMap() {
   const mapContainer = document.getElementById("map");
   const mapTitle = document.getElementById("mapTitle");
   const mapSubTitle = document.getElementById("mapSubTitle");
 
-  if (!mapContainer || typeof kakao === "undefined" || !kakao.maps) return;
+  if (!mapContainer) return;
 
   map = new kakao.maps.Map(mapContainer, {
     center: new kakao.maps.LatLng(35.1469, 126.9229),
@@ -337,8 +346,10 @@ export async function initMap() {
 
   bindModalEvents();
   bindLocationEvents();
+  bindResizeEvents();
 
   setTimeout(() => {
+    map.relayout();
     setMapToCurrentLocation(map, "main");
   }, 300);
 
@@ -346,4 +357,22 @@ export async function initMap() {
     bindMapEvents();
     updateMapTitleByCenter(map);
   }, 800);
+}
+
+export async function initMap() {
+  const mapContainer = document.getElementById("map");
+  if (!mapContainer) return;
+
+  if (!window.kakao || !window.kakao.maps) {
+    console.error("카카오맵 SDK가 아직 로드되지 않았습니다.");
+    return;
+  }
+
+  kakao.maps.load(async function () {
+    try {
+      await setupMap();
+    } catch (error) {
+      console.error("지도 초기화 실패:", error);
+    }
+  });
 }
