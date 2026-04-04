@@ -2,6 +2,10 @@ let map;
 let modalMap;
 let markers = [];
 let modalMarkers = [];
+let currentLocationMarker = null;
+let modalCurrentLocationMarker = null;
+let mapGeocoder = null;
+let lastTitleCenterKey = "";
 
 function getMarkerImageSrc(status) {
   if (status === "ongoing" || status === "recruiting" || status === "active") {
@@ -44,7 +48,7 @@ function createInfoWindowContent(item) {
   `;
 }
 
-function addMarkersToMap(targetMap, markerList, groupBuys) {
+function addMarkersToMap(targetMap, markerList, groupBuys, shouldFitBounds = true) {
   clearMarkers(markerList);
 
   if (!Array.isArray(groupBuys) || groupBuys.length === 0) {
@@ -77,7 +81,7 @@ function addMarkersToMap(targetMap, markerList, groupBuys) {
     bounds.extend(position);
   });
 
-  if (!bounds.isEmpty()) {
+  if (shouldFitBounds && !bounds.isEmpty()) {
     targetMap.setBounds(bounds);
   }
 }
@@ -97,6 +101,128 @@ async function getSafeGroupBuys() {
   }
 }
 
+function getCurrentPosition() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error("이 브라우저에서는 위치 정보를 지원하지 않습니다."));
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => resolve(position),
+      (error) => reject(error),
+      {
+        enableHighAccuracy: false,
+        timeout: 5000,
+        maximumAge: 60000
+      }
+    );
+  });
+}
+
+function ensureGeocoder() {
+  if (!mapGeocoder && kakao.maps.services) {
+    mapGeocoder = new kakao.maps.services.Geocoder();
+  }
+
+  return mapGeocoder;
+}
+
+function updateMapTitleByCenter(targetMap) {
+  const mapTitle = document.getElementById("mapTitle");
+  if (!targetMap || !mapTitle) return;
+
+  const geocoder = ensureGeocoder();
+  if (!geocoder) return;
+
+  const center = targetMap.getCenter();
+  const centerKey = `${center.getLat().toFixed(4)},${center.getLng().toFixed(4)}`;
+
+  if (lastTitleCenterKey === centerKey) return;
+  lastTitleCenterKey = centerKey;
+
+  geocoder.coord2RegionCode(center.getLng(), center.getLat(), (result, status) => {
+    if (status !== kakao.maps.services.Status.OK) return;
+
+    const region =
+      result.find((item) => item.region_type === "H") ||
+      result.find((item) => item.region_type === "B");
+
+    if (!region) return;
+
+    mapTitle.textContent = `${region.address_name} 기준 주변 공동구매`;
+  });
+}
+
+async function setMapToCurrentLocation(targetMap, markerType = "main") {
+  if (!targetMap) return;
+
+  try {
+    const position = await getCurrentPosition();
+    const lat = position.coords.latitude;
+    const lng = position.coords.longitude;
+    const currentLatLng = new kakao.maps.LatLng(lat, lng);
+
+    targetMap.setCenter(currentLatLng);
+    targetMap.setLevel(3);
+
+    if (markerType === "main") {
+      if (currentLocationMarker) {
+        currentLocationMarker.setMap(null);
+      }
+
+      currentLocationMarker = new kakao.maps.Marker({
+        map: targetMap,
+        position: currentLatLng,
+        title: "내 위치"
+      });
+    }
+
+    if (markerType === "modal") {
+      if (modalCurrentLocationMarker) {
+        modalCurrentLocationMarker.setMap(null);
+      }
+
+      modalCurrentLocationMarker = new kakao.maps.Marker({
+        map: targetMap,
+        position: currentLatLng,
+        title: "내 위치"
+      });
+    }
+
+    if (targetMap === map) {
+      updateMapTitleByCenter(map);
+    }
+  } catch (error) {
+    console.error("현재 위치를 가져오지 못했습니다.", error);
+  }
+}
+
+function bindLocationEvents() {
+  const mainLocationBtn = document.getElementById("mainLocationBtn");
+  const modalLocationBtn = document.getElementById("modalLocationBtn");
+
+  if (mainLocationBtn) {
+    mainLocationBtn.addEventListener("click", async () => {
+      await setMapToCurrentLocation(map, "main");
+    });
+  }
+
+  if (modalLocationBtn) {
+    modalLocationBtn.addEventListener("click", async () => {
+      if (!modalMap) return;
+      await setMapToCurrentLocation(modalMap, "modal");
+    });
+  }
+}
+
+function bindResizeEvents() {
+  window.addEventListener("resize", () => {
+    if (!map) return;
+    map.relayout();
+  });
+}
+
 function bindModalEvents() {
   const mapElement = document.getElementById("map");
   const mapModal = document.getElementById("mapModal");
@@ -105,28 +231,68 @@ function bindModalEvents() {
 
   if (!mapElement || !mapModal || !closeMapModalBtn || !modalMapElement) return;
 
-  mapElement.addEventListener("mousedown", async () => {
-    mapModal.classList.remove("hidden");
+  let isMouseDown = false;
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
 
-    const groupBuys = await getSafeGroupBuys();
+  mapElement.addEventListener("mousedown", (e) => {
+    isMouseDown = true;
+    isDragging = false;
+    startX = e.clientX;
+    startY = e.clientY;
+  });
 
-    if (!modalMap) {
-      modalMap = new kakao.maps.Map(modalMapElement, {
-        center: new kakao.maps.LatLng(35.1469, 126.9229),
-        level: 4
-      });
+  mapElement.addEventListener("mousemove", (e) => {
+    if (!isMouseDown) return;
 
-      modalMap.setZoomable(true);
-      modalMap.setDraggable(true);
+    const moveX = Math.abs(e.clientX - startX);
+    const moveY = Math.abs(e.clientY - startY);
 
-      const zoomControl = new kakao.maps.ZoomControl();
-      modalMap.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+    if (moveX > 5 || moveY > 5) {
+      isDragging = true;
+    }
+  });
+
+  mapElement.addEventListener("mouseup", async () => {
+    if (!isDragging) {
+      if (!map) return;
+
+      const currentCenter = map.getCenter();
+      const currentLevel = map.getLevel();
+
+      mapModal.classList.remove("hidden");
+
+      if (!modalMap) {
+        modalMap = new kakao.maps.Map(modalMapElement, {
+          center: currentCenter,
+          level: currentLevel
+        });
+
+        modalMap.setZoomable(true);
+        modalMap.setDraggable(true);
+
+        const zoomControl = new kakao.maps.ZoomControl();
+        modalMap.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+      }
+
+      setTimeout(async () => {
+        modalMap.relayout();
+        modalMap.setCenter(currentCenter);
+        modalMap.setLevel(currentLevel);
+
+        const groupBuys = await getSafeGroupBuys();
+        addMarkersToMap(modalMap, modalMarkers, groupBuys, false);
+      }, 0);
     }
 
-    setTimeout(() => {
-      modalMap.relayout();
-      addMarkersToMap(modalMap, modalMarkers, groupBuys);
-    }, 0);
+    isMouseDown = false;
+    isDragging = false;
+  });
+
+  mapElement.addEventListener("mouseleave", () => {
+    isMouseDown = false;
+    isDragging = false;
   });
 
   closeMapModalBtn.addEventListener("click", () => {
@@ -140,16 +306,20 @@ function bindModalEvents() {
   });
 }
 
-export async function initMap() {
+function bindMapEvents() {
+  if (!map) return;
+
+  kakao.maps.event.addListener(map, "idle", function () {
+    updateMapTitleByCenter(map);
+  });
+}
+
+async function setupMap() {
   const mapContainer = document.getElementById("map");
   const mapTitle = document.getElementById("mapTitle");
   const mapSubTitle = document.getElementById("mapSubTitle");
 
-  if (!mapContainer || typeof kakao === "undefined" || !kakao.maps) return;
-
-  if (mapTitle && window.APP_DATA?.map?.locationName) {
-    mapTitle.textContent = `${window.APP_DATA.map.locationName} 기준 주변 공동구매`;
-  }
+  if (!mapContainer) return;
 
   map = new kakao.maps.Map(mapContainer, {
     center: new kakao.maps.LatLng(35.1469, 126.9229),
@@ -162,12 +332,47 @@ export async function initMap() {
   const zoomControl = new kakao.maps.ZoomControl();
   map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
 
+  if (mapTitle) {
+    mapTitle.textContent = "내 주변 공동구매";
+  }
+
   const groupBuys = await getSafeGroupBuys();
 
   if (mapSubTitle) {
     mapSubTitle.textContent = `총 ${groupBuys.length}개의 공동구매`;
   }
 
-  addMarkersToMap(map, markers, groupBuys);
+  addMarkersToMap(map, markers, groupBuys, true);
+
   bindModalEvents();
+  bindLocationEvents();
+  bindResizeEvents();
+
+  setTimeout(() => {
+    map.relayout();
+    setMapToCurrentLocation(map, "main");
+  }, 300);
+
+  setTimeout(() => {
+    bindMapEvents();
+    updateMapTitleByCenter(map);
+  }, 800);
+}
+
+export async function initMap() {
+  const mapContainer = document.getElementById("map");
+  if (!mapContainer) return;
+
+  if (!window.kakao || !window.kakao.maps) {
+    console.error("카카오맵 SDK가 아직 로드되지 않았습니다.");
+    return;
+  }
+
+  kakao.maps.load(async function () {
+    try {
+      await setupMap();
+    } catch (error) {
+      console.error("지도 초기화 실패:", error);
+    }
+  });
 }

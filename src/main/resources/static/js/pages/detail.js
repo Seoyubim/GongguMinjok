@@ -4,7 +4,31 @@
     selectedTime: null
   };
 
-  document.addEventListener("DOMContentLoaded", init);
+  document.addEventListener("DOMContentLoaded", () => {
+    updateAuthUI();
+    init();
+  });
+
+  function updateAuthUI() {
+    const loginBtn = document.getElementById("loginBtn");
+    const mypageBtn = document.getElementById("mypageBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    if (!loginBtn || !mypageBtn || !logoutBtn) return;
+
+    const isLoggedIn =
+      typeof getLoginState === "function" ? getLoginState() : false;
+
+    if (isLoggedIn) {
+      loginBtn.classList.add("hidden");
+      mypageBtn.classList.remove("hidden");
+      logoutBtn.classList.remove("hidden");
+    } else {
+      loginBtn.classList.remove("hidden");
+      mypageBtn.classList.add("hidden");
+      logoutBtn.classList.add("hidden");
+    }
+  }
 
   function init() {
     if (!window.APP_DATA || !Array.isArray(window.APP_DATA.groupBuys)) {
@@ -65,17 +89,18 @@
   }
 
   function renderHero(groupBuy) {
-    const heroIcon = document.querySelector(".detail-hero-icon");
-    if (!heroIcon) return;
+    const imageEl = document.getElementById("detailImage");
+    if (!imageEl) return;
 
-    const emojiMap = {
-      농산물: "🥬",
-      식품: "🍽️",
-      생활용품: "🧴",
-      음료: "🥤"
+    if (groupBuy.imageUrl) {
+      imageEl.src = groupBuy.imageUrl;
+    } else {
+      imageEl.src = "images/default.jpg";
+    }
+
+    imageEl.onerror = () => {
+      imageEl.src = "images/default.jpg";
     };
-
-    heroIcon.textContent = emojiMap[groupBuy.category] || "🛍️";
   }
 
   function renderBasicInfo(groupBuy) {
@@ -429,6 +454,15 @@
 
     if (openModalBtn && modal) {
       openModalBtn.addEventListener("click", () => {
+        const isLoggedIn =
+          typeof getLoginState === "function" ? getLoginState() : false;
+
+        if (!isLoggedIn) {
+          showToast("로그인이 필요합니다.");
+          window.location.href = "login.html";
+          return;
+        }
+
         modal.classList.remove("hidden");
       });
     }
@@ -449,6 +483,15 @@
 
     if (modalConfirmBtn) {
       modalConfirmBtn.addEventListener("click", () => {
+        const isLoggedIn =
+          typeof getLoginState === "function" ? getLoginState() : false;
+
+        if (!isLoggedIn) {
+          showToast("로그인이 필요합니다.");
+          window.location.href = "login.html";
+          return;
+        }
+
         if (!state.selectedTime) {
           showToast("픽업 시간을 선택해 주세요.");
           return;
@@ -505,9 +548,8 @@
     if (!privateCheck) return;
 
     privateCheck.addEventListener("change", () => {
-        privateCheck.checked = false;
-
-        showToast("비공개 댓글 기능은 나중에 추가 예정입니다");
+      privateCheck.checked = false;
+      showToast("비공개 댓글 기능은 나중에 추가 예정입니다");
     });
   }
 
