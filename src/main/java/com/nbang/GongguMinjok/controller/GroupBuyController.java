@@ -55,4 +55,17 @@ public class GroupBuyController {
         groupBuyService.deleteGroupBuy(id, userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
+
+    // GET /api/groupbuys/host/{hostId}
+    @GetMapping("/host/{hostId}")
+    public ResponseEntity<List<GroupBuyResponseDto>> getGroupBuysByHost(@PathVariable Long hostId) {
+        return ResponseEntity.ok(groupBuyService.getGroupBuysByHost(hostId));
+    }
+
+    // GET /api/groupbuys/my
+    @GetMapping("/my")
+    public ResponseEntity<List<GroupBuyResponseDto>> getMyGroupBuys(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(groupBuyService.getMyGroupBuys(userDetails.getUsername()));
+    }
 }

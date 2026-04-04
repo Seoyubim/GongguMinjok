@@ -116,4 +116,24 @@ public class GroupBuyService {
 
         groupBuyRepository.delete(groupBuy);
     }
+
+    // 특정 호스트가 올린 공동구매 목록
+    @Transactional(readOnly = true)
+    public List<GroupBuyResponseDto> getGroupBuysByHost(Long hostId) {
+        return groupBuyRepository.findByHostId(hostId)
+                .stream()
+                .map(GroupBuyResponseDto::new)
+                .collect(Collectors.toList());
+    }
+
+    // 내가 올린 공동구매 목록
+    @Transactional(readOnly = true)
+    public List<GroupBuyResponseDto> getMyGroupBuys(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+        return groupBuyRepository.findByHostId(user.getId())
+                .stream()
+                .map(GroupBuyResponseDto::new)
+                .collect(Collectors.toList());
+    }
 }

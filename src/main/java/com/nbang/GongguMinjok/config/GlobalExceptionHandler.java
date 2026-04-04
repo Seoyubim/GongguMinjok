@@ -33,9 +33,10 @@ public class GlobalExceptionHandler {
     // 그 외 모든 예외
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleException(Exception e) {
+        e.printStackTrace();
         ErrorResponseDto error = new ErrorResponseDto(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "서버 오류가 발생했어요. 잠시 후 다시 시도해주세요."
+                e.getClass().getSimpleName() + ": " + e.getMessage()
         );
         return ResponseEntity.internalServerError().body(error);
     }

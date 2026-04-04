@@ -4,6 +4,7 @@ import com.nbang.GongguMinjok.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -45,13 +46,15 @@ public class SecurityConfig {
                                 "/api/auth/email/send",
                                 "/api/auth/email/verify"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/groupbuys").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/groupbuys/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/groupbuys/host/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
                         new JwtAuthenticationFilter(jwtTokenProvider, customUserDetailsService),
                         UsernamePasswordAuthenticationFilter.class
                 );
-
         return http.build();
     }
 
