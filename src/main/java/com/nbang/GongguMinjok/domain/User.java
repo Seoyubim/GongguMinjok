@@ -41,11 +41,18 @@ public class User {
     private String profileImage; // 프로필 사진 URL
 
     @Column(nullable = false)
-    private int mannerScore = 50;  // 매너지수 기본값 100점
+    private int mannerScore = 50;  // 매너지수 기본값 50점
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private MannerGrade mannerGrade = MannerGrade.SOSO;  // 매너등급
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.USER;          // 권한 (기본값: USER)
+
+    @Column(nullable = false)
+    private boolean emailVerified = false;  // 이메일 인증 여부
 
     @Column(nullable = false)
     private boolean isActive = true;  // 계정 활성화 여부
@@ -65,5 +72,11 @@ public class User {
         GOOD,   // 70~89: 긍정 평가 누적 시
         GREAT,  // 90~99: 높은 신뢰도
         LEGEND // 100: 최상위 등급
+    }
+
+    // 권한
+    public enum Role {
+        USER,
+        ADMIN
     }
 }
