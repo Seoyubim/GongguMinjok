@@ -359,12 +359,56 @@ async function setupMap() {
   }, 800);
 }
 
+/**
+ * 카카오맵 SDK 스크립트가 완전히 다운로드될 때까지 폴링으로 대기.
+ *
+ * autoload=false 옵션 사용 시:
+ *   - SDK 스크립트 다운로드 완료 → window.kakao 객체 생성됨
+ *   - kakao.maps.load() 호출 후 콜백 내부 → window.kakao.maps 완전히 준비됨
+ *
+ * 따라서 여기서는 window.kakao 의 존재만 확인하고,
+ * window.kakao.maps 의 준비는 kakao.maps.load() 의 콜백에 맡김.
+ *
+ * index.html 의 onload="window.kakaoSdkReady = true;" 도 함께 체크하여
+ * 두 조건 중 하나라도 충족되면 resolve.
+ */
+function waitForKakao(timeout = 10000) {
+  return new Promise((resolve, reject) => {
+    const isReady = () => window.kakaoSdkReady === true || window.kakao != null;
+
+    if (isReady()) {
+      resolve();
+      return;
+    }
+
+    const interval = 100;
+    let elapsed = 0;
+
+    const timer = setInterval(() => {
+      elapsed += interval;
+
+      if (isReady()) {
+        clearInterval(timer);
+        resolve();
+        return;
+      }
+
+      if (elapsed >= timeout) {
+        clearInterval(timer);
+        reject(new Error("카카오맵 SDK 로드 시간이 초과되었습니다."));
+      }
+    }, interval);
+  });
+}
+
 export async function initMap() {
   const mapContainer = document.getElementById("map");
   if (!mapContainer) return;
 
-  if (!window.kakao || !window.kakao.maps) {
-    console.error("카카오맵 SDK가 아직 로드되지 않았습니다.");
+  try {
+    await waitForKakao();
+  } catch (error) {
+    console.error("카카오맵 SDK 로드 실패:", error);
     return;
   }
 
