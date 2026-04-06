@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -21,6 +22,7 @@ public class GroupBuyRequestDto {
     private int maxReward;
     private int maxParticipants;
     private String pickupLocation;
-    private List<LocalDateTime> pickupTimes;
+    private List<LocalDateTime> pickupTimes = new ArrayList<>(); // ← 기본값 빈 리스트
     private GroupBuy.Category category;
+    private List<String> imageUrls = new ArrayList<>();           // ← 얘도 같이
 }

@@ -1,6 +1,7 @@
 package com.nbang.GongguMinjok.service;
 
 import com.nbang.GongguMinjok.domain.GroupBuy;
+import com.nbang.GongguMinjok.domain.GroupBuyImage;
 import com.nbang.GongguMinjok.domain.GroupBuyPickupTime;
 import com.nbang.GongguMinjok.domain.User;
 import com.nbang.GongguMinjok.dto.GroupBuyRequestDto;
@@ -58,17 +59,23 @@ public class GroupBuyService {
         groupBuy.setPickupLocation(dto.getPickupLocation());
         groupBuy.setCategory(dto.getCategory());
 
-
-        GroupBuy saved = groupBuyRepository.save(groupBuy);
-
+        // save 전에 자식들 먼저 세팅
         for (LocalDateTime time : dto.getPickupTimes()) {
             GroupBuyPickupTime pickupTime = new GroupBuyPickupTime();
-            pickupTime.setGroupBuy(saved);
+            pickupTime.setGroupBuy(groupBuy);  // 아직 id 없는 부모를 참조
             pickupTime.setPickupTime(time);
-            saved.getPickupTimes().add(pickupTime);
+            groupBuy.getPickupTimes().add(pickupTime);
         }
 
-        return new GroupBuyResponseDto(groupBuyRepository.save(saved));
+        int order = 0;
+        for (String url : dto.getImageUrls()) {
+            GroupBuyImage image = new GroupBuyImage();
+            image.setGroupBuy(groupBuy);
+            image.setImageUrl(url);
+            image.setOrderIndex(order++);
+            groupBuy.getImages().add(image);
+        }
+        return new GroupBuyResponseDto(groupBuyRepository.save(groupBuy));
     }
 
     // 수정
@@ -78,7 +85,7 @@ public class GroupBuyService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
 
         if (!groupBuy.getHost().getEmail().equals(email)) {
-            throw new IllegalArgumentException("수정 권한이 없습니다.");
+            throw new org.springframework.security.access.AccessDeniedException("수정 권한이 없습니다.");
         }
 
         groupBuy.setTitle(dto.getTitle());
@@ -101,6 +108,18 @@ public class GroupBuyService {
             groupBuy.getPickupTimes().add(pickupTime);
         }
 
+        groupBuy.getImages().clear();
+        if (dto.getImageUrls() != null) {
+            int order = 0;
+            for (String url : dto.getImageUrls()) {
+                GroupBuyImage image = new GroupBuyImage();
+                image.setGroupBuy(groupBuy);
+                image.setImageUrl(url);
+                image.setOrderIndex(order++);
+                groupBuy.getImages().add(image);
+            }
+        }
+
         return new GroupBuyResponseDto(groupBuyRepository.save(groupBuy));
     }
 
@@ -111,7 +130,7 @@ public class GroupBuyService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
 
         if (!groupBuy.getHost().getEmail().equals(email)) {
-            throw new IllegalArgumentException("삭제 권한이 없습니다.");
+            throw new org.springframework.security.access.AccessDeniedException("삭제 권한이 없습니다.");
         }
 
         groupBuyRepository.delete(groupBuy);

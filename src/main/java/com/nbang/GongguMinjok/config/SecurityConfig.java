@@ -49,6 +49,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/groupbuys").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/groupbuys/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/groupbuys/host/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/groupbuys/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/groupbuys/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
@@ -61,7 +63,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("*"));
+        // 와일드카드 대신 명시적 origin 지정
+        config.setAllowedOrigins(List.of(
+                "http://localhost:3000",  // 로컬 프론트 개발 서버
+                "http://localhost:5500"
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
 
