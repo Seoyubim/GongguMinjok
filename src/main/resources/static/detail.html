@@ -58,7 +58,7 @@
           <span>날짜 정보</span>
         </div>
 
-        <div class="pickup-map-box">
+        <div class="pickup-map-box" id="pickupMapTrigger">
           <span>🗺️ 픽업 장소 지도로 보기</span>
           <button class="btn-map-view" type="button">지도 보기 →</button>
         </div>
@@ -144,12 +144,30 @@
     </div>
   </div>
 
+  <div id="pickupMapModal" class="map-modal hidden">
+    <div class="map-modal-content">
+      <button id="closePickupMapBtn" class="map-modal-close" type="button" aria-label="지도 닫기">×</button>
+      <button id="pickupLocationBtn" class="btn btn-outline btn-sm location-btn modal-location-btn" type="button">
+        내 위치
+      </button>
+      <div id="pickupMap" class="modal-map"></div>
+    </div>
+  </div>
+
   <div id="toast" class="toast"></div>
 
   <script src="js/mock/data.js"></script>
+  <script src="js/api/groupBuyApi.js"></script>
   <script src="js/utils/storage.js"></script>
   <script src="js/utils/format.js"></script>
   <script src="js/utils/ui.js"></script>
+
+  <script
+    type="text/javascript"
+    src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=4e2629de2f371f4282d3552c56fed7ef&autoload=false"
+    onload="window.kakaoSdkReady = true;"
+    onerror="console.error('카카오맵 SDK 스크립트 로드 실패');"
+  ></script>
   <script src="js/pages/detail.js"></script>
 </body>
 </html>

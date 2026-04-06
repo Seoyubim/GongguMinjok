@@ -1,13 +1,206 @@
 (function () {
   const state = {
     groupBuy: null,
-    selectedTime: null
+    selectedTime: null,
+    pickupMap: null,
+    pickupLocationMarker: null,
+    pickupCurrentLocationMarker: null
   };
 
   document.addEventListener("DOMContentLoaded", () => {
     updateAuthUI();
     init();
+    bindPickupMapEvents();
   });
+
+  // =============================
+  // 카카오맵 SDK 로드 대기
+  // =============================
+  // autoload=false 방식: window.kakao 객체 생성 여부만 확인
+  // kakao.maps.Map 준비는 kakao.maps.load() 콜백에서 보장
+  function waitForKakao(timeout = 10000) {
+    return new Promise((resolve, reject) => {
+      const isReady = () => window.kakaoSdkReady === true || window.kakao != null;
+
+      if (isReady()) {
+        resolve();
+        return;
+      }
+
+      const interval = 100;
+      let elapsed = 0;
+
+      const timer = setInterval(() => {
+        elapsed += interval;
+
+        if (isReady()) {
+          clearInterval(timer);
+          resolve();
+          return;
+        }
+
+        if (elapsed >= timeout) {
+          clearInterval(timer);
+          reject(new Error("카카오맵 SDK 로드 시간이 초과되었습니다."));
+        }
+      }, interval);
+    });
+  }
+
+  // =============================
+  // 픽업 장소 지도 Modal
+  // =============================
+
+  /**
+   * 픽업 장소 텍스트를 키워드 검색으로 좌표 변환 후 지도 초기화.
+   * 이미 지도가 생성된 경우 중심만 재설정.
+   *
+   * detail.html은 autoload 없이 SDK를 로드하므로
+   * waitForKakao() 완료 시점에 services 포함 모든 라이브러리가 준비됨.
+   * kakao.maps.load() 추가 호출 불필요 → keywordSearch 즉시 실행 가능.
+   *
+   * @param {string} pickupLocation - 픽업 장소 텍스트 (예: "광주 공원")
+   */
+  // lat, lng: groupBuy 데이터의 좌표값 (DB 연동 시 API 응답에서 그대로 전달)
+  // lat/lng가 없을 경우 광주 기본 좌표로 폴백
+  async function initPickupMap(lat, lng, pickupLocation) {
+    const mapContainer = document.getElementById("pickupMap");
+    if (!mapContainer) return;
+
+    try {
+      await waitForKakao();
+    } catch (e) {
+      console.error("카카오맵 SDK 로드 실패:", e);
+      return;
+    }
+
+    // autoload=false 방식: kakao.maps.load() 콜백 안에서 지도 API 사용 (index.html과 동일한 패턴)
+    kakao.maps.load(() => {
+      const centerLatLng =
+        lat != null && lng != null
+          ? new kakao.maps.LatLng(lat, lng)
+          : new kakao.maps.LatLng(35.1469, 126.9229);
+
+      renderPickupMap(mapContainer, centerLatLng, pickupLocation);
+    });
+  }
+
+  /**
+   * 지도 생성 또는 중심 이동 + 마커 표시
+   */
+  function renderPickupMap(mapContainer, centerLatLng, pickupLocation) {
+    if (!state.pickupMap) {
+      // 최초 생성
+      state.pickupMap = new kakao.maps.Map(mapContainer, {
+        center: centerLatLng,
+        level: 4
+      });
+
+      state.pickupMap.setZoomable(true);
+      state.pickupMap.setDraggable(true);
+
+      const zoomControl = new kakao.maps.ZoomControl();
+      state.pickupMap.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+    } else {
+      // 이미 있으면 중심만 재설정
+      state.pickupMap.setCenter(centerLatLng);
+      state.pickupMap.setLevel(4);
+
+      if (state.pickupLocationMarker) {
+        state.pickupLocationMarker.setMap(null);
+      }
+    }
+
+    // 픽업 장소 마커
+    state.pickupLocationMarker = new kakao.maps.Marker({
+      map: state.pickupMap,
+      position: centerLatLng,
+      title: pickupLocation
+    });
+
+    // 인포윈도우
+    const infowindow = new kakao.maps.InfoWindow({
+      content: `<div style="padding:8px 12px; font-size:13px; font-weight:600;">📍 ${pickupLocation}</div>`
+    });
+    infowindow.open(state.pickupMap, state.pickupLocationMarker);
+
+    // modal이 display:flex 된 직후라 크기 재계산 필요
+    setTimeout(() => {
+      state.pickupMap.relayout();
+      state.pickupMap.setCenter(centerLatLng);
+    }, 50);
+  }
+
+  /**
+   * 픽업 지도 modal 이벤트 바인딩
+   */
+  function bindPickupMapEvents() {
+    const trigger = document.getElementById("pickupMapTrigger");
+    const modal = document.getElementById("pickupMapModal");
+    const closeBtn = document.getElementById("closePickupMapBtn");
+    const locationBtn = document.getElementById("pickupLocationBtn");
+
+    if (!trigger || !modal) return;
+
+    // 지도 보기 → 버튼 클릭
+    trigger.addEventListener("click", () => {
+      const { lat, lng, pickupLocation } = state.groupBuy ?? {};
+      modal.classList.remove("hidden");
+      initPickupMap(lat, lng, pickupLocation || "광주광역시");
+    });
+
+    // × 닫기 버튼
+    if (closeBtn) {
+      closeBtn.addEventListener("click", () => {
+        modal.classList.add("hidden");
+      });
+    }
+
+    // 모달 바깥 클릭
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.classList.add("hidden");
+      }
+    });
+
+    // 내 위치 버튼
+    if (locationBtn) {
+      locationBtn.addEventListener("click", () => {
+        if (!state.pickupMap) return;
+
+        if (!navigator.geolocation) {
+          showToast("위치 정보를 지원하지 않는 브라우저입니다.");
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const myLatLng = new kakao.maps.LatLng(
+              position.coords.latitude,
+              position.coords.longitude
+            );
+
+            state.pickupMap.setCenter(myLatLng);
+            state.pickupMap.setLevel(3);
+
+            if (state.pickupCurrentLocationMarker) {
+              state.pickupCurrentLocationMarker.setMap(null);
+            }
+
+            state.pickupCurrentLocationMarker = new kakao.maps.Marker({
+              map: state.pickupMap,
+              position: myLatLng,
+              title: "내 위치"
+            });
+          },
+          () => {
+            showToast("현재 위치를 가져올 수 없습니다.");
+          },
+          { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+        );
+      });
+    }
+  }
 
   function updateAuthUI() {
     const loginBtn = document.getElementById("loginBtn");
@@ -30,38 +223,40 @@
     }
   }
 
-  function init() {
-    if (!window.APP_DATA || !Array.isArray(window.APP_DATA.groupBuys)) {
-      console.error("APP_DATA 또는 groupBuys 데이터를 찾을 수 없습니다.");
-      showToast("임시 데이터를 불러올 수 없습니다.");
-      return;
-    }
-
+  async function init() {
     const groupBuyId = getGroupBuyIdFromUrl();
-    const groupBuy = getGroupBuyById(groupBuyId) || window.APP_DATA.groupBuys[0];
 
-    if (!groupBuy) {
-      console.error("상세 데이터를 찾을 수 없습니다.");
-      showToast("상세 데이터를 찾을 수 없습니다.");
-      return;
+    try {
+      // DB 연동 시 getGroupBuyById 내부만 fetch로 교체하면 이 코드는 그대로 유지
+      let groupBuy = await getGroupBuyById(groupBuyId);
+
+      // id로 못 찾으면 첫 번째 항목으로 폴백 (개발 환경용)
+      if (!groupBuy) {
+        const allGroupBuys = await getGroupBuys();
+        groupBuy = allGroupBuys[0];
+      }
+
+      if (!groupBuy) {
+        console.error("상세 데이터를 찾을 수 없습니다.");
+        showToast("상세 데이터를 찾을 수 없습니다.");
+        return;
+      }
+
+      state.groupBuy = groupBuy;
+      state.selectedTime = getInitialSelectedTime(groupBuy);
+
+      renderDetail(groupBuy);
+      bindEvents();
+    } catch (e) {
+      console.error("데이터 로드 실패:", e);
+      showToast("데이터를 불러올 수 없습니다.");
     }
-
-    state.groupBuy = groupBuy;
-    state.selectedTime = getInitialSelectedTime(groupBuy);
-
-    renderDetail(groupBuy);
-    bindEvents();
   }
 
   function getGroupBuyIdFromUrl() {
     const params = new URLSearchParams(window.location.search);
     const id = Number(params.get("id"));
     return Number.isNaN(id) ? null : id;
-  }
-
-  function getGroupBuyById(id) {
-    if (!id) return null;
-    return window.APP_DATA.groupBuys.find((item) => item.id === id) || null;
   }
 
   function getInitialSelectedTime(groupBuy) {
