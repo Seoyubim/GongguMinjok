@@ -23,28 +23,51 @@
       </div>
 
       <div class="signup-box">
-        <form>
+        <form id="signup-form">
 
           <label>이메일</label>
-          <input type="email" placeholder="example@email.com">
+          <div class="input-with-btn">
+            <input type="email" id="email" placeholder="example@email.com">
+            <button type="button" id="btn-send-code" class="btn btn-primary btn-sm" disabled>전송</button>
+          </div>
+
+          <div id="verify-section" class="hidden">
+            <div class="input-with-btn">
+              <div class="verify-input-wrapper">
+                <input type="text" id="verify-code" placeholder="인증번호 6자리 입력" maxlength="6">
+                <span id="timer" class="timer"></span>
+              </div>
+              <button type="button" id="btn-verify-code" class="btn btn-primary btn-sm">확인</button>
+            </div>
+            <p id="verify-msg" class="verify-msg"></p>
+          </div>
 
           <label>비밀번호</label>
-          <input type="password" placeholder="비밀번호 입력">
+          <div class="password-wrapper">
+            <input type="password" id="password" placeholder="비밀번호 입력">
+            <button type="button" class="btn-pw-toggle" data-target="password">보기</button>
+          </div>
 
           <label>비밀번호 확인</label>
-          <input type="password" placeholder="비밀번호 다시 입력">
+          <div class="password-wrapper">
+            <input type="password" id="password-confirm" placeholder="비밀번호 다시 입력">
+            <button type="button" class="btn-pw-toggle" data-target="password-confirm">보기</button>
+          </div>
+          <p id="password-confirm-msg" class="field-error"></p>
 
           <label>닉네임</label>
-          <input type="text" placeholder="닉네임 입력">
+          <input type="text" id="nickname" placeholder="닉네임 입력">
 
           <label>핸드폰 번호</label>
-          <input type="tel" placeholder="010-1234-5678">
+          <input type="tel" id="phone" placeholder="010-1234-5678">
 
           <label>지역</label>
-          <input type="text" placeholder="예: 서울시 강남구">
+          <input type="text" id="location" placeholder="예: 봉선동">
 
           <label>프로필 사진 (선택)</label>
-          <input type="file">
+          <input type="file" id="profile-image" accept="image/*">
+
+          <p id="form-error" class="form-error"></p>
 
           <button type="submit" class="btn-signup">회원가입</button>
 
@@ -59,5 +82,9 @@
     </div>
   </main>
 
+  <div id="signup-toast" class="toast">회원가입이 완료되었습니다!</div>
+
+  <script src="js/api/authApi.js"></script>
+  <script src="js/pages/signup.js"></script>
 </body>
 </html>
