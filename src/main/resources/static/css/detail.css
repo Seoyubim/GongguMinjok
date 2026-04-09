@@ -19,7 +19,6 @@
   gap: 1rem;
 }
 
-/* 픽업 장소 지도 보기 버튼 영역 */
 .pickup-map-box {
   height: 80px;
   background: #dcfce7;
@@ -63,7 +62,6 @@
   gap: 0.5rem;
 }
 
-/* 픽업 시간 선택 그리드 */
 .time-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -130,13 +128,99 @@
   margin-top: 0.5rem;
 }
 
-/* 하단 고정 바 */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  width: 90%;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  animation: modalFade 0.2s ease;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.modal-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.modal-header button {
+  border: none;
+  background: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.modal-desc {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.modal-section {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.modal-section strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.modal-price {
+  margin: 1rem 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.modal-price p {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 400;
+  margin-top: 0.25rem;
+}
+
+@keyframes modalFade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .fixed-bottom {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255,255,255,0.9);
   border-top: 1px solid #e5e7eb;
   padding: 1rem;
   z-index: 40;
@@ -170,7 +254,6 @@
   line-height: 1.4;
 }
 
-/* 댓글 */
 .comment-list {
   margin-bottom: 12px;
 }
@@ -262,17 +345,26 @@
   font-size: 13px;
 }
 
-/* 히어로 이미지 */
-.detail-hero {
-  width: 100%;
-  height: 220px;
-  margin-bottom: 1rem;
-  border-radius: 0.75rem;
-  overflow: hidden;
+.hidden {
+  display: none;
 }
 
-.detail-hero-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 100px;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 9999;
+}
+
+.toast.show {
+  opacity: 1;
 }
