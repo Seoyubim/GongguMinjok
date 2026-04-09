@@ -7,8 +7,6 @@ import com.nbang.GongguMinjok.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.nbang.GongguMinjok.dto.LoginRequestDto;
-import com.nbang.GongguMinjok.dto.LoginResponseDto;
 
 import java.util.Map;
 
@@ -41,14 +39,6 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<UserResponseDto> register(@RequestBody UserRequestDto dto) {
         UserResponseDto response = userService.register(dto);
-        return ResponseEntity.ok(response);
-    }
-
-    // 로그인
-    // POST /api/auth/login
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto dto) {
-        LoginResponseDto response = userService.login(dto);
         return ResponseEntity.ok(response);
     }
 }

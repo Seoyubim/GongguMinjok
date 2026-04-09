@@ -9,7 +9,6 @@ const tabButtons = document.querySelectorAll(".tab-trigger");
 const loginBtn = document.getElementById("loginBtn");
 const mypageBtn = document.getElementById("mypageBtn");
 const logoutBtn = document.getElementById("logoutBtn");
-const writeBtn = document.getElementById("writeBtn");
 const toast = document.getElementById("toast");
 
 const loadMoreBtn = document.getElementById("loadMoreBtn");
@@ -28,12 +27,10 @@ function renderAuthButtons() {
     loginBtn.classList.add("hidden");
     mypageBtn.classList.remove("hidden");
     logoutBtn.classList.remove("hidden");
-    writeBtn?.classList.remove("hidden");
   } else {
     loginBtn.classList.remove("hidden");
     mypageBtn.classList.add("hidden");
     logoutBtn.classList.add("hidden");
-    writeBtn?.classList.add("hidden");
   }
 }
 
