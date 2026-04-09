@@ -8,8 +8,8 @@
 .steps {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  justify-content: space-between;
+  width: 100%;
   margin-bottom: 2rem;
 }
 
@@ -23,6 +23,7 @@
   font-weight: 600;
   background: #e5e7eb;
   color: #6b7280;
+  flex-shrink: 0;
 }
 
 .step-circle.active {
@@ -31,7 +32,7 @@
 }
 
 .step-line {
-  width: 64px;
+  flex: 1;
   height: 4px;
   background: #e5e7eb;
 }
@@ -39,6 +40,7 @@
 .step-labels {
   display: flex;
   justify-content: space-between;
+  width: 100%;
   margin-top: 0.5rem;
   font-size: 0.75rem;
   color: #6b7280;
