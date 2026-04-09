@@ -9,6 +9,9 @@ import com.nbang.GongguMinjok.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.nbang.GongguMinjok.config.JwtTokenProvider;
+import com.nbang.GongguMinjok.dto.LoginRequestDto;
+import com.nbang.GongguMinjok.dto.LoginResponseDto;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +20,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationRepository emailVerificationRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     public UserResponseDto register(UserRequestDto dto) {
 
@@ -56,5 +60,38 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
         return new UserResponseDto(savedUser);
+    }
+
+    public LoginResponseDto login(LoginRequestDto dto) {
+
+        // 이메일 존재 여부 확인
+        User user = userRepository.findByEmail(dto.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일이에요!"));
+
+        // 계정 활성화 여부 확인
+        if (!user.isActive()) {
+            throw new IllegalArgumentException("비활성화된 계정이에요!");
+        }
+
+        // 이메일 인증 여부 확인
+        if (!user.isEmailVerified()) {
+            throw new IllegalArgumentException("이메일 인증이 필요해요!");
+        }
+
+        // 비밀번호 확인
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 올바르지 않아요!");
+        }
+
+        // JWT 발급
+        String token = jwtTokenProvider.generateToken(user.getEmail());
+
+        return LoginResponseDto.builder()
+                .accessToken(token)
+                .id(user.getId())
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .location(user.getLocation())
+                .build();
     }
 }

@@ -15,9 +15,8 @@
           <img src="images/logo.jpg" alt="공구의 민족 로고" class="logo-image">
           <h1 class="logo-text">공구의 민족</h1>
         </a>
-
         <div class="header-actions">
-          <a href="mypage.html" class="btn btn-outline">👤 마이페이지</a>
+          <a href="mypage.html" class="btn btn-outline">마이페이지</a>
         </div>
       </div>
     </div>
@@ -25,9 +24,7 @@
 
   <main class="main-content">
     <div class="create-page">
-      <a href="index.html" class="btn btn-outline btn-sm back-link">
-        ← 뒤로가기
-      </a>
+      <a href="index.html" class="btn btn-outline btn-sm back-link">← 뒤로가기</a>
 
       <h1 class="page-title">공동구매 만들기</h1>
       <p class="page-subtitle">이웃과 함께 똑똑한 소비를 시작해보세요</p>
@@ -46,7 +43,7 @@
         <span>확인</span>
       </div>
 
-      <div class="step-content active">
+      <div class="step-content active" id="step-1">
         <div class="card">
           <div class="card-header">기본 정보</div>
 
@@ -84,8 +81,77 @@
               <textarea id="description" class="form-textarea" placeholder="상품에 대한 설명을 자유롭게 작성해주세요"></textarea>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-full">다음 단계</button>
+            <button type="button" class="btn btn-primary btn-full" onclick="goToStep(2)">다음 단계</button>
           </form>
+        </div>
+      </div>
+
+      <div class="step-content" id="step-2">
+        <div class="card">
+          <div class="card-header">픽업 장소</div>
+          <div class="form-group">
+            <input id="pickupLocation" type="text" class="form-input" placeholder="예: 성수역 2번 출구 카페">
+          </div>
+          <div class="map-placeholder">📍 지도에서 위치 선택</div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">픽업 시간대</div>
+          <div id="pickup-times-container">
+            <input type="text" class="form-input pickup-time" placeholder="예: 오늘 18:00-19:00">
+          </div>
+          <button class="btn btn-outline" onclick="addPickupTime()">+ 시간대 추가</button>
+        </div>
+
+        <div class="button-group">
+          <button class="btn btn-outline" onclick="goToStep(1)">이전</button>
+          <button class="btn btn-primary" onclick="goToStep(3)">다음 단계</button>
+        </div>
+      </div>
+
+      <div class="step-content" id="step-3">
+        <div class="card">
+          <div class="card-header">확인</div>
+
+          <div class="confirm-item">
+            <label>제목</label>
+            <p id="confirm-title"></p>
+          </div>
+
+          <div class="confirm-item">
+            <label>카테고리</label>
+            <p id="confirm-category"></p>
+          </div>
+
+          <div class="confirm-item">
+            <label>가격</label>
+            <p id="confirm-price"></p>
+          </div>
+
+          <div class="confirm-item">
+            <label>최대 참여 인원</label>
+            <p id="confirm-participants"></p>
+          </div>
+
+          <div class="confirm-item">
+            <label>픽업 장소</label>
+            <p id="confirm-location"></p>
+          </div>
+
+          <div class="confirm-item">
+            <label>픽업 시간대</label>
+            <ul id="confirm-times"></ul>
+          </div>
+
+          <div class="confirm-item">
+            <label>설명</label>
+            <p id="confirm-description"></p>
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button class="btn btn-outline" onclick="goToStep(2)">이전</button>
+          <button class="btn btn-primary" onclick="submitForm()">공동구매 생성</button>
         </div>
       </div>
     </div>
