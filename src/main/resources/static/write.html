@@ -8,158 +8,151 @@
   <link rel="stylesheet" href="css/write.css">
 </head>
 <body>
-  <header class="header">
-    <div class="container">
-      <div class="header-content">
-        <a href="index.html" class="logo">
-          <img src="images/logo.jpg" alt="공구의 민족 로고" class="logo-image">
-          <h1 class="logo-text">공구의 민족</h1>
-        </a>
-        <div class="header-actions">
-          <a href="mypage.html" class="btn btn-outline">마이페이지</a>
+
+<header class="header">
+  <div class="container">
+    <div class="header-content">
+      <a href="index.html" class="logo">
+        <img src="images/logo.jpg" alt="공구의 민족 로고" class="logo-image">
+        <h1 class="logo-text">공구의 민족</h1>
+      </a>
+      <div class="header-actions">
+        <a href="mypage.html" class="btn btn-outline">마이페이지</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="main-content">
+  <div class="page" id="pg-create">
+
+    <nav class="tnav">
+      <button class="tnav-back" onclick="go('list')">←</button>
+      <span class="tnav-title">공동구매 만들기</span>
+      <button class="tnav-icon" style="font-size:13px;font-weight:600;color:var(--gp)" onclick="saveDraft()">임시저장</button>
+    </nav>
+
+    <div class="step-bar">
+      <div class="step-track" id="cr-step-track">
+        <div class="step-item active" id="cr-si-1">
+          <div class="step-circle">1</div>
+          <span class="step-lbl">기본정보</span>
+        </div>
+        <div class="step-item pending" id="cr-si-2">
+          <div class="step-circle">2</div>
+          <span class="step-lbl">구매설정</span>
+        </div>
+        <div class="step-item pending" id="cr-si-3">
+          <div class="step-circle">3</div>
+          <span class="step-lbl">픽업설정</span>
+        </div>
+        <div class="step-item pending" id="cr-si-4">
+          <div class="step-circle">4</div>
+          <span class="step-lbl">미리보기</span>
         </div>
       </div>
     </div>
-  </header>
 
-  <main class="main-content">
-    <div class="create-page">
-      <a href="index.html" class="btn btn-outline btn-sm back-link">← 뒤로가기</a>
-
-      <h1 class="page-title">공동구매 만들기</h1>
-      <p class="page-subtitle">이웃과 함께 똑똑한 소비를 시작해보세요</p>
-
-      <div class="steps">
-        <div class="step-circle active">1</div>
-        <div class="step-line"></div>
-        <div class="step-circle">2</div>
-        <div class="step-line"></div>
-        <div class="step-circle">3</div>
+    <div class="step-cont active" id="cr-s1">
+      <div class="sec">
+        <div style="font-size:14px;font-weight:700;margin-bottom:13px">
+          🛒 구매 유형 <span style="color:var(--red)">*</span>
+        </div>
+        <div class="type-grid">
+          <div class="type-card" onclick="crType(this,'online')">
+            <div class="tc-icon">🛒</div>
+            <div class="tc-lbl">온라인 마켓</div>
+            <div class="tc-desc">쿠팡·네이버 링크 공유</div>
+          </div>
+          <div class="type-card" onclick="crType(this,'farm')">
+            <div class="tc-icon">🌾</div>
+            <div class="tc-lbl">산지 직배송</div>
+            <div class="tc-desc">농·수산물 대량구매</div>
+          </div>
+        </div>
+        <div class="err-msg" id="cr-type-err">구매 유형을 선택해 주세요.</div>
       </div>
 
-      <div class="step-labels">
-        <span>기본 정보</span>
-        <span>픽업 정보</span>
-        <span>확인</span>
-      </div>
+      <div class="sec">
+        <div style="font-size:14px;font-weight:700;margin-bottom:13px">📝 게시글 정보</div>
 
-      <div class="step-content active" id="step-1">
-        <div class="card">
-          <div class="card-header">기본 정보</div>
-
-          <form id="createForm">
-            <div class="form-group">
-              <label class="form-label" for="title">제목 *</label>
-              <input id="title" type="text" class="form-input" placeholder="예: 제주 한라봉 5kg 공동구매">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="category">카테고리 *</label>
-              <select id="category" class="form-select">
-                <option value="">카테고리 선택</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="price">인당 가격 *</label>
-              <input id="price" type="number" class="form-input" placeholder="20000">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="maxParticipants">최대 참여 인원 *</label>
-              <input id="maxParticipants" type="number" class="form-input" placeholder="5">
-              <p class="form-hint">💡 참여자가 많을수록 진행자 할인 혜택이 커져요!</p>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="productLink">상품 링크</label>
-              <input id="productLink" type="text" class="form-input" placeholder="https://example.com/product">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="description">설명</label>
-              <textarea id="description" class="form-textarea" placeholder="상품에 대한 설명을 자유롭게 작성해주세요"></textarea>
-            </div>
-
-            <button type="button" class="btn btn-primary btn-full" onclick="goToStep(2)">다음 단계</button>
-          </form>
-        </div>
-      </div>
-
-      <div class="step-content" id="step-2">
-        <div class="card">
-          <div class="card-header">픽업 장소</div>
-          <div class="form-group">
-            <input id="pickupLocation" type="text" class="form-input" placeholder="예: 성수역 2번 출구 카페">
-          </div>
-          <div class="map-placeholder">📍 지도에서 위치 선택</div>
+        <div class="fgroup">
+          <label class="flabel">제목 <span class="req">*</span></label>
+          <input class="finput" id="cr-title" maxlength="40" placeholder="예) 코스트코 세제 소분 나눔" oninput="ccnt('cr-title','cr-tc',40)">
+          <div class="char-cnt"><span id="cr-tc">0</span>/40</div>
+          <div class="err-msg" id="cr-title-err">제목을 입력해 주세요. (5자 이상)</div>
         </div>
 
-        <div class="card">
-          <div class="card-header">픽업 시간대</div>
-          <div id="pickup-times-container">
-            <input type="text" class="form-input pickup-time" placeholder="예: 오늘 18:00-19:00">
-          </div>
-          <button class="btn btn-outline" onclick="addPickupTime()">+ 시간대 추가</button>
+        <div class="fgroup">
+          <label class="flabel">상세 설명 <span class="req">*</span></label>
+          <textarea class="ftarea" id="cr-desc" maxlength="500" placeholder="상품 정보, 소분 방식 등 자세히 적어주세요" oninput="ccnt('cr-desc','cr-dc',500)"></textarea>
+          <div class="char-cnt"><span id="cr-dc">0</span>/500</div>
+          <div class="err-msg" id="cr-desc-err">설명을 입력해 주세요. (10자 이상)</div>
         </div>
 
-        <div class="button-group">
-          <button class="btn btn-outline" onclick="goToStep(1)">이전</button>
-          <button class="btn btn-primary" onclick="goToStep(3)">다음 단계</button>
-        </div>
-      </div>
-
-      <div class="step-content" id="step-3">
-        <div class="card">
-          <div class="card-header">확인</div>
-
-          <div class="confirm-item">
-            <label>제목</label>
-            <p id="confirm-title"></p>
-          </div>
-
-          <div class="confirm-item">
-            <label>카테고리</label>
-            <p id="confirm-category"></p>
-          </div>
-
-          <div class="confirm-item">
-            <label>가격</label>
-            <p id="confirm-price"></p>
-          </div>
-
-          <div class="confirm-item">
-            <label>최대 참여 인원</label>
-            <p id="confirm-participants"></p>
-          </div>
-
-          <div class="confirm-item">
-            <label>픽업 장소</label>
-            <p id="confirm-location"></p>
-          </div>
-
-          <div class="confirm-item">
-            <label>픽업 시간대</label>
-            <ul id="confirm-times"></ul>
-          </div>
-
-          <div class="confirm-item">
-            <label>설명</label>
-            <p id="confirm-description"></p>
-          </div>
-        </div>
-
-        <div class="button-group">
-          <button class="btn btn-outline" onclick="goToStep(2)">이전</button>
-          <button class="btn btn-primary" onclick="submitForm()">공동구매 생성</button>
+        <div class="fgroup" id="cr-link-group" style="display:none">
+          <label class="flabel">상품 링크</label>
+          <input class="finput" id="cr-link" type="url" placeholder="https://...">
         </div>
       </div>
     </div>
-  </main>
 
-  <div id="toast" class="toast"></div>
+    <div class="step-cont" id="cr-s2">
+      <div class="sec">
+        <div style="font-size:14px;font-weight:700;margin-bottom:13px">👥 모집 인원</div>
+        <div class="fgroup">
+          <label class="flabel">최대 모집 인원 <span class="req">*</span></label>
+          <div class="stepper">
+            <button onclick="stepV('cr-head',-1,2,20)">−</button>
+            <input type="number" id="cr-head" value="4" min="2" max="20" oninput="calcPrice()">
+            <button onclick="stepV('cr-head',1,2,20)">＋</button>
+          </div>
+        </div>
+      </div>
 
-  <script src="js/data.js"></script>
-  <script src="js/write.js"></script>
+      <div class="sec">
+        <div style="font-size:14px;font-weight:700;margin-bottom:13px">💰 금액 설정</div>
+        <input class="finput" id="cr-total" type="number" placeholder="총 금액" oninput="calcPrice()">
+        <input class="finput" id="cr-disc" type="number" value="0" oninput="calcPrice()">
+        <div id="cr-pp">계산 중...</div>
+      </div>
+
+      <div class="sec">
+        <div style="font-size:14px;font-weight:700;margin-bottom:13px">💳 정산 방법</div>
+        <select id="cr-pay" class="finput">
+          <option value="">선택</option>
+          <option value="cash">현금</option>
+          <option value="transfer">계좌이체</option>
+          <option value="kakao">카카오페이</option>
+          <option value="toss">토스</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="step-cont" id="cr-s3">
+      <div class="sec">
+        <div style="font-size:14px;font-weight:700;margin-bottom:13px">📍 픽업 장소</div>
+        <input id="cr-addr" class="finput" placeholder="주소 입력">
+      </div>
+
+      <div class="sec">
+        <div style="font-size:14px;font-weight:700;margin-bottom:13px">📅 픽업 날짜</div>
+        <input id="cr-pdate" type="date" class="finput">
+      </div>
+    </div>
+
+    <div class="step-cont" id="cr-s4">
+      <h3>미리보기</h3>
+      <p id="preview"></p>
+    </div>
+
+    <div class="bot-cta">
+      <button id="cr-prev-btn" class="btn-prev-step" onclick="crPrev()" style="display:none">← 이전</button>
+      <button id="cr-next-btn" class="btn-next-step" onclick="crNext()">다음 단계 →</button>
+    </div>
+
+  </div>
+</main>
+
 </body>
 </html>
