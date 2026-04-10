@@ -10,7 +10,51 @@ var pickupTimes = [];
   var mm = String(today.getMonth() + 1).padStart(2, '0');
   var dd = String(today.getDate()).padStart(2, '0');
   document.getElementById('cr-pdate').min = yyyy + '-' + mm + '-' + dd;
+
+  // 임시저장 데이터 있으면 팝업 표시
+  if (localStorage.getItem('groupbuy_draft')) {
+    document.getElementById('cr-draft-modal').style.display = 'flex';
+  }
 })();
+
+// 임시저장 불러오기
+function applyDraft() {
+  var draft = JSON.parse(localStorage.getItem('groupbuy_draft'));
+  if (!draft) return;
+
+  if (draft.type) {
+    var cards = document.querySelectorAll('.type-card');
+    for (var i = 0; i < cards.length; i++) {
+      if (cards[i].getAttribute('onclick').indexOf(draft.type) !== -1) {
+        crType(cards[i], draft.type);
+        break;
+      }
+    }
+  }
+  if (draft.title) document.getElementById('cr-title').value = draft.title;
+  if (draft.category) document.getElementById('cr-category').value = draft.category;
+  if (draft.desc) document.getElementById('cr-desc').value = draft.desc;
+  if (draft.total) document.getElementById('cr-total').value = draft.total;
+  if (draft.qty) document.getElementById('cr-qty').value = draft.qty;
+  if (draft.head) document.getElementById('cr-head').value = draft.head;
+  if (draft.addr) document.getElementById('cr-addr').value = draft.addr;
+  if (draft.pickupTimes) {
+    pickupTimes = draft.pickupTimes.slice();
+    renderPickupChips();
+  }
+
+  ccnt('cr-title', 'cr-tc', 40);
+  ccnt('cr-desc', 'cr-dc', 500);
+  calcPrice();
+
+  document.getElementById('cr-draft-modal').style.display = 'none';
+}
+
+// 임시저장 삭제 후 팝업 닫기
+function dismissDraft() {
+  localStorage.removeItem('groupbuy_draft');
+  document.getElementById('cr-draft-modal').style.display = 'none';
+}
 
 // 페이지 이동
 function go(page) {
@@ -365,6 +409,10 @@ function searchAddress() {
 
 // 공구 등록
 function submitGroupBuy() {
+  if (!localStorage.getItem('token')) {
+    window.location.href = 'login.html';
+    return;
+  }
   var data = {
     title: document.getElementById('cr-title').value.trim(),
     description: document.getElementById('cr-desc').value.trim(),

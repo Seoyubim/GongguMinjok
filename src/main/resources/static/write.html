@@ -26,6 +26,18 @@
 <main class="main-content">
   <div class="page" id="pg-create">
 
+    <!-- 임시저장 불러오기 팝업 -->
+    <div class="draft-modal" id="cr-draft-modal">
+      <div class="draft-modal-box">
+        <div class="draft-modal-title">이전에 작성 중인 내용이 있습니다.</div>
+        <div class="draft-modal-desc">불러오시겠어요?</div>
+        <div class="draft-modal-btns">
+          <button class="btn btn-outline" onclick="dismissDraft()">아니요</button>
+          <button class="btn btn-primary" onclick="applyDraft()">예</button>
+        </div>
+      </div>
+    </div>
+
     <nav class="tnav">
       <button class="tnav-back" onclick="go('list')">←</button>
       <span class="tnav-title">공동구매 만들기</span>
