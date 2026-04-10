@@ -23,6 +23,9 @@ public class GroupBuyResponseDto {
     private int maxParticipants;
     private int currentParticipants;
     private String pickupLocation;
+    private Double lat;
+    private Double lng;
+    private String dongName;
     private List<LocalDateTime> pickupTimes;
     private String category;
     private List<String> imageUrls;
@@ -43,6 +46,9 @@ public class GroupBuyResponseDto {
         this.maxParticipants = groupBuy.getMaxParticipants();
         this.currentParticipants = groupBuy.getCurrentParticipants();
         this.pickupLocation = groupBuy.getPickupLocation();
+        this.lat = groupBuy.getLat();
+        this.lng = groupBuy.getLng();
+        this.dongName = groupBuy.getDongName();
         this.pickupTimes = groupBuy.getPickupTimes().stream()
                 .map(GroupBuyPickupTime::getPickupTime)
                 .collect(Collectors.toList());

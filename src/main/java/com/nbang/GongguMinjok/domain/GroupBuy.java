@@ -67,6 +67,15 @@ public class GroupBuy {
     @Column(nullable = false)
     private String pickupLocation;
 
+    @Column
+    private Double lat;
+
+    @Column
+    private Double lng;
+
+    @Column(length = 50)
+    private String dongName;
+
     // 호스트가 지정한 픽업 가능 시간 목록
     @OneToMany(mappedBy = "groupBuy", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GroupBuyPickupTime> pickupTimes = new ArrayList<>();
