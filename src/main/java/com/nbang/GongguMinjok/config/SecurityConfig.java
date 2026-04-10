@@ -49,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/groupbuys").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/groupbuys/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/groupbuys/host/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/groupbuys/*/participants").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/groupbuys/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/groupbuys/**").authenticated()
                         .anyRequest().authenticated()
