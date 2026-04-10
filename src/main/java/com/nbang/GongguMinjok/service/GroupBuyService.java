@@ -57,6 +57,9 @@ public class GroupBuyService {
         groupBuy.setMaxReward(dto.getMaxReward());
         groupBuy.setMaxParticipants(dto.getMaxParticipants());
         groupBuy.setPickupLocation(dto.getPickupLocation());
+        groupBuy.setLat(dto.getLat());
+        groupBuy.setLng(dto.getLng());
+        groupBuy.setDongName(dto.getDongName());
         groupBuy.setCategory(dto.getCategory());
 
         // save 전에 자식들 먼저 세팅
