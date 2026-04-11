@@ -7,7 +7,6 @@
   margin: 0 auto;
 }
 
-/* 임시저장 불러오기 팝업 */
 #pg-create .draft-modal {
   display: none;
   position: fixed;
@@ -47,7 +46,6 @@
   flex: 1;
 }
 
-/* 상단 네비게이션 */
 #pg-create .tnav {
   display: flex;
   justify-content: space-between;
@@ -72,7 +70,6 @@
   color: var(--gp);
 }
 
-/* 스텝 바 */
 #pg-create .step-bar {
   background: white;
   padding: 12px;
@@ -112,7 +109,6 @@
   color: white;
 }
 
-/* 스텝 콘텐츠 영역 */
 #pg-create .step-cont {
   display: none;
   padding: 16px;
@@ -122,14 +118,12 @@
   display: block;
 }
 
-/* 섹션 제목 */
 #pg-create .sec-title {
   font-size: 14px;
   font-weight: 700;
   margin-bottom: 13px;
 }
 
-/* 폼 그룹 */
 #pg-create .fgroup {
   margin-bottom: 12px;
 }
@@ -166,7 +160,6 @@
   margin-top: 4px;
 }
 
-/* 에러 메시지 */
 #pg-create .err-msg {
   display: none;
   color: var(--red);
@@ -174,7 +167,6 @@
   margin-top: 4px;
 }
 
-/* 구매 유형 카드 */
 #pg-create .type-grid {
   display: flex;
   gap: 10px;
@@ -216,7 +208,6 @@
   margin-top: 2px;
 }
 
-/* 라벨과 스텝퍼를 한 줄에 배치 */
 #pg-create .fgroup-row {
   display: flex;
   align-items: center;
@@ -228,7 +219,6 @@
   margin-bottom: 0;
 }
 
-/* 인원 스텝퍼 */
 #pg-create .stepper {
   display: flex;
   border: 1px solid var(--g2);
@@ -255,7 +245,6 @@
   width: 150px;
 }
 
-/* 스텝퍼 input 네이티브 위아래 화살표 제거 */
 #pg-create .stepper input[type=number]::-webkit-inner-spin-button,
 #pg-create .stepper input[type=number]::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -266,7 +255,6 @@
   -moz-appearance: textfield;
 }
 
-/* 픽업 시간 추가 행 */
 #pg-create .pickup-row {
   display: flex;
   gap: 8px;
@@ -291,7 +279,6 @@
   font-size: 16px;
 }
 
-/* 픽업 시간 칩 목록 */
 #pg-create .pickup-list {
   display: flex;
   flex-wrap: wrap;
@@ -320,7 +307,15 @@
   padding: 0;
 }
 
-/* 주소 검색 버튼 */
+#pg-create .addr-result {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #374151;
+}
+
 #pg-create .addr-search-btn {
   width: 100%;
   height: 48px;
@@ -339,7 +334,6 @@
   background: #bbf7d0;
 }
 
-/* 하단 버튼 영역 */
 #pg-create .bot-cta {
   position: sticky;
   bottom: 0;

@@ -26,7 +26,6 @@
 <main class="main-content">
   <div class="page" id="pg-create">
 
-    <!-- 임시저장 불러오기 팝업 -->
     <div class="draft-modal" id="cr-draft-modal">
       <div class="draft-modal-box">
         <div class="draft-modal-title">이전에 작성 중인 내용이 있습니다.</div>
@@ -65,7 +64,6 @@
       </div>
     </div>
 
-    <!-- Step 1: 기본정보 -->
     <div class="step-cont active" id="cr-s1">
 
       <div class="card">
@@ -137,7 +135,6 @@
 
     </div>
 
-    <!-- Step 2: 구매설정 -->
     <div class="step-cont" id="cr-s2">
 
       <div class="card">
@@ -169,21 +166,23 @@
             <span>인당 예상 금액</span>
             <span class="text-lime" id="cr-pp-val">— 원</span>
           </div>
+          <div class="split-row" style="margin-top:8px">
+            <span>호스트 예상 할인 금액</span>
+            <span class="text-lime" id="cr-host-disc">— </span>
+          </div>
         </div>
       </div>
 
     </div>
 
-    <!-- Step 3: 픽업설정 -->
     <div class="step-cont" id="cr-s3">
 
       <div class="card">
         <div class="sec-title">📍 픽업 장소 <span class="req">*</span></div>
-        <div class="fgroup">
-          <input id="cr-addr" class="finput" placeholder="픽업 장소를 입력해 주세요">
-          <div class="err-msg" id="cr-addr-err">픽업 장소를 입력해 주세요.</div>
-        </div>
+        <input type="hidden" id="cr-addr">
         <button class="addr-search-btn" type="button" onclick="searchAddress()">🔍 주소 검색</button>
+        <div class="err-msg" id="cr-addr-err" style="margin-top:8px">픽업 장소를 검색해 주세요.</div>
+        <div class="addr-result hidden" id="cr-addr-result"></div>
       </div>
 
       <div class="card">
@@ -235,10 +234,8 @@
 
     </div>
 
-    <!-- Step 4: 미리보기 -->
     <div class="step-cont" id="cr-s4">
       <div class="card" id="preview">
-        <!-- JS에서 채움 -->
       </div>
     </div>
 
@@ -252,6 +249,7 @@
 
 <script src="js/api/groupBuyApi.js"></script>
 <script src="js/utils/storage.js"></script>
+<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=4e2629de2f371f4282d3552c56fed7ef&libraries=services&autoload=false"></script>
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="js/pages/write.js"></script>
 </body>
