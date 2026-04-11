@@ -26,10 +26,21 @@
 <main class="main-content">
   <div class="page" id="pg-create">
 
+    <div class="draft-modal" id="cr-draft-modal">
+      <div class="draft-modal-box">
+        <div class="draft-modal-title">이전에 작성 중인 내용이 있습니다.</div>
+        <div class="draft-modal-desc">불러오시겠어요?</div>
+        <div class="draft-modal-btns">
+          <button class="btn btn-outline" onclick="dismissDraft()">아니요</button>
+          <button class="btn btn-primary" onclick="applyDraft()">예</button>
+        </div>
+      </div>
+    </div>
+
     <nav class="tnav">
       <button class="tnav-back" onclick="go('list')">←</button>
       <span class="tnav-title">공동구매 만들기</span>
-      <button class="tnav-icon" style="font-size:13px;font-weight:600;color:var(--gp)" onclick="saveDraft()">임시저장</button>
+      <button class="tnav-icon" onclick="saveDraft()">임시저장</button>
     </nav>
 
     <div class="step-bar">
@@ -38,15 +49,15 @@
           <div class="step-circle">1</div>
           <span class="step-lbl">기본정보</span>
         </div>
-        <div class="step-item pending" id="cr-si-2">
+        <div class="step-item" id="cr-si-2">
           <div class="step-circle">2</div>
           <span class="step-lbl">구매설정</span>
         </div>
-        <div class="step-item pending" id="cr-si-3">
+        <div class="step-item" id="cr-si-3">
           <div class="step-circle">3</div>
           <span class="step-lbl">픽업설정</span>
         </div>
-        <div class="step-item pending" id="cr-si-4">
+        <div class="step-item" id="cr-si-4">
           <div class="step-circle">4</div>
           <span class="step-lbl">미리보기</span>
         </div>
@@ -54,17 +65,16 @@
     </div>
 
     <div class="step-cont active" id="cr-s1">
-      <div class="sec">
-        <div style="font-size:14px;font-weight:700;margin-bottom:13px">
-          🛒 구매 유형 <span style="color:var(--red)">*</span>
-        </div>
+
+      <div class="card">
+        <div class="sec-title">🛒 구매 유형 <span class="req">*</span></div>
         <div class="type-grid">
-          <div class="type-card" onclick="crType(this,'online')">
+          <div class="type-card" onclick="crType(this,'COUPANG_LINK')">
             <div class="tc-icon">🛒</div>
             <div class="tc-lbl">온라인 마켓</div>
             <div class="tc-desc">쿠팡·네이버 링크 공유</div>
           </div>
-          <div class="type-card" onclick="crType(this,'farm')">
+          <div class="type-card" onclick="crType(this,'DIRECT_DELIVERY')">
             <div class="tc-icon">🌾</div>
             <div class="tc-lbl">산지 직배송</div>
             <div class="tc-desc">농·수산물 대량구매</div>
@@ -73,8 +83,8 @@
         <div class="err-msg" id="cr-type-err">구매 유형을 선택해 주세요.</div>
       </div>
 
-      <div class="sec">
-        <div style="font-size:14px;font-weight:700;margin-bottom:13px">📝 게시글 정보</div>
+      <div class="card">
+        <div class="sec-title">📝 게시글 정보</div>
 
         <div class="fgroup">
           <label class="flabel">제목 <span class="req">*</span></label>
@@ -84,25 +94,54 @@
         </div>
 
         <div class="fgroup">
+          <label class="flabel">카테고리 <span class="req">*</span></label>
+          <select class="finput" id="cr-category">
+            <option value="">카테고리 선택</option>
+            <option value="ELECTRONICS">전자제품</option>
+            <option value="HOME_APPLIANCES">가전제품</option>
+            <option value="FURNITURE_INTERIOR">가구/인테리어</option>
+            <option value="HOME_KITCHEN">생활/주방용품</option>
+            <option value="BABY_KIDS">유아/아동</option>
+            <option value="WOMENS_CLOTHING">여성의류</option>
+            <option value="WOMENS_ACCESSORIES">여성잡화</option>
+            <option value="MENS_FASHION_ACCESSORIES">남성패션/잡화</option>
+            <option value="BEAUTY_PERSONAL_CARE">뷰티/개인관리</option>
+            <option value="SPORTS_LEISURE">스포츠/레저</option>
+            <option value="HOBBIES_GAMES_MUSIC">취미/게임/음악</option>
+            <option value="BOOKS">도서</option>
+            <option value="TICKETS_VOUCHERS">티켓/상품권</option>
+            <option value="E_COUPONS">전자쿠폰</option>
+            <option value="PROCESSED_FOODS">가공식품</option>
+            <option value="HEALTH_SUPPLEMENTS">건강식품/영양제</option>
+            <option value="PET_SUPPLIES">반려동물용품</option>
+            <option value="PLANTS">식물</option>
+            <option value="OTHERS">기타</option>
+          </select>
+          <div class="err-msg" id="cr-category-err">카테고리를 선택해 주세요.</div>
+        </div>
+
+        <div class="fgroup">
           <label class="flabel">상세 설명 <span class="req">*</span></label>
           <textarea class="ftarea" id="cr-desc" maxlength="500" placeholder="상품 정보, 소분 방식 등 자세히 적어주세요" oninput="ccnt('cr-desc','cr-dc',500)"></textarea>
           <div class="char-cnt"><span id="cr-dc">0</span>/500</div>
           <div class="err-msg" id="cr-desc-err">설명을 입력해 주세요. (10자 이상)</div>
         </div>
 
-        <div class="fgroup" id="cr-link-group" style="display:none">
-          <label class="flabel">상품 링크</label>
+        <div class="fgroup hidden" id="cr-link-group">
+          <label class="flabel">제품 링크</label>
           <input class="finput" id="cr-link" type="url" placeholder="https://...">
         </div>
       </div>
+
     </div>
 
     <div class="step-cont" id="cr-s2">
-      <div class="sec">
-        <div style="font-size:14px;font-weight:700;margin-bottom:13px">👥 모집 인원</div>
-        <div class="fgroup">
+
+      <div class="card">
+        <div class="sec-title">👥 모집 인원</div>
+        <div class="fgroup fgroup-row">
           <label class="flabel">최대 모집 인원 <span class="req">*</span></label>
-          <div class="stepper">
+          <div class="stepper stepper-sm">
             <button onclick="stepV('cr-head',-1,2,20)">−</button>
             <input type="number" id="cr-head" value="4" min="2" max="20" oninput="calcPrice()">
             <button onclick="stepV('cr-head',1,2,20)">＋</button>
@@ -110,49 +149,108 @@
         </div>
       </div>
 
-      <div class="sec">
-        <div style="font-size:14px;font-weight:700;margin-bottom:13px">💰 금액 설정</div>
-        <input class="finput" id="cr-total" type="number" placeholder="총 금액" oninput="calcPrice()">
-        <input class="finput" id="cr-disc" type="number" value="0" oninput="calcPrice()">
-        <div id="cr-pp">계산 중...</div>
+      <div class="card">
+        <div class="sec-title">💰 금액 설정</div>
+        <div class="fgroup">
+          <label class="flabel">총 금액 (원) <span class="req">*</span></label>
+          <input class="finput" id="cr-total" type="number" min="0" placeholder="예) 100000" oninput="calcPrice()">
+          <div class="err-msg" id="cr-total-err">총 금액을 입력해 주세요.</div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">총 수량 <span class="req">*</span></label>
+          <input class="finput" id="cr-qty" type="number" min="1" placeholder="예) 10">
+          <div class="err-msg" id="cr-qty-err">총 수량을 입력해 주세요.</div>
+        </div>
+        <div class="info-box">
+          <div class="split-row">
+            <span>인당 예상 금액</span>
+            <span class="text-lime" id="cr-pp-val">— 원</span>
+          </div>
+          <div class="split-row" style="margin-top:8px">
+            <span>호스트 예상 할인 금액</span>
+            <span class="text-lime" id="cr-host-disc">— </span>
+          </div>
+        </div>
       </div>
 
-      <div class="sec">
-        <div style="font-size:14px;font-weight:700;margin-bottom:13px">💳 정산 방법</div>
-        <select id="cr-pay" class="finput">
-          <option value="">선택</option>
-          <option value="cash">현금</option>
-          <option value="transfer">계좌이체</option>
-          <option value="kakao">카카오페이</option>
-          <option value="toss">토스</option>
-        </select>
-      </div>
     </div>
 
     <div class="step-cont" id="cr-s3">
-      <div class="sec">
-        <div style="font-size:14px;font-weight:700;margin-bottom:13px">📍 픽업 장소</div>
-        <input id="cr-addr" class="finput" placeholder="주소 입력">
+
+      <div class="card">
+        <div class="sec-title">📍 픽업 장소 <span class="req">*</span></div>
+        <input type="hidden" id="cr-addr">
+        <button class="addr-search-btn" type="button" onclick="searchAddress()">🔍 주소 검색</button>
+        <div class="err-msg" id="cr-addr-err" style="margin-top:8px">픽업 장소를 검색해 주세요.</div>
+        <div class="addr-result hidden" id="cr-addr-result"></div>
       </div>
 
-      <div class="sec">
-        <div style="font-size:14px;font-weight:700;margin-bottom:13px">📅 픽업 날짜</div>
-        <input id="cr-pdate" type="date" class="finput">
+      <div class="card">
+        <div class="sec-title">📅 픽업 가능 시간 <span class="req">*</span></div>
+        <div class="fgroup">
+          <div class="pickup-row">
+            <input type="date" id="cr-pdate" class="finput" onchange="updateTimeOptions()">
+            <select id="cr-phour" class="finput pickup-hour" onchange="updateMinOptions()">
+              <option value="00">00</option>
+              <option value="01">01</option>
+              <option value="02">02</option>
+              <option value="03">03</option>
+              <option value="04">04</option>
+              <option value="05">05</option>
+              <option value="06">06</option>
+              <option value="07">07</option>
+              <option value="08">08</option>
+              <option value="09">09</option>
+              <option value="10">10</option>
+              <option value="11">11</option>
+              <option value="12" selected>12</option>
+              <option value="13">13</option>
+              <option value="14">14</option>
+              <option value="15">15</option>
+              <option value="16">16</option>
+              <option value="17">17</option>
+              <option value="18">18</option>
+              <option value="19">19</option>
+              <option value="20">20</option>
+              <option value="21">21</option>
+              <option value="22">22</option>
+              <option value="23">23</option>
+            </select>
+            <span class="pickup-colon">:</span>
+            <select id="cr-pmin" class="finput pickup-min">
+              <option value="00">00</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="30">30</option>
+              <option value="40">40</option>
+              <option value="50">50</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="addPickupTime()">+ 추가</button>
+          </div>
+          <div class="err-msg" id="cr-pickup-err">픽업 시간을 1개 이상 추가해 주세요.</div>
+        </div>
+        <div id="cr-pickup-list" class="pickup-list"></div>
       </div>
+
     </div>
 
     <div class="step-cont" id="cr-s4">
-      <h3>미리보기</h3>
-      <p id="preview"></p>
+      <div class="card" id="preview">
+      </div>
     </div>
 
     <div class="bot-cta">
-      <button id="cr-prev-btn" class="btn-prev-step" onclick="crPrev()" style="display:none">← 이전</button>
-      <button id="cr-next-btn" class="btn-next-step" onclick="crNext()">다음 단계 →</button>
+      <button id="cr-prev-btn" class="btn btn-outline hidden" onclick="crPrev()">← 이전</button>
+      <button id="cr-next-btn" class="btn btn-primary" onclick="crNext()">다음 단계 →</button>
     </div>
 
   </div>
 </main>
 
+<script src="js/api/groupBuyApi.js"></script>
+<script src="js/utils/storage.js"></script>
+<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=4e2629de2f371f4282d3552c56fed7ef&libraries=services&autoload=false"></script>
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script src="js/pages/write.js"></script>
 </body>
 </html>
