@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,8 +28,8 @@ public class ParticipationService {
         GroupBuy groupBuy = groupBuyRepository.findById(groupBuyId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
 
-        if (groupBuy.getStatus() == GroupBuy.Status.CLOSED) {
-            throw new IllegalArgumentException("마감된 공동구매입니다.");
+        if (groupBuy.getStatus() != GroupBuy.Status.RECRUITING) {
+            throw new IllegalArgumentException("참여할 수 없는 공동구매입니다.");
         }
 
         User participant = userRepository.findByEmail(email)
@@ -52,7 +53,19 @@ public class ParticipationService {
         participationRepository.save(participation);
 
         groupBuy.setCurrentParticipants(groupBuy.getCurrentParticipants() + 1);
-        updateStatus(groupBuy);
+
+        if (groupBuy.getCurrentParticipants() == groupBuy.getMaxParticipants()) {
+            groupBuy.setStatus(GroupBuy.Status.CLOSED);
+            // 결제 기한: 정원 충족 시각 + 24시간
+            LocalDateTime paymentDeadline = LocalDateTime.now().plusHours(24);
+            participationRepository.findByGroupBuyId(groupBuyId).forEach(p -> {
+                p.setPaymentDeadline(paymentDeadline);
+                participationRepository.save(p);
+            });
+        } else {
+            groupBuy.setStatus(GroupBuy.Status.RECRUITING);
+        }
+
         groupBuyRepository.save(groupBuy);
 
         return ParticipationResponseDto.from(participation);
@@ -70,14 +83,15 @@ public class ParticipationService {
             throw new IllegalArgumentException("참여하지 않은 공동구매입니다.");
         }
 
-        if (groupBuy.getStatus() == GroupBuy.Status.CLOSED) {
-            throw new IllegalArgumentException("이미 확정된 공동구매는 취소할 수 없습니다.");
+        if (groupBuy.getStatus() == GroupBuy.Status.CLOSED
+                || groupBuy.getStatus() == GroupBuy.Status.EXPIRED) {
+            throw new IllegalArgumentException("이미 확정되었거나 만료된 공동구매는 취소할 수 없습니다.");
         }
 
         participationRepository.deleteByGroupBuyIdAndParticipantId(groupBuyId, participant.getId());
 
         groupBuy.setCurrentParticipants(groupBuy.getCurrentParticipants() - 1);
-        updateStatus(groupBuy);
+        groupBuy.setStatus(GroupBuy.Status.RECRUITING);
         groupBuyRepository.save(groupBuy);
     }
 
@@ -97,11 +111,4 @@ public class ParticipationService {
                 .collect(Collectors.toList());
     }
 
-    private void updateStatus(GroupBuy groupBuy) {
-        if (groupBuy.getCurrentParticipants() == groupBuy.getMaxParticipants()) {
-            groupBuy.setStatus(GroupBuy.Status.CLOSED);
-        } else {
-            groupBuy.setStatus(GroupBuy.Status.RECRUITING);
-        }
-    }
 }

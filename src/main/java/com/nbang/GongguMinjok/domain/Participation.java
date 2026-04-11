@@ -32,6 +32,14 @@ public class Participation {
     @JoinColumn(name = "user_id", nullable = false)
     private User participant;
 
+    // 결제 완료 여부
+    @Column(nullable = false)
+    private boolean paymentConfirmed = false;
+
+    // 결제 확정 기한 (정원 충족 시각 + 24시간)
+    @Column
+    private LocalDateTime paymentDeadline;
+
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime joinedAt;

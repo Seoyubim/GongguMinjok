@@ -113,6 +113,17 @@ public class GroupBuy {
     @Enumerated(EnumType.STRING)
     private Status status = Status.RECRUITING;
 
+    @Column(nullable = false)
+    private LocalDateTime deadline;
+
+    // 결제 확정 여부
+    @Column(name = "is_paid", nullable = false)
+    private boolean paid = false;
+
+    // 마감 처리 완료 여부 (스케줄러 중복 실행 방지)
+    @Column(nullable = false)
+    private boolean deadlineNotified = false;
+
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -124,6 +135,30 @@ public class GroupBuy {
     public enum Status {
         RECRUITING,
         CLOSING,
-        CLOSED
+        CLOSED,
+        EXPIRED
+    }
+
+    // --- 할인 계산 메서드 (DB 미저장) ---
+
+    public int getUnitPrice() {
+        if (totalQuantity == 0) return 0;
+        return totalPrice / totalQuantity;
+    }
+
+    public int getHostDiscount() {
+        double discountRate = Math.min(currentParticipants * 0.01, 0.10);
+        int discount = (int) (getUnitPrice() * discountRate);
+        return Math.min(discount, 15000);
+    }
+
+    public int getHostFinalPrice() {
+        return getUnitPrice() - getHostDiscount();
+    }
+
+    public int getParticipantFinalPrice() {
+        int participantCount = currentParticipants - 1; // 호스트 제외
+        if (participantCount <= 0) return getUnitPrice();
+        return getUnitPrice() + (getHostDiscount() / participantCount);
     }
 }
