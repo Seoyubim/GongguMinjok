@@ -109,6 +109,15 @@
   color: white;
 }
 
+#pg-create .step-item.completed {
+  color: var(--gp);
+}
+
+#pg-create .step-item.completed .step-circle {
+  background: #d9f99d;
+  color: #4d7c0f;
+}
+
 #pg-create .step-cont {
   display: none;
   padding: 16px;
