@@ -58,10 +58,9 @@ public class ParticipationService {
             groupBuy.setStatus(GroupBuy.Status.CLOSED);
             // 결제 기한: 정원 충족 시각 + 24시간
             LocalDateTime paymentDeadline = LocalDateTime.now().plusHours(24);
-            participationRepository.findByGroupBuyId(groupBuyId).forEach(p -> {
-                p.setPaymentDeadline(paymentDeadline);
-                participationRepository.save(p);
-            });
+            List<Participation> participations = participationRepository.findByGroupBuyId(groupBuyId);
+            participations.forEach(p -> p.setPaymentDeadline(paymentDeadline));
+            participationRepository.saveAll(participations);
         } else {
             groupBuy.setStatus(GroupBuy.Status.RECRUITING);
         }

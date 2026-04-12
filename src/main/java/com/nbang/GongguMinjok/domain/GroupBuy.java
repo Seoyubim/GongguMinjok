@@ -149,7 +149,7 @@ public class GroupBuy {
     public int getHostDiscount() {
         double discountRate = Math.min(currentParticipants * 0.01, 0.10);
         int discount = (int) (getUnitPrice() * discountRate);
-        return Math.min(discount, 15000);
+        return Math.min(discount, maxReward);
     }
 
     public int getHostFinalPrice() {

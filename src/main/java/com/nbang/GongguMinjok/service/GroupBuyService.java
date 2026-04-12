@@ -60,6 +60,7 @@ public class GroupBuyService {
         groupBuy.setDongName(dto.getDongName());
         groupBuy.setCategory(dto.getCategory());
         groupBuy.setDeadline(dto.getDeadline());
+        groupBuy.setMaxReward(15000);
 
         // save 전에 자식들 먼저 세팅
         for (LocalDateTime time : dto.getPickupTimes()) {
