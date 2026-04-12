@@ -131,6 +131,11 @@
           <label class="flabel">제품 링크</label>
           <input class="finput" id="cr-link" type="url" placeholder="https://...">
         </div>
+
+        <div class="fgroup">
+          <label class="flabel">상품 이미지</label>
+          <input type="file" id="cr-images" accept="image/*" multiple onclick="return alertImageUpload()">
+        </div>
       </div>
 
     </div>
@@ -153,23 +158,40 @@
         <div class="sec-title">💰 금액 설정</div>
         <div class="fgroup">
           <label class="flabel">총 금액 (원) <span class="req">*</span></label>
-          <input class="finput" id="cr-total" type="number" min="0" placeholder="예) 100000" oninput="calcPrice()">
+          <input class="finput" id="cr-total" type="number" min="1" placeholder="예) 100000" oninput="if(parseInt(this.value)<0)this.value=''; calcPrice()">
           <div class="err-msg" id="cr-total-err">총 금액을 입력해 주세요.</div>
         </div>
         <div class="fgroup">
           <label class="flabel">총 수량 <span class="req">*</span></label>
-          <input class="finput" id="cr-qty" type="number" min="1" placeholder="예) 10">
+          <input class="finput" id="cr-qty" type="number" min="1" placeholder="예) 10" oninput="if(parseInt(this.value)<0)this.value=''">
           <div class="err-msg" id="cr-qty-err">총 수량을 입력해 주세요.</div>
         </div>
         <div class="info-box">
           <div class="split-row">
-            <span>인당 예상 금액</span>
+            <span>인당 기준 금액</span>
             <span class="text-lime" id="cr-pp-val">— 원</span>
           </div>
           <div class="split-row" style="margin-top:8px">
-            <span>호스트 예상 할인 금액</span>
+            <span>호스트 예상 할인</span>
             <span class="text-lime" id="cr-host-disc">— </span>
           </div>
+          <hr style="border:none;border-top:1px solid #e5e7eb;margin:10px 0">
+          <div class="split-row">
+            <span>호스트 실제 결제</span>
+            <span class="text-lime" id="cr-host-price">— 원</span>
+          </div>
+          <div class="split-row" style="margin-top:8px">
+            <span>참여자 실제 결제 <span style="font-size:11px;color:#9ca3af">(할인분 분담)</span></span>
+            <span class="text-lime" id="cr-participant-price">— 원</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="sec-title">⏰ 모집 마감일 <span class="req">*</span></div>
+        <div class="fgroup">
+          <input class="finput" id="cr-deadline" type="datetime-local" onchange="updatePickupMin()">
+          <div class="err-msg" id="cr-deadline-err">모집 마감일을 입력해 주세요.</div>
         </div>
       </div>
 
@@ -189,42 +211,7 @@
         <div class="sec-title">📅 픽업 가능 시간 <span class="req">*</span></div>
         <div class="fgroup">
           <div class="pickup-row">
-            <input type="date" id="cr-pdate" class="finput" onchange="updateTimeOptions()">
-            <select id="cr-phour" class="finput pickup-hour" onchange="updateMinOptions()">
-              <option value="00">00</option>
-              <option value="01">01</option>
-              <option value="02">02</option>
-              <option value="03">03</option>
-              <option value="04">04</option>
-              <option value="05">05</option>
-              <option value="06">06</option>
-              <option value="07">07</option>
-              <option value="08">08</option>
-              <option value="09">09</option>
-              <option value="10">10</option>
-              <option value="11">11</option>
-              <option value="12" selected>12</option>
-              <option value="13">13</option>
-              <option value="14">14</option>
-              <option value="15">15</option>
-              <option value="16">16</option>
-              <option value="17">17</option>
-              <option value="18">18</option>
-              <option value="19">19</option>
-              <option value="20">20</option>
-              <option value="21">21</option>
-              <option value="22">22</option>
-              <option value="23">23</option>
-            </select>
-            <span class="pickup-colon">:</span>
-            <select id="cr-pmin" class="finput pickup-min">
-              <option value="00">00</option>
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="30">30</option>
-              <option value="40">40</option>
-              <option value="50">50</option>
-            </select>
+            <input type="datetime-local" id="cr-pdatetime" class="finput">
             <button class="btn btn-outline btn-sm" onclick="addPickupTime()">+ 추가</button>
           </div>
           <div class="err-msg" id="cr-pickup-err">픽업 시간을 1개 이상 추가해 주세요.</div>
@@ -249,7 +236,6 @@
 
 <script src="js/api/groupBuyApi.js"></script>
 <script src="js/utils/storage.js"></script>
-<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=4e2629de2f371f4282d3552c56fed7ef&libraries=services&autoload=false"></script>
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="js/pages/write.js"></script>
 </body>

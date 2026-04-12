@@ -5,13 +5,24 @@ let selectedLat = null;
 let selectedLng = null;
 let selectedDongName = '';
 
-// 날짜 입력 최솟값을 오늘로 설정
+// 마감일/픽업 datetime 최솟값 설정
 (() => {
   const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, '0');
-  const dd = String(today.getDate()).padStart(2, '0');
-  document.getElementById('cr-pdate').min = `${yyyy}-${mm}-${dd}`;
+
+  // 마감일 최솟값: 오늘 + 3일 00:00
+  const minDeadline = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 3, 0, 0, 0);
+  const deadlineMin = minDeadline.getFullYear() + '-' +
+    String(minDeadline.getMonth() + 1).padStart(2, '0') + '-' +
+    String(minDeadline.getDate()).padStart(2, '0') + 'T00:00';
+  document.getElementById('cr-deadline').min = deadlineMin;
+
+  // 픽업 datetime 최솟값: 현재 시각
+  const pickupMin = today.getFullYear() + '-' +
+    String(today.getMonth() + 1).padStart(2, '0') + '-' +
+    String(today.getDate()).padStart(2, '0') + 'T' +
+    String(today.getHours()).padStart(2, '0') + ':' +
+    String(today.getMinutes()).padStart(2, '0');
+  document.getElementById('cr-pdatetime').min = pickupMin;
 
   // 임시저장 데이터 있으면 팝업 표시
   if (localStorage.getItem('groupbuy_draft')) {
@@ -45,10 +56,14 @@ function applyDraft() {
     resultEl.textContent = '주소: ' + draft.addr;
     resultEl.classList.remove('hidden');
   }
+  if (draft.lat) selectedLat = draft.lat;
+  if (draft.lng) selectedLng = draft.lng;
+  if (draft.dongName) selectedDongName = draft.dongName;
   if (draft.pickupTimes) {
     pickupTimes = draft.pickupTimes.slice();
     renderPickupChips();
   }
+  if (draft.deadline) document.getElementById('cr-deadline').value = draft.deadline;
 
   ccnt('cr-title', 'cr-tc', 40);
   ccnt('cr-desc', 'cr-dc', 500);
@@ -61,6 +76,12 @@ function applyDraft() {
 function dismissDraft() {
   localStorage.removeItem('groupbuy_draft');
   document.getElementById('cr-draft-modal').style.display = 'none';
+}
+
+// 이미지 업로드 미지원 안내
+function alertImageUpload() {
+  alert('이미지 업로드는 추후 지원 예정입니다.');
+  return false;
 }
 
 // 페이지 이동
@@ -114,92 +135,65 @@ function calcPrice() {
   const perPerson = head > 0 ? Math.ceil(total / head) : 0;
   document.getElementById('cr-pp-val').textContent = perPerson.toLocaleString() + ' 원';
 
-  // 호스트 예상 할인
+  // 호스트 예상 할인 및 실제 결제 금액
   const discEl = document.getElementById('cr-host-disc');
+  const hostPriceEl = document.getElementById('cr-host-price');
+  const participantPriceEl = document.getElementById('cr-participant-price');
   if (total > 0) {
     const discountRate = Math.min(head * 0.01, 0.10);
     const discountAmount = Math.min(Math.floor(perPerson * discountRate), 15000);
     const discountPct = Math.round(discountRate * 100);
     discEl.textContent = `${discountPct}% → ${discountAmount.toLocaleString()}원`;
+    hostPriceEl.textContent = (perPerson - discountAmount).toLocaleString() + ' 원';
+    participantPriceEl.textContent = (perPerson + Math.ceil(discountAmount / (head - 1))).toLocaleString() + ' 원';
   } else {
     discEl.textContent = '— ';
+    hostPriceEl.textContent = '— 원';
+    participantPriceEl.textContent = '— 원';
   }
 }
 
-// 오늘 날짜 선택 시 현재 시각 이전 시/분 옵션 비활성화
-function updateTimeOptions() {
-  const dateVal = document.getElementById('cr-pdate').value;
-  const hourSel = document.getElementById('cr-phour');
-  const now = new Date();
-  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-
-  for (const opt of hourSel.options) opt.disabled = false;
-
-  if (dateVal === today) {
-    const curHour = now.getHours();
-    const curMin = now.getMinutes();
-    const minHour = curMin >= 50 ? curHour + 1 : curHour;
-    for (const opt of hourSel.options) {
-      if (parseInt(opt.value) < minHour) opt.disabled = true;
-    }
-    if (hourSel.options[hourSel.selectedIndex].disabled) {
-      for (let i = 0; i < hourSel.options.length; i++) {
-        if (!hourSel.options[i].disabled) {
-          hourSel.selectedIndex = i;
-          break;
-        }
-      }
-    }
-  }
-
-  updateMinOptions();
-}
-
-// 현재 시각 선택 시 현재 분 이전 옵션 비활성화
-function updateMinOptions() {
-  const dateVal = document.getElementById('cr-pdate').value;
-  const hourSel = document.getElementById('cr-phour');
-  const minSel = document.getElementById('cr-pmin');
-  const now = new Date();
-  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-
-  for (const opt of minSel.options) opt.disabled = false;
-
-  if (dateVal === today && parseInt(hourSel.value) === now.getHours()) {
-    const curMin = now.getMinutes();
-    for (const opt of minSel.options) {
-      if (parseInt(opt.value) <= curMin) opt.disabled = true;
-    }
-    if (minSel.options[minSel.selectedIndex].disabled) {
-      for (let i = 0; i < minSel.options.length; i++) {
-        if (!minSel.options[i].disabled) {
-          minSel.selectedIndex = i;
-          break;
-        }
-      }
-    }
+// 마감일 변경 시 픽업 datetime 최솟값 갱신
+function updatePickupMin() {
+  const deadlineVal = document.getElementById('cr-deadline').value;
+  const pickupInput = document.getElementById('cr-pdatetime');
+  if (deadlineVal) {
+    pickupInput.min = deadlineVal;
+  } else {
+    const now = new Date();
+    pickupInput.min = now.getFullYear() + '-' +
+      String(now.getMonth() + 1).padStart(2, '0') + '-' +
+      String(now.getDate()).padStart(2, '0') + 'T' +
+      String(now.getHours()).padStart(2, '0') + ':' +
+      String(now.getMinutes()).padStart(2, '0');
   }
 }
 
 // 픽업 시간 추가
 function addPickupTime() {
-  const date = document.getElementById('cr-pdate').value;
-  const hour = document.getElementById('cr-phour').value;
-  const min = document.getElementById('cr-pmin').value;
+  const val = document.getElementById('cr-pdatetime').value;
   const errEl = document.getElementById('cr-pickup-err');
+  const deadlineVal = document.getElementById('cr-deadline').value;
 
-  if (!date) {
-    errEl.textContent = '날짜를 선택해 주세요.';
+  if (!val) {
+    errEl.textContent = '날짜와 시간을 선택해 주세요.';
     errEl.style.display = 'block';
     return;
   }
 
-  const datetime = `${date}T${hour}:${min}:00`;
+  if (deadlineVal && new Date(val) <= new Date(deadlineVal)) {
+    errEl.textContent = '픽업 시간은 모집 마감일 이후로 설정해 주세요.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const datetime = val + ':00';
   if (pickupTimes.indexOf(datetime) !== -1) return;
 
   pickupTimes.push(datetime);
   renderPickupChips();
   errEl.style.display = 'none';
+  document.getElementById('cr-pdatetime').value = '';
 }
 
 function renderPickupChips() {
@@ -273,6 +267,18 @@ function validateStep(step) {
     } else {
       qtyErr.style.display = 'none';
     }
+    const deadline = document.getElementById('cr-deadline').value;
+    const deadlineErr = document.getElementById('cr-deadline-err');
+    const minDeadline = new Date();
+    minDeadline.setDate(minDeadline.getDate() + 3);
+    minDeadline.setHours(0, 0, 0, 0);
+    if (!deadline || new Date(deadline) < minDeadline) {
+      deadlineErr.textContent = deadline ? '마감일은 오늘로부터 3일 이후부터 설정 가능합니다.' : '모집 마감일을 입력해 주세요.';
+      deadlineErr.style.display = 'block';
+      valid = false;
+    } else {
+      deadlineErr.style.display = 'none';
+    }
   }
 
   if (step === 3) {
@@ -290,7 +296,14 @@ function validateStep(step) {
       pickupErr.style.display = 'block';
       valid = false;
     } else {
-      pickupErr.style.display = 'none';
+      const deadlineVal = document.getElementById('cr-deadline').value;
+      if (deadlineVal && pickupTimes.some(dt => new Date(dt) <= new Date(deadlineVal))) {
+        pickupErr.textContent = '픽업 시간은 모집 마감일 이후로 설정해 주세요.';
+        pickupErr.style.display = 'block';
+        valid = false;
+      } else {
+        pickupErr.style.display = 'none';
+      }
     }
   }
 
@@ -301,6 +314,7 @@ function updateStepUI() {
   for (let i = 1; i <= 4; i++) {
     document.getElementById(`cr-s${i}`).classList.toggle('active', i === currentStep);
     document.getElementById(`cr-si-${i}`).classList.toggle('active', i === currentStep);
+    document.getElementById(`cr-si-${i}`).classList.toggle('completed', i < currentStep);
   }
 
   const prevBtn = document.getElementById('cr-prev-btn');
@@ -343,6 +357,8 @@ function renderPreview() {
   const qty = document.getElementById('cr-qty').value;
   const head = document.getElementById('cr-head').value;
   const addr = document.getElementById('cr-addr').value.trim();
+  const deadlineRaw = document.getElementById('cr-deadline').value;
+  const deadlineLabel = deadlineRaw ? deadlineRaw.replace('T', ' ') : '';
   const perPerson = Math.ceil(total / parseInt(head));
   const discountRate = Math.min(parseInt(head) * 0.01, 0.10);
   const discountAmount = Math.min(Math.floor(perPerson * discountRate), 15000);
@@ -364,8 +380,11 @@ function renderPreview() {
     `<tr><td style="padding:6px 0;color:#6b7280">총 금액</td><td style="font-weight:600">${total.toLocaleString()} 원</td></tr>` +
     `<tr><td style="padding:6px 0;color:#6b7280">총 수량</td><td style="font-weight:600">${qty} 개</td></tr>` +
     `<tr><td style="padding:6px 0;color:#6b7280">최대 인원</td><td style="font-weight:600">${head} 명</td></tr>` +
-    `<tr><td style="padding:6px 0;color:#6b7280">인당 금액</td><td style="font-weight:600;color:#84cc16">${perPerson.toLocaleString()} 원</td></tr>` +
+    `<tr><td style="padding:6px 0;color:#6b7280">모집 마감일</td><td style="font-weight:600">${deadlineLabel}</td></tr>` +
+    `<tr><td style="padding:6px 0;color:#6b7280">인당 기준 금액</td><td style="font-weight:600;color:#84cc16">${perPerson.toLocaleString()} 원</td></tr>` +
     `<tr><td style="padding:6px 0;color:#6b7280">호스트 예상 할인</td><td style="font-weight:600;color:#84cc16">${discountText}</td></tr>` +
+    `<tr><td style="padding:6px 0;color:#6b7280">호스트 실제 결제</td><td style="font-weight:600;color:#84cc16">${(perPerson - discountAmount).toLocaleString()} 원</td></tr>` +
+    `<tr><td style="padding:6px 0;color:#6b7280">참여자 실제 결제</td><td style="font-weight:600;color:#84cc16">${(perPerson + Math.ceil(discountAmount / (parseInt(head) - 1))).toLocaleString()} 원</td></tr>` +
     `<tr><td style="padding:6px 0;color:#6b7280">픽업 장소</td><td style="font-weight:600">${addr}</td></tr>` +
     `<tr><td style="padding:6px 0;color:#6b7280;vertical-align:top">픽업 시간</td><td><ul style="padding-left:16px">${timesHtml}</ul></td></tr>` +
     '</table>';
@@ -382,6 +401,10 @@ function saveDraft() {
     qty: document.getElementById('cr-qty').value,
     head: document.getElementById('cr-head').value,
     addr: document.getElementById('cr-addr').value,
+    lat: selectedLat,
+    lng: selectedLng,
+    dongName: selectedDongName,
+    deadline: document.getElementById('cr-deadline').value,
     pickupTimes: pickupTimes.slice()
   };
   localStorage.setItem('groupbuy_draft', JSON.stringify(draft));
@@ -393,21 +416,30 @@ function searchAddress() {
     oncomplete: (data) => {
       // 도로명 주소 우선 사용 없으면 지번 주소 사용
       const addr = data.roadAddress || data.jibunAddress;
-      selectedDongName = data.bname || '';
-      document.getElementById('cr-addr').value = addr;
-      document.getElementById('cr-addr-err').style.display = 'none';
+      const addrErr = document.getElementById('cr-addr-err');
       const resultEl = document.getElementById('cr-addr-result');
-      resultEl.textContent = '주소: ' + addr;
-      resultEl.classList.remove('hidden');
 
-      // 카카오 REST API로 주소를 위도/경도로 변환
+      // 카카오 REST API로 주소를 위도/경도로 변환 — 성공 후 주소 확정
       fetch(`https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(addr)}`, {
         headers: { 'Authorization': 'KakaoAK 6862dc8015e382acfd29f23b95906a08' }
       }).then(res => res.json()).then(json => {
         if (json.documents && json.documents.length > 0) {
           selectedLat = parseFloat(json.documents[0].y);
           selectedLng = parseFloat(json.documents[0].x);
+          selectedDongName = data.bname || '';
+          document.getElementById('cr-addr').value = addr;
+          addrErr.style.display = 'none';
+          resultEl.textContent = '주소: ' + addr;
+          resultEl.classList.remove('hidden');
+        } else {
+          addrErr.textContent = '주소 좌표를 가져오지 못했습니다. 다시 검색해 주세요.';
+          addrErr.style.display = 'block';
+          resultEl.classList.add('hidden');
         }
+      }).catch(() => {
+        addrErr.textContent = '주소 좌표를 가져오지 못했습니다. 다시 검색해 주세요.';
+        addrErr.style.display = 'block';
+        resultEl.classList.add('hidden');
       });
     }
   }).open();
@@ -430,6 +462,7 @@ function submitGroupBuy() {
     lat: selectedLat,
     lng: selectedLng,
     dongName: selectedDongName,
+    deadline: document.getElementById('cr-deadline').value + ':00',
     pickupTimes: pickupTimes.slice(),
     imageUrls: []
   };
