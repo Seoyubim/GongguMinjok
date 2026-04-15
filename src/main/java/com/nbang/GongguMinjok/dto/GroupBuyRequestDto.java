@@ -18,8 +18,6 @@ public class GroupBuyRequestDto {
     private GroupBuy.ProductType productType;
     private int totalPrice;
     private int totalQuantity;
-    private int rewardPerUser;
-    private int maxReward;
     private int maxParticipants;
     private String pickupLocation;
     private Double lat;
@@ -28,4 +26,5 @@ public class GroupBuyRequestDto {
     private List<LocalDateTime> pickupTimes = new ArrayList<>(); // ← 기본값 빈 리스트
     private GroupBuy.Category category;
     private List<String> imageUrls = new ArrayList<>();           // ← 얘도 같이
+    private LocalDateTime deadline;
 }

@@ -18,8 +18,6 @@ public class GroupBuyResponseDto {
     private String productType;
     private int totalPrice;
     private int totalQuantity;
-    private int rewardPerUser;
-    private int maxReward;
     private int maxParticipants;
     private int currentParticipants;
     private String pickupLocation;
@@ -33,6 +31,11 @@ public class GroupBuyResponseDto {
     private Long hostId;
     private String hostNickname;
     private LocalDateTime createdAt;
+    private LocalDateTime deadline;
+    private int unitPrice;
+    private int hostDiscount;
+    private int hostFinalPrice;
+    private int participantFinalPrice;
 
     public GroupBuyResponseDto(GroupBuy groupBuy) {
         this.id = groupBuy.getId();
@@ -41,8 +44,6 @@ public class GroupBuyResponseDto {
         this.productType = groupBuy.getProductType().name();
         this.totalPrice = groupBuy.getTotalPrice();
         this.totalQuantity = groupBuy.getTotalQuantity();
-        this.rewardPerUser = groupBuy.getRewardPerUser();
-        this.maxReward = groupBuy.getMaxReward();
         this.maxParticipants = groupBuy.getMaxParticipants();
         this.currentParticipants = groupBuy.getCurrentParticipants();
         this.pickupLocation = groupBuy.getPickupLocation();
@@ -61,5 +62,10 @@ public class GroupBuyResponseDto {
         this.hostId = groupBuy.getHost().getId();
         this.hostNickname = groupBuy.getHost().getNickname();
         this.createdAt = groupBuy.getCreatedAt();
+        this.deadline = groupBuy.getDeadline();
+        this.unitPrice = groupBuy.getUnitPrice();
+        this.hostDiscount = groupBuy.getHostDiscount();
+        this.hostFinalPrice = groupBuy.getHostFinalPrice();
+        this.participantFinalPrice = groupBuy.getParticipantFinalPrice();
     }
 }

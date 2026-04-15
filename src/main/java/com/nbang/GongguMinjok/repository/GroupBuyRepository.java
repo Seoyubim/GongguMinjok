@@ -3,6 +3,7 @@ package com.nbang.GongguMinjok.repository;
 import com.nbang.GongguMinjok.domain.GroupBuy;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface GroupBuyRepository extends JpaRepository<GroupBuy, Long> {
@@ -10,4 +11,11 @@ public interface GroupBuyRepository extends JpaRepository<GroupBuy, Long> {
     List<GroupBuy> findByHostId(Long hostId);
     List<GroupBuy> findByCategory(GroupBuy.Category category);
     List<GroupBuy> findByStatus(GroupBuy.Status status);
+
+    // Logic A: 인원 미달 만료 처리 대상
+    List<GroupBuy> findByStatusAndDeadlineBeforeAndDeadlineNotifiedFalse(
+            GroupBuy.Status status, LocalDateTime now);
+
+    // Logic B: 결제 미확정 처리 대상
+    List<GroupBuy> findByStatusAndPaidFalse(GroupBuy.Status status);
 }

@@ -53,14 +53,14 @@ public class GroupBuyService {
         groupBuy.setProductType(dto.getProductType());
         groupBuy.setTotalPrice(dto.getTotalPrice());
         groupBuy.setTotalQuantity(dto.getTotalQuantity());
-        groupBuy.setRewardPerUser(dto.getRewardPerUser());
-        groupBuy.setMaxReward(dto.getMaxReward());
         groupBuy.setMaxParticipants(dto.getMaxParticipants());
         groupBuy.setPickupLocation(dto.getPickupLocation());
         groupBuy.setLat(dto.getLat());
         groupBuy.setLng(dto.getLng());
         groupBuy.setDongName(dto.getDongName());
         groupBuy.setCategory(dto.getCategory());
+        groupBuy.setDeadline(dto.getDeadline());
+        groupBuy.setMaxReward(15000);
 
         // save 전에 자식들 먼저 세팅
         for (LocalDateTime time : dto.getPickupTimes()) {
@@ -96,11 +96,10 @@ public class GroupBuyService {
         groupBuy.setProductType(dto.getProductType());
         groupBuy.setTotalPrice(dto.getTotalPrice());
         groupBuy.setTotalQuantity(dto.getTotalQuantity());
-        groupBuy.setRewardPerUser(dto.getRewardPerUser());
-        groupBuy.setMaxReward(dto.getMaxReward());
         groupBuy.setMaxParticipants(dto.getMaxParticipants());
         groupBuy.setPickupLocation(dto.getPickupLocation());
         groupBuy.setCategory(dto.getCategory());
+        groupBuy.setDeadline(dto.getDeadline());
 
         // 픽업 시간 교체 (orphanRemoval = true 로 기존 것 자동 삭제)
         groupBuy.getPickupTimes().clear();
