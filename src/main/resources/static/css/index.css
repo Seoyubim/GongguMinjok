@@ -57,9 +57,6 @@
   color: #6b7280;
 }
 
-/* .map-modal, .location-btn, .modal-location-btn 등
-   지도 modal 공통 스타일은 common.css 로 이동 */
-
 .list-section {
   padding: 1rem;
 }
@@ -82,28 +79,40 @@
 }
 
 .category-filter {
-  display: flex;
-  gap: 0.5rem;
   margin-bottom: 1rem;
-  overflow-x: auto;
-  padding-bottom: 0.5rem;
 }
 
-.category-btn {
-  white-space: nowrap;
-  padding: 0.5rem 1rem;
+.category-checkbox-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.category-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
   border-radius: 999px;
   border: 1px solid #d1d5db;
-  background: white;
+  background-color: white;
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   transition: all 0.2s;
 }
 
-.category-btn.active {
-  background: #84cc16;
-  color: white;
+.category-checkbox input {
+  display: none;
+}
+
+.category-checkbox:has(input:checked) {
+  background-color: #84cc16;
   border-color: #84cc16;
+  color: white;
+}
+
+.category-checkbox:hover {
+  background-color: #f3f4f6;
 }
 
 .groupbuy-grid {
