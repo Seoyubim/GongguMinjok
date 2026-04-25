@@ -177,7 +177,7 @@ logoutBtn.addEventListener("click", handleLogout);
 
 async function initPage() {
   renderAuthButtons();
-  renderCategories();
+  //renderCategories();
   await initMap();
   await renderGroupBuys();
 }
