@@ -1,5 +1,6 @@
 package com.nbang.GongguMinjok.controller;
 
+import com.nbang.GongguMinjok.dto.DistanceRange;
 import com.nbang.GongguMinjok.dto.GroupBuyRequestDto;
 import com.nbang.GongguMinjok.dto.GroupBuyResponseDto;
 import com.nbang.GongguMinjok.service.GroupBuyService;
@@ -18,10 +19,13 @@ public class GroupBuyController {
 
     private final GroupBuyService groupBuyService;
 
-    // GET /api/groupbuys
+    // GET /api/groupbuys?userLat=37.5&userLng=127.0&distanceRange=NEAR
     @GetMapping
-    public ResponseEntity<List<GroupBuyResponseDto>> getGroupBuys() {
-        return ResponseEntity.ok(groupBuyService.getGroupBuys());
+    public ResponseEntity<List<GroupBuyResponseDto>> getGroupBuys(
+            @RequestParam(required = false) Double userLat,
+            @RequestParam(required = false) Double userLng,
+            @RequestParam(required = false) DistanceRange distanceRange) {
+        return ResponseEntity.ok(groupBuyService.getGroupBuys(userLat, userLng, distanceRange));
     }
 
     // GET /api/groupbuys/{id}

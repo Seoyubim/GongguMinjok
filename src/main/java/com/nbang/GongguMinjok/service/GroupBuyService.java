@@ -4,6 +4,7 @@ import com.nbang.GongguMinjok.domain.GroupBuy;
 import com.nbang.GongguMinjok.domain.GroupBuyImage;
 import com.nbang.GongguMinjok.domain.GroupBuyPickupTime;
 import com.nbang.GongguMinjok.domain.User;
+import com.nbang.GongguMinjok.dto.DistanceRange;
 import com.nbang.GongguMinjok.dto.GroupBuyRequestDto;
 import com.nbang.GongguMinjok.dto.GroupBuyResponseDto;
 import com.nbang.GongguMinjok.repository.GroupBuyRepository;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,13 +25,44 @@ public class GroupBuyService {
     private final GroupBuyRepository groupBuyRepository;
     private final UserRepository userRepository;
 
-    // 전체 목록 조회
+    // 전체 목록 조회 (위치 필터/정렬 선택적 적용)
     @Transactional(readOnly = true)
-    public List<GroupBuyResponseDto> getGroupBuys() {
-        return groupBuyRepository.findAllByOrderByCreatedAtDesc()
-                .stream()
-                .map(GroupBuyResponseDto::new)
+    public List<GroupBuyResponseDto> getGroupBuys(Double userLat, Double userLng, DistanceRange distanceRange) {
+        List<GroupBuy> all = groupBuyRepository.findAllByOrderByCreatedAtDesc();
+
+        if (userLat == null || userLng == null) {
+            return all.stream().map(GroupBuyResponseDto::new).collect(Collectors.toList());
+        }
+
+        return all.stream()
+                .filter(gb -> gb.getLat() != null && gb.getLng() != null)
+                .map(gb -> {
+                    double dist = calculateDistance(userLat, userLng, gb.getLat(), gb.getLng());
+                    GroupBuyResponseDto dto = new GroupBuyResponseDto(gb);
+                    dto.setDistance(dist);
+                    return dto;
+                })
+                .filter(dto -> {
+                    if (distanceRange == null) return true;
+                    double dist = dto.getDistance();
+                    return switch (distanceRange) {
+                        case NEAR   -> dist < 1.0;
+                        case MEDIUM -> dist >= 1.0 && dist < 3.0;
+                        case FAR    -> dist >= 3.0 && dist <= 5.0;
+                    };
+                })
+                .sorted(Comparator.comparingDouble(GroupBuyResponseDto::getDistance))
                 .collect(Collectors.toList());
+    }
+
+    private double calculateDistance(double lat1, double lng1, double lat2, double lng2) {
+        final int R = 6371;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLng = Math.toRadians(lng2 - lng1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
     // 단건 조회

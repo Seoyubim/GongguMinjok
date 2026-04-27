@@ -36,6 +36,11 @@ public class GroupBuyResponseDto {
     private int hostDiscount;
     private int hostFinalPrice;
     private int participantFinalPrice;
+    private Double distance; // 사용자와의 거리(km), 위치 필터 사용 시에만 값 존재
+
+    public void setDistance(Double distance) {
+        this.distance = distance;
+    }
 
     public GroupBuyResponseDto(GroupBuy groupBuy) {
         this.id = groupBuy.getId();
