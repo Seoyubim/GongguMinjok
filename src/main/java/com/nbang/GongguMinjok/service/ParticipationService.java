@@ -28,7 +28,8 @@ public class ParticipationService {
         GroupBuy groupBuy = groupBuyRepository.findById(groupBuyId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
 
-        if (groupBuy.getStatus() != GroupBuy.Status.OPEN) {
+        if (groupBuy.getStatus() != GroupBuy.Status.OPEN
+                && groupBuy.getStatus() != GroupBuy.Status.CLOSING) {
             throw new IllegalArgumentException("참여할 수 없는 공동구매입니다.");
         }
 
@@ -82,9 +83,9 @@ public class ParticipationService {
             throw new IllegalArgumentException("참여하지 않은 공동구매입니다.");
         }
 
-        if (groupBuy.getStatus() == GroupBuy.Status.CLOSED
-                || groupBuy.getStatus() == GroupBuy.Status.EXPIRED) {
-            throw new IllegalArgumentException("이미 확정되었거나 만료된 공동구매는 취소할 수 없습니다.");
+        if (groupBuy.getStatus() != GroupBuy.Status.OPEN
+                && groupBuy.getStatus() != GroupBuy.Status.CLOSING) {
+            throw new IllegalArgumentException("모집 중인 공동구매만 취소할 수 있습니다.");
         }
 
         participationRepository.deleteByGroupBuyIdAndParticipantId(groupBuyId, participant.getId());
