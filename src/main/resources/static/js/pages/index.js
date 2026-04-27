@@ -1,8 +1,6 @@
 import { initMap } from "../utils/map.js";
 
-const data = window.APP_DATA;
 const groupbuyGrid = document.getElementById("groupbuyGrid");
-const categoryFilter = document.getElementById("categoryFilter");
 const groupCount = document.getElementById("groupCount");
 const tabButtons = document.querySelectorAll(".tab-trigger");
 
@@ -15,7 +13,7 @@ const toast = document.getElementById("toast");
 const loadMoreBtn = document.getElementById("loadMoreBtn");
 const loadMoreWrap = document.getElementById("loadMoreWrap");
 
-let selectedCategory = "전체";
+let selectedCategories = [];
 let selectedStatus = "all";
 
 const ITEMS_PER_PAGE = 20;
@@ -43,26 +41,16 @@ function handleLogout() {
   showToast("로그아웃되었습니다.");
 }
 
-function renderCategories() {
-  categoryFilter.innerHTML = data.categories
-    .map(
-      (category) => `
-        <button
-          class="category-btn ${category === selectedCategory ? "active" : ""}"
-          data-category="${category}"
-          type="button"
-        >
-          ${category}
-        </button>
-      `
-    )
-    .join("");
-
-  document.querySelectorAll(".category-btn").forEach((button) => {
-    button.addEventListener("click", () => {
-      selectedCategory = button.dataset.category;
+function bindCategoryCheckboxes() {
+  const checkboxes = document.querySelectorAll('#categoryFilter input[type="checkbox"]');
+  checkboxes.forEach((checkbox) => {
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) {
+        selectedCategories.push(checkbox.value);
+      } else {
+        selectedCategories = selectedCategories.filter((c) => c !== checkbox.value);
+      }
       visibleCount = ITEMS_PER_PAGE;
-      renderCategories();
       renderGroupBuys();
     });
   });
@@ -73,9 +61,12 @@ async function getFilteredGroupBuys() {
 
   return groupBuys.filter((item) => {
     const matchCategory =
-      selectedCategory === "전체" || item.category === selectedCategory;
+      selectedCategories.length === 0 || selectedCategories.includes(item.category);
+
     const matchStatus =
-      selectedStatus === "all" || item.status === selectedStatus;
+      selectedStatus === "all" ||
+      (selectedStatus === "recruiting" && item.status === "OPEN") ||
+      (selectedStatus === "closing" && item.status === "CLOSING");
 
     return matchCategory && matchStatus;
   });
@@ -83,23 +74,29 @@ async function getFilteredGroupBuys() {
 
 function createGroupBuyCard(item) {
   const progress = (item.currentParticipants / item.maxParticipants) * 100;
+  const imageUrl = item.imageUrls?.[0] || "";
+  const distanceText = item.distance != null ? item.distance.toFixed(1) + "km" : "";
+  const pickupTimeText = item.pickupTimes?.[0] ? formatPickupTime(item.pickupTimes[0]) : "";
+  const mannerScoreHtml = item.hostMannerScore != null
+    ? `<span>${getBadgeEmoji(item.hostMannerScore)}</span><span class="text-gray">${item.hostMannerScore}</span>`
+    : "";
 
   return `
     <a class="groupbuy-card-link" href="detail.html?id=${item.id}">
       <div class="groupbuy-card">
         <div class="card-image">
-          <img src="${item.imageUrl}" alt="${item.title}">
+          <img src="${imageUrl}" alt="${item.title}">
           <div class="card-badge ${getStatusClass(item.status)}">
             ${getStatusLabel(item.status)}
           </div>
-          <div class="card-category">${item.category}</div>
+          <div class="card-category">${getCategoryLabel(item.category)}</div>
         </div>
 
         <div class="card-content">
           <h3 class="card-title">${item.title}</h3>
 
           <div class="card-price-row">
-            <span class="card-price">${formatPrice(item.price)}</span>
+            <span class="card-price">${formatPrice(item.participantFinalPrice)}</span>
           </div>
 
           <div class="progress-bar">
@@ -109,21 +106,20 @@ function createGroupBuyCard(item) {
           <div class="card-info">
             <div class="info-row">
               📍 <span>${item.pickupLocation}</span>
-              <span class="text-lime info-distance">${item.distance}km</span>
+              ${distanceText ? `<span class="text-lime info-distance">${distanceText}</span>` : ""}
             </div>
             <div class="info-row">
-              🕐 <span>${item.pickupTimes[0]}</span>
+              🕐 <span>${pickupTimeText}</span>
             </div>
           </div>
 
           <div class="card-host">
             <div class="host-info">
-              <div class="host-avatar">${item.hostName.charAt(0)}</div>
-              <span>${item.hostName}</span>
+              <div class="host-avatar">${item.hostNickname.charAt(0)}</div>
+              <span>${item.hostNickname}</span>
             </div>
             <div class="host-rating">
-              <span>${getBadgeEmoji(item.hostMannerScore)}</span>
-              <span class="text-gray">${item.hostMannerScore}</span>
+              ${mannerScoreHtml}
             </div>
           </div>
         </div>
@@ -177,7 +173,7 @@ logoutBtn.addEventListener("click", handleLogout);
 
 async function initPage() {
   renderAuthButtons();
-  //renderCategories();
+  bindCategoryCheckboxes();
   await initMap();
   await renderGroupBuys();
 }

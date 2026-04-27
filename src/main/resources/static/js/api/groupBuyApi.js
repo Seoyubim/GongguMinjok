@@ -1,19 +1,17 @@
 async function getGroupBuys() {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(window.APP_DATA.groupBuys);
-    }, 200);
-  });
+  const response = await fetch('/api/groupbuys');
+  if (!response.ok) {
+    throw new Error('공동구매 목록을 불러오는데 실패했습니다.');
+  }
+  return response.json();
 }
 
-// DB 연동 시 fetch('/api/groupbuys/${id}') 로 교체
 async function getGroupBuyById(id) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const groupBuy = window.APP_DATA.groupBuys.find((item) => item.id === id) || null;
-      resolve(groupBuy);
-    }, 200);
-  });
+  const response = await fetch('/api/groupbuys/' + id);
+  if (!response.ok) {
+    throw new Error('공동구매 정보를 불러오는데 실패했습니다.');
+  }
+  return response.json();
 }
 
 async function createGroupBuy(data) {

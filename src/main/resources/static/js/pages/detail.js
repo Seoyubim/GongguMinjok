@@ -263,14 +263,9 @@
   }
 
   function getInitialSelectedTime(groupBuy) {
-    if (Array.isArray(groupBuy.pickupTimeSlots) && groupBuy.pickupTimeSlots.length > 0) {
-      return groupBuy.pickupTimeSlots[0].time;
-    }
-
     if (Array.isArray(groupBuy.pickupTimes) && groupBuy.pickupTimes.length > 0) {
       return groupBuy.pickupTimes[0];
     }
-
     return null;
   }
 
@@ -281,7 +276,7 @@
     renderRecruitmentStatus(groupBuy);
     renderParticipants(groupBuy.participants || []);
     renderComments(groupBuy.comments || []);
-    renderTimeSlots(groupBuy.pickupTimeSlots || []);
+    renderTimeSlots(groupBuy.pickupTimes || []);
     renderBottomBar(groupBuy);
     renderModal(groupBuy);
   }
@@ -290,14 +285,10 @@
     const imageEl = document.getElementById("detailImage");
     if (!imageEl) return;
 
-    if (groupBuy.imageUrl) {
-      imageEl.src = groupBuy.imageUrl;
-    } else {
-      imageEl.src = "images/default.jpg";
-    }
-
+    imageEl.src = groupBuy.imageUrls?.[0] || "";
     imageEl.onerror = () => {
-      imageEl.src = "images/default.jpg";
+      imageEl.onerror = null;
+      imageEl.src = "";
     };
   }
 
@@ -314,11 +305,13 @@
       const spans = metaEl.querySelectorAll("span");
 
       if (spans[0]) {
-        spans[0].textContent = `👤 ${groupBuy.hostName}`;
+        spans[0].textContent = `👤 ${groupBuy.hostNickname}`;
       }
 
       if (spans[1]) {
-        spans[1].textContent = `${getBadgeEmoji(groupBuy.hostMannerScore)} ${groupBuy.hostMannerScore}`;
+        if (groupBuy.hostMannerScore != null) {
+          spans[1].textContent = `${getBadgeEmoji(groupBuy.hostMannerScore)} ${groupBuy.hostMannerScore}`;
+        }
       }
     }
 
@@ -336,7 +329,7 @@
     if (rows[0]) {
       const strong = rows[0].querySelector("strong");
       if (strong) {
-        strong.textContent = formatPrice(groupBuy.price);
+        strong.textContent = formatPrice(groupBuy.participantFinalPrice);
       }
     }
 
@@ -357,7 +350,7 @@
     if (rows[3]) {
       const valueSpan = rows[3].querySelectorAll("span")[1];
       if (valueSpan) {
-        valueSpan.textContent = getPickupDateText(groupBuy);
+        valueSpan.textContent = getPickupDateText(groupBuy.pickupTimes);
       }
     }
   }
@@ -548,7 +541,7 @@
     return commentItem;
   }
 
-  function renderTimeSlots(timeSlots) {
+  function renderTimeSlots(pickupTimes) {
     const timeCard = getCardBySectionTitle("🕒 픽업 시간 선택");
     if (!timeCard) return;
 
@@ -557,30 +550,29 @@
 
     timeGrid.innerHTML = "";
 
-    if (!timeSlots.length) {
+    if (!pickupTimes.length) {
       timeGrid.innerHTML = `<p class="small-note">선택 가능한 픽업 시간이 없습니다.</p>`;
       return;
     }
 
-    timeSlots.forEach((slot, index) => {
+    pickupTimes.forEach((dateTimeStr, index) => {
       const button = document.createElement("button");
       button.className = "time-box";
       button.type = "button";
-      button.dataset.time = slot.time;
+      button.dataset.time = dateTimeStr;
 
-      if (state.selectedTime === slot.time || (!state.selectedTime && index === 0)) {
+      if (state.selectedTime === dateTimeStr || (!state.selectedTime && index === 0)) {
         button.classList.add("active");
       }
 
       button.innerHTML = `
-        <div class="time">${escapeHtml(slot.time)}</div>
-        <div class="count">${slot.count}명 선택</div>
+        <div class="time">${escapeHtml(formatPickupTime(dateTimeStr))}</div>
       `;
 
       button.addEventListener("click", () => {
-        state.selectedTime = slot.time;
-        updateTimeBoxActive(timeGrid, slot.time);
-        syncModalSelectedTime(slot.time);
+        state.selectedTime = dateTimeStr;
+        updateTimeBoxActive(timeGrid, dateTimeStr);
+        syncModalSelectedTime(dateTimeStr);
       });
 
       timeGrid.appendChild(button);
@@ -590,7 +582,7 @@
   function renderBottomBar(groupBuy) {
     const priceEl = document.querySelector(".fixed-bottom .price");
     if (priceEl) {
-      priceEl.textContent = `1인 부담금 ${formatPrice(groupBuy.price)}`;
+      priceEl.textContent = `1인 부담금 ${formatPrice(groupBuy.participantFinalPrice)}`;
     }
   }
 
@@ -612,21 +604,21 @@
     if (modalTimeGrid) {
       modalTimeGrid.innerHTML = "";
 
-      (groupBuy.pickupTimeSlots || []).forEach((slot, index) => {
+      (groupBuy.pickupTimes || []).forEach((dateTimeStr, index) => {
         const btn = document.createElement("button");
         btn.className = "time-box";
         btn.type = "button";
-        btn.dataset.time = slot.time;
-        btn.textContent = slot.time;
+        btn.dataset.time = dateTimeStr;
+        btn.textContent = formatPickupTime(dateTimeStr);
 
-        if (state.selectedTime === slot.time || (!state.selectedTime && index === 0)) {
+        if (state.selectedTime === dateTimeStr || (!state.selectedTime && index === 0)) {
           btn.classList.add("active");
         }
 
         btn.addEventListener("click", () => {
-          state.selectedTime = slot.time;
-          updateTimeBoxActive(modalTimeGrid, slot.time);
-          syncPageSelectedTime(slot.time);
+          state.selectedTime = dateTimeStr;
+          updateTimeBoxActive(modalTimeGrid, dateTimeStr);
+          syncPageSelectedTime(dateTimeStr);
         });
 
         modalTimeGrid.appendChild(btn);
@@ -634,7 +626,7 @@
     }
 
     if (modalPriceStrong) {
-      modalPriceStrong.textContent = formatPrice(groupBuy.price);
+      modalPriceStrong.textContent = formatPrice(groupBuy.participantFinalPrice);
     }
   }
 
@@ -791,18 +783,16 @@
     );
   }
 
-  function getPickupDateText(groupBuy) {
-    const today = new Date();
-    const pickupDate = new Date(today);
-    pickupDate.setDate(today.getDate() + ((groupBuy.id % 4) + 1));
-    return formatDateKorean(pickupDate);
+  function getPickupDateText(pickupTimes) {
+    if (Array.isArray(pickupTimes) && pickupTimes.length > 0) {
+      return formatDateKorean(new Date(pickupTimes[0]));
+    }
+    return "미정";
   }
 
   function getDeadlineText(groupBuy) {
-    const today = new Date();
-    const deadline = new Date(today);
-    deadline.setDate(today.getDate() + (groupBuy.status === "closing" ? 0 : 1));
-    return formatDateKorean(deadline);
+    if (!groupBuy.deadline) return "미정";
+    return formatDateKorean(new Date(groupBuy.deadline));
   }
 
   function formatDateKorean(date) {
