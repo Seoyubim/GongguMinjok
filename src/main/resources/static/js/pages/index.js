@@ -74,7 +74,7 @@ async function getFilteredGroupBuys() {
 
 function createGroupBuyCard(item) {
   const progress = (item.currentParticipants / item.maxParticipants) * 100;
-  const imageUrl = item.imageUrls?.[0] || "images/default.jpg";
+  const imageUrl = item.imageUrls?.[0] || "";
   const distanceText = item.distance != null ? item.distance.toFixed(1) + "km" : "";
   const pickupTimeText = item.pickupTimes?.[0] ? formatPickupTime(item.pickupTimes[0]) : "";
   const mannerScoreHtml = item.hostMannerScore != null
