@@ -28,7 +28,7 @@ public class ParticipationService {
         GroupBuy groupBuy = groupBuyRepository.findById(groupBuyId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
 
-        if (groupBuy.getStatus() != GroupBuy.Status.RECRUITING) {
+        if (groupBuy.getStatus() != GroupBuy.Status.OPEN) {
             throw new IllegalArgumentException("참여할 수 없는 공동구매입니다.");
         }
 
@@ -62,7 +62,7 @@ public class ParticipationService {
             participations.forEach(p -> p.setPaymentDeadline(paymentDeadline));
             participationRepository.saveAll(participations);
         } else {
-            groupBuy.setStatus(GroupBuy.Status.RECRUITING);
+            groupBuy.setStatus(GroupBuy.Status.OPEN);
         }
 
         groupBuyRepository.save(groupBuy);
@@ -90,7 +90,7 @@ public class ParticipationService {
         participationRepository.deleteByGroupBuyIdAndParticipantId(groupBuyId, participant.getId());
 
         groupBuy.setCurrentParticipants(groupBuy.getCurrentParticipants() - 1);
-        groupBuy.setStatus(GroupBuy.Status.RECRUITING);
+        groupBuy.setStatus(GroupBuy.Status.OPEN);
         groupBuyRepository.save(groupBuy);
     }
 

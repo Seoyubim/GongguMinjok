@@ -29,8 +29,25 @@ public class GroupBuyScheduler {
     public void processGroupBuyDeadlines() {
         LocalDateTime now = LocalDateTime.now();
 
+        processClosingGroupBuys(now);
         processExpiredGroupBuys(now);
         processUnpaidParticipants(now);
+    }
+
+    /**
+     * Logic C: 마감일 24시간 전 → CLOSING 처리
+     */
+    private void processClosingGroupBuys(LocalDateTime now) {
+        List<GroupBuy> targets = groupBuyRepository
+                .findByStatusAndDeadlineAfterAndDeadlineBefore(
+                        GroupBuy.Status.OPEN, now, now.plusHours(24));
+
+        for (GroupBuy groupBuy : targets) {
+            log.info("[스케줄러-C] 마감 임박 처리: id={}, title={}", groupBuy.getId(), groupBuy.getTitle());
+
+            groupBuy.setStatus(GroupBuy.Status.CLOSING);
+            groupBuyRepository.save(groupBuy);
+        }
     }
 
     /**
@@ -38,14 +55,11 @@ public class GroupBuyScheduler {
      */
     private void processExpiredGroupBuys(LocalDateTime now) {
         List<GroupBuy> targets = groupBuyRepository
-                .findByStatusAndDeadlineBeforeAndDeadlineNotifiedFalse(GroupBuy.Status.RECRUITING, now);
+                .findByStatusInAndDeadlineBeforeAndDeadlineNotifiedFalse(
+                        List.of(GroupBuy.Status.OPEN, GroupBuy.Status.CLOSING), now);
 
         for (GroupBuy groupBuy : targets) {
             log.info("[스케줄러-A] 공동구매 만료 처리: id={}, title={}", groupBuy.getId(), groupBuy.getTitle());
-
-            // 참여 기록 전체 삭제 (결제 전이므로 환불 불필요)
-            List<Participation> participations = participationRepository.findByGroupBuyId(groupBuy.getId());
-            participationRepository.deleteAll(participations);
 
             groupBuy.setStatus(GroupBuy.Status.EXPIRED);
             groupBuy.setDeadlineNotified(true);
@@ -72,12 +86,11 @@ public class GroupBuyScheduler {
             log.info("[스케줄러-B] 결제 미확정 처리: groupBuyId={}, 미확정 참여자 수={}",
                     groupBuy.getId(), unpaidList.size());
 
-            // 미확정 참여자 매너점수 차감 후 참여 기록 삭제
+            // 미확정 참여자 매너점수 차감
             for (Participation p : unpaidList) {
                 User user = p.getParticipant();
                 user.setMannerScore(user.getMannerScore() - 30);
                 userRepository.save(user);
-                participationRepository.delete(p);
 
                 log.info("[스케줄러-B] 매너점수 차감: userId={}, 차감 후 점수={}", user.getId(), user.getMannerScore());
             }
