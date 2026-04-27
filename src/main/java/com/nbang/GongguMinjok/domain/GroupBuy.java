@@ -133,10 +133,13 @@ public class GroupBuy {
     private LocalDateTime updatedAt;
 
     public enum Status {
-        OPEN,
-        CLOSING,
-        CLOSED,
-        EXPIRED
+        OPEN,              // 현재 인원을 모집 중인 상태
+        CLOSING,           // 마감 24시간 전 상태
+        CLOSED,            // 정원이 모두 찼으며, 현재 결제 대기 중인 상태
+        PAYMENT_COMPLETED, // 모든 참여자의 결제가 완료된 상태
+        PICKUP_READY,      // 호스트가 물건을 수령하여 픽업이 가능한 상태
+        COMPLETED,         // 픽업이 모두 종료된 상태
+        EXPIRED            // 모집 미달, 미결제, 취소 등으로 인해 만료된 상태
     }
 
     // --- 할인 계산 메서드 (DB 미저장) ---
