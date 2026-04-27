@@ -57,10 +57,19 @@ public class ParticipationService {
 
         if (groupBuy.getCurrentParticipants() == groupBuy.getMaxParticipants()) {
             groupBuy.setStatus(GroupBuy.Status.CLOSED);
+
+            // 정원 충족 시점에 금액 확정
+            int participantAmount = groupBuy.getParticipantFinalPrice();
+            int hostAmount = groupBuy.getHostFinalPrice();
+            groupBuy.setHostPaymentAmount(hostAmount);
+
             // 결제 기한: 정원 충족 시각 + 24시간
             LocalDateTime paymentDeadline = LocalDateTime.now().plusHours(24);
             List<Participation> participations = participationRepository.findByGroupBuyId(groupBuyId);
-            participations.forEach(p -> p.setPaymentDeadline(paymentDeadline));
+            participations.forEach(p -> {
+                p.setPaymentDeadline(paymentDeadline);
+                p.setPaymentAmount(participantAmount);
+            });
             participationRepository.saveAll(participations);
         } else {
             groupBuy.setStatus(GroupBuy.Status.OPEN);

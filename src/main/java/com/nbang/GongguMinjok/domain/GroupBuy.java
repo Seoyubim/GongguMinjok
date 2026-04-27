@@ -116,6 +116,10 @@ public class GroupBuy {
     @Column(nullable = false)
     private LocalDateTime deadline;
 
+    // 확정된 호스트 결제 금액 (정원 충족 시점에 고정)
+    @Column
+    private Integer hostPaymentAmount;
+
     // 마감 처리 완료 여부 (스케줄러 중복 실행 방지)
     @Column(nullable = false)
     private boolean deadlineNotified = false;
