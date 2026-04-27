@@ -12,10 +12,14 @@ public interface GroupBuyRepository extends JpaRepository<GroupBuy, Long> {
     List<GroupBuy> findByCategory(GroupBuy.Category category);
     List<GroupBuy> findByStatus(GroupBuy.Status status);
 
-    // Logic A: 인원 미달 만료 처리 대상
-    List<GroupBuy> findByStatusAndDeadlineBeforeAndDeadlineNotifiedFalse(
-            GroupBuy.Status status, LocalDateTime now);
+    // Logic A: 인원 미달 만료 처리 대상 (OPEN, CLOSING 모두 포함)
+    List<GroupBuy> findByStatusInAndDeadlineBeforeAndDeadlineNotifiedFalse(
+            List<GroupBuy.Status> statuses, LocalDateTime now);
 
     // Logic B: 결제 미확정 처리 대상
     List<GroupBuy> findByStatusAndPaidFalse(GroupBuy.Status status);
+
+    // Logic C: 마감 24시간 전 CLOSING 전환 대상 (deadline이 now~now+24h 사이)
+    List<GroupBuy> findByStatusAndDeadlineAfterAndDeadlineBefore(
+            GroupBuy.Status status, LocalDateTime from, LocalDateTime to);
 }

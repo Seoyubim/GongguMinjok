@@ -111,7 +111,7 @@ public class GroupBuy {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private Status status = Status.RECRUITING;
+    private Status status = Status.OPEN;
 
     @Column(nullable = false)
     private LocalDateTime deadline;
@@ -133,7 +133,7 @@ public class GroupBuy {
     private LocalDateTime updatedAt;
 
     public enum Status {
-        RECRUITING,
+        OPEN,
         CLOSING,
         CLOSED,
         EXPIRED
