@@ -36,6 +36,10 @@ public class Participation {
     @Column(nullable = false)
     private boolean paymentConfirmed = false;
 
+    // 확정된 결제 금액 (정원 충족 시점에 고정)
+    @Column
+    private Integer paymentAmount;
+
     // 결제 확정 기한 (정원 충족 시각 + 24시간)
     @Column
     private LocalDateTime paymentDeadline;
