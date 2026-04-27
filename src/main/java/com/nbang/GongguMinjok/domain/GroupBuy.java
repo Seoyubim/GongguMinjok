@@ -116,10 +116,6 @@ public class GroupBuy {
     @Column(nullable = false)
     private LocalDateTime deadline;
 
-    // 결제 확정 여부
-    @Column(name = "is_paid", nullable = false)
-    private boolean paid = false;
-
     // 마감 처리 완료 여부 (스케줄러 중복 실행 방지)
     @Column(nullable = false)
     private boolean deadlineNotified = false;
