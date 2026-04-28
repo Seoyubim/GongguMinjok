@@ -22,3 +22,26 @@ function logout() {
 function isLoggedIn() {
   return getLoginState();
 }
+
+(function() {
+  const originalFetch = window.fetch;
+  window.fetch = async function(...args) {
+    const response = await originalFetch(...args);
+
+    const url = typeof args[0] === "string" ? args[0] : args[0]?.url ?? "";
+    if (url.includes("/api/auth/")) return response;
+
+    if (response.status === 401 || response.status === 403) {
+      logout();
+      const msg = "로그인이 만료되었습니다. 다시 로그인해주세요.";
+      if (typeof showToast !== "undefined") {
+        showToast(msg);
+      } else {
+        alert(msg);
+      }
+      setTimeout(() => { window.location.href = "login.html"; }, 1000);
+    }
+
+    return response;
+  };
+})();
