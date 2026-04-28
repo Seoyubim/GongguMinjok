@@ -23,6 +23,19 @@ function isLoggedIn() {
   return getLoginState();
 }
 
+function checkTokenExpiry() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    if (payload.exp * 1000 < Date.now()) {
+      logout();
+      alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+      window.location.href = "login.html";
+    }
+  } catch {}
+}
+
 (function() {
   const originalFetch = window.fetch;
   window.fetch = async function(...args) {

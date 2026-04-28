@@ -1,3 +1,4 @@
+checkTokenExpiry();
 (function () {
   const state = {
     groupBuy: null,

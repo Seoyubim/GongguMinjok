@@ -1,3 +1,4 @@
+checkTokenExpiry();
 let currentStep = 1;
 let selectedType = '';
 let pickupTimes = [];
