@@ -1,4 +1,5 @@
 import { initMap } from "../utils/map.js";
+checkTokenExpiry();
 
 const groupbuyGrid = document.getElementById("groupbuyGrid");
 const groupCount = document.getElementById("groupCount");

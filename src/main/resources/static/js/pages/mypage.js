@@ -1,3 +1,4 @@
+checkTokenExpiry();
 const logoutBtn = document.getElementById("logoutBtn");
 const toast = document.getElementById("toast");
 
