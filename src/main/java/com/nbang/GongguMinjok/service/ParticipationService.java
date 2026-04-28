@@ -71,8 +71,6 @@ public class ParticipationService {
                 p.setPaymentAmount(participantAmount);
             });
             participationRepository.saveAll(participations);
-        } else {
-            groupBuy.setStatus(GroupBuy.Status.OPEN);
         }
 
         groupBuyRepository.save(groupBuy);
@@ -92,15 +90,16 @@ public class ParticipationService {
             throw new IllegalArgumentException("참여하지 않은 공동구매입니다.");
         }
 
-        if (groupBuy.getStatus() != GroupBuy.Status.OPEN
-                && groupBuy.getStatus() != GroupBuy.Status.CLOSING) {
+        GroupBuy.Status currentStatus = groupBuy.getStatus();
+        if (currentStatus != GroupBuy.Status.OPEN
+                && currentStatus != GroupBuy.Status.CLOSING) {
             throw new IllegalArgumentException("모집 중인 공동구매만 취소할 수 있습니다.");
         }
 
         participationRepository.deleteByGroupBuyIdAndParticipantId(groupBuyId, participant.getId());
 
         groupBuy.setCurrentParticipants(groupBuy.getCurrentParticipants() - 1);
-        groupBuy.setStatus(GroupBuy.Status.OPEN);
+        groupBuy.setStatus(currentStatus);
         groupBuyRepository.save(groupBuy);
     }
 
