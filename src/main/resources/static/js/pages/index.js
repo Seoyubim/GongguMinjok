@@ -78,7 +78,7 @@ function createGroupBuyCard(item) {
   const distanceText = item.distance != null ? item.distance.toFixed(1) + "km" : "";
   const pickupTimeText = item.pickupTimes?.[0] ? formatPickupTime(item.pickupTimes[0]) : "";
   const mannerScoreHtml = item.hostMannerScore != null
-    ? `<span>${getBadgeEmoji(item.hostMannerScore)}</span><span class="text-gray">${item.hostMannerScore}</span>`
+    ? `<span class="text-gray">${item.hostMannerScore}</span>`
     : "";
 
   return `
@@ -115,7 +115,7 @@ function createGroupBuyCard(item) {
 
           <div class="card-host">
             <div class="host-info">
-              <div class="host-avatar">${item.hostNickname.charAt(0)}</div>
+              <div class="host-avatar">${getBadgeEmoji(item.hostMannerGrade)}</div>
               <span>${item.hostNickname}</span>
             </div>
             <div class="host-rating">
