@@ -53,10 +53,7 @@ public class GroupBuy {
 
     // 보상 정책
     @Column(nullable = false)
-    private int rewardPerUser; // k 값 (예: 500원)
-
-    @Column(nullable = false)
-    private int maxReward; // 최대 보상 (예: 5000원)
+    private int maxReward; // 최대 보상 (예: 15000원)
 
     @Column(nullable = false)
     private int maxParticipants;
@@ -150,7 +147,7 @@ public class GroupBuy {
     }
 
     public int getHostDiscount() {
-        double discountRate = Math.min(currentParticipants * 0.01, 0.10);
+        double discountRate = Math.min(maxParticipants * 0.01, 0.10);
         int discount = (int) (getUnitPrice() * discountRate);
         return Math.min(discount, maxReward);
     }
