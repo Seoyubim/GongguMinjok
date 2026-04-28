@@ -157,7 +157,7 @@ public class GroupBuy {
     }
 
     public int getParticipantFinalPrice() {
-        int participantCount = currentParticipants - 1; // 호스트 제외
+        int participantCount = maxParticipants - 1; // 호스트 제외
         if (participantCount <= 0) return getUnitPrice();
         return getUnitPrice() + (getHostDiscount() / participantCount);
     }
