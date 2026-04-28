@@ -58,8 +58,17 @@ function formatPickupTime(dateTimeStr) {
   return `${month}/${day} ${hours}:${minutes}`;
 }
 
-function getBadgeEmoji(score) {
-  if (score >= 90) return "🥇";
-  if (score >= 80) return "🥈";
-  return "🥉";
+function getBadgeEmoji(grade) {
+  const emojis = {
+    LEGEND: "👑",
+    GREAT:  "😄",
+    GOOD:   "🙂",
+    SOSO:   "😐",
+    BAD:    "😢",
+  };
+  return emojis[grade] ?? "";
+  /* 이미지로 전환 시 위 return을 아래로 교체:
+  if (!emojis[grade]) return "";
+  return `<img src="/images/grade_${grade.toLowerCase()}.png" alt="${grade}" class="manner-badge-img" style="height:1em">`;
+  */
 }

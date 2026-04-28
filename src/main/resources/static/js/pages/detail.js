@@ -309,8 +309,8 @@
       }
 
       if (spans[1]) {
-        if (groupBuy.hostMannerScore != null) {
-          spans[1].textContent = `${getBadgeEmoji(groupBuy.hostMannerScore)} ${groupBuy.hostMannerScore}`;
+        if (groupBuy.hostMannerGrade != null) {
+          spans[1].textContent = `${getBadgeEmoji(groupBuy.hostMannerGrade)} ${groupBuy.hostMannerScore}`;
         }
       }
     }
@@ -410,13 +410,8 @@
 
       const participantName = participant.nickname || participant.name || "이웃";
       const avatarText = participant.avatarText || participantName.charAt(0);
-      const participantScore =
-        participant.mannerScore ??
-        participant.rating ??
-        participant.score ??
-        0;
-
-      const participantBadge = getBadgeEmoji(participantScore);
+      const participantScore = participant.mannerScore ?? null;
+      const participantBadge = getBadgeEmoji(participant.mannerGrade);
 
       const participantTime =
         participant.selectedTime ||
@@ -427,7 +422,7 @@
       row.innerHTML = `
         <div class="avatar-circle-md">${escapeHtml(avatarText)}</div>
         <span class="small-note">${escapeHtml(participantName)}</span>
-        <span class="small-note">${participantBadge} ${escapeHtml(String(participantScore))}</span>
+        <span class="small-note">${participantBadge}${participantScore !== null ? ` ${participantScore}` : ""}</span>
         <span class="small-note">${escapeHtml(participantTime)}</span>
       `;
 
