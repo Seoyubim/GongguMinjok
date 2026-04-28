@@ -28,8 +28,12 @@ loginForm.addEventListener("submit", async (event) => {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      showToast("로그인 실패: " + (errorText || "이메일 또는 비밀번호를 확인해주세요."));
+      let message = "이메일 또는 비밀번호를 확인해주세요.";
+      try {
+        const errorData = await response.json();
+        if (errorData.message) message = errorData.message;
+      } catch {}
+      showToast(message);
       return;
     }
 
