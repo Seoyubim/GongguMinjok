@@ -350,3 +350,225 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* 클러스터 클릭 시 공동구매 목록 모달 */
+.cluster-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.cluster-modal.hidden {
+  display: none;
+}
+
+.cluster-modal-content {
+  background: white;
+  border-radius: 1rem 1rem 0 0;
+  width: 100%;
+  max-width: 600px;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.cluster-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.cluster-modal-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.cluster-modal-header button {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: #6b7280;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.cluster-modal-list {
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* 클러스터 모달 내 간략 카드 */
+.cluster-card {
+  padding: 0.875rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: white;
+  transition: box-shadow 0.15s;
+}
+
+.cluster-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cluster-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.cluster-card-top-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.cluster-card-top-right {
+  font-size: 0.85rem;
+  color: #6b7280;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cluster-card-badge {
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cluster-card-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cluster-card-info {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+
+.cluster-card-label {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  background: #f3f4f6;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.25rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cluster-card-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.cluster-card-count {
+  font-size: 0.85rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+/* 행정동 말풍선 마커 — 레벨 7 이상 */
+.dong-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  position: relative;
+  transition: box-shadow 0.15s;
+}
+
+.dong-label::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid white;
+}
+
+.dong-label:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.dong-name {
+  font-weight: 600;
+  color: #374151;
+}
+
+.dong-count {
+  font-weight: 500;
+  color: #84cc16;
+}
+
+/* 녹색 원 클러스터 마커 — 레벨 6 이하 */
+.cluster-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #84cc16;
+  color: white;
+  font-weight: 700;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(132, 204, 22, 0.5);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.cluster-dot:hover {
+  background: #65a30d;
+  box-shadow: 0 4px 12px rgba(132, 204, 22, 0.6);
+}
+
+.cluster-dot-sm {
+  width: 36px;
+  height: 36px;
+  font-size: 0.8rem;
+}
+
+.cluster-dot-md {
+  width: 44px;
+  height: 44px;
+  font-size: 0.875rem;
+}
+
+.cluster-dot-lg {
+  width: 52px;
+  height: 52px;
+  font-size: 1rem;
+}

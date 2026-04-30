@@ -16,13 +16,6 @@ function getStatusClass(status) {
   return "";
 }
 
-function getMarkerClassByStatus(status) {
-  if (status === "OPEN") return "marker-green";
-  if (status === "CLOSING") return "marker-red";
-  if (status === "CLOSED" || status === "PAYMENT_COMPLETED" || status === "PICKUP_READY" || status === "COMPLETED") return "marker-blue";
-  return "marker-green";
-}
-
 function getCategoryLabel(category) {
   const map = {
     ELECTRONICS: "전자제품",

@@ -1,90 +1,14 @@
+import { initCluster, initModalCluster } from "./mapCluster.js";
+
 let map;
 let modalMap;
-let markers = [];
-let modalMarkers = [];
 let currentLocationMarker = null;
 let modalCurrentLocationMarker = null;
 let mapGeocoder = null;
 let lastTitleCenterKey = "";
+let clusterClickFn = null;
+let modalClusterInitialized = false;
 
-function getMarkerImageSrc(status) {
-  if (status === "ongoing" || status === "recruiting" || status === "active") {
-    return "images/marker-green.png";
-  }
-
-  if (status === "closing" || status === "deadline") {
-    return "images/marker-red.png";
-  }
-
-  if (status === "done" || status === "completed" || status === "closed") {
-    return "images/marker-blue.png";
-  }
-
-  return "images/marker-default.png";
-}
-
-function createMarkerImage(status) {
-  const imageSrc = getMarkerImageSrc(status);
-  const imageSize = new kakao.maps.Size(36, 40);
-  const imageOption = {
-    offset: new kakao.maps.Point(18, 40)
-  };
-
-  return new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
-}
-
-function clearMarkers(markerList) {
-  markerList.forEach((marker) => marker.setMap(null));
-  markerList.length = 0;
-}
-
-function createInfoWindowContent(item) {
-  return `
-    <div style="padding:10px; min-width:180px; font-size:13px; line-height:1.5;">
-      <strong>${item.title}</strong><br>
-      <span>📍 ${item.pickupLocation || "위치 정보 없음"}</span><br>
-      <span>👥 ${item.currentParticipants || 0} / ${item.maxParticipants || 0}</span>
-    </div>
-  `;
-}
-
-function addMarkersToMap(targetMap, markerList, groupBuys, shouldFitBounds = true) {
-  clearMarkers(markerList);
-
-  if (!Array.isArray(groupBuys) || groupBuys.length === 0) {
-    return;
-  }
-
-  const bounds = new kakao.maps.LatLngBounds();
-
-  groupBuys.forEach((item) => {
-    if (item.lat == null || item.lng == null) return;
-
-    const position = new kakao.maps.LatLng(item.lat, item.lng);
-
-    const marker = new kakao.maps.Marker({
-      map: targetMap,
-      position,
-      title: item.title,
-      image: createMarkerImage(item.status)
-    });
-
-    const infowindow = new kakao.maps.InfoWindow({
-      content: createInfoWindowContent(item)
-    });
-
-    kakao.maps.event.addListener(marker, "click", function () {
-      infowindow.open(targetMap, marker);
-    });
-
-    markerList.push(marker);
-    bounds.extend(position);
-  });
-
-  if (shouldFitBounds && !bounds.isEmpty()) {
-    targetMap.setBounds(bounds);
-  }
-}
 
 async function getSafeGroupBuys() {
   if (typeof window.getGroupBuys !== "function") {
@@ -281,8 +205,11 @@ function bindModalEvents() {
         modalMap.setCenter(currentCenter);
         modalMap.setLevel(currentLevel);
 
-        const groupBuys = await getSafeGroupBuys();
-        addMarkersToMap(modalMap, modalMarkers, groupBuys, false);
+        if (!modalClusterInitialized) {
+          const groupBuys = await getSafeGroupBuys();
+          initModalCluster(modalMap, groupBuys, clusterClickFn);
+          modalClusterInitialized = true;
+        }
       }, 0);
     }
 
@@ -314,7 +241,8 @@ function bindMapEvents() {
   });
 }
 
-async function setupMap() {
+async function setupMap(onClickFn = null) {
+  clusterClickFn = onClickFn;
   const mapContainer = document.getElementById("map");
   const mapTitle = document.getElementById("mapTitle");
   const mapSubTitle = document.getElementById("mapSubTitle");
@@ -342,7 +270,7 @@ async function setupMap() {
     mapSubTitle.textContent = `총 ${groupBuys.length}개의 공동구매`;
   }
 
-  addMarkersToMap(map, markers, groupBuys, true);
+  initCluster(map, groupBuys, onClickFn);
 
   bindModalEvents();
   bindLocationEvents();
@@ -401,7 +329,7 @@ function waitForKakao(timeout = 10000) {
   });
 }
 
-export async function initMap() {
+export async function initMap(onClickFn = null) {
   const mapContainer = document.getElementById("map");
   if (!mapContainer) return;
 
@@ -414,7 +342,7 @@ export async function initMap() {
 
   kakao.maps.load(async function () {
     try {
-      await setupMap();
+      await setupMap(onClickFn);
     } catch (error) {
       console.error("지도 초기화 실패:", error);
     }
