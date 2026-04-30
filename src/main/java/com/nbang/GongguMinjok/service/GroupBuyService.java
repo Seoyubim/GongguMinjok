@@ -124,23 +124,42 @@ public class GroupBuyService {
             throw new org.springframework.security.access.AccessDeniedException("수정 권한이 없습니다.");
         }
 
+        // OPEN 상태에서만 수정 허용 (CLOSING 이후 상태는 수정 불가)
+        if (groupBuy.getStatus() != GroupBuy.Status.OPEN) {
+            throw new IllegalStateException("OPEN 상태인 공동구매만 수정할 수 있습니다.");
+        }
+
+        // 허용 필드: title, description, pickupLocation/lat/lng/dongName, pickupTimes, deadline, imageUrls, category
         groupBuy.setTitle(dto.getTitle());
         groupBuy.setDescription(dto.getDescription());
-        groupBuy.setProductType(dto.getProductType());
-        groupBuy.setTotalPrice(dto.getTotalPrice());
-        groupBuy.setTotalQuantity(dto.getTotalQuantity());
-        groupBuy.setMaxParticipants(dto.getMaxParticipants());
         groupBuy.setPickupLocation(dto.getPickupLocation());
+        groupBuy.setLat(dto.getLat());
+        groupBuy.setLng(dto.getLng());
+        groupBuy.setDongName(dto.getDongName());
         groupBuy.setCategory(dto.getCategory());
-        groupBuy.setDeadline(dto.getDeadline());
+
+        // 마감일: 연장만 허용, 현재 마감일 기준 최대 7일
+        if (dto.getDeadline() != null) {
+            LocalDateTime current = groupBuy.getDeadline();
+            LocalDateTime newDeadline = dto.getDeadline();
+            if (newDeadline.isBefore(current)) {
+                throw new IllegalArgumentException("마감일은 단축할 수 없습니다.");
+            }
+            if (newDeadline.isAfter(current.plusDays(7))) {
+                throw new IllegalArgumentException("마감일은 현재 마감일로부터 최대 7일까지만 연장할 수 있습니다.");
+            }
+            groupBuy.setDeadline(newDeadline);
+        }
 
         // 픽업 시간 교체 (orphanRemoval = true 로 기존 것 자동 삭제)
         groupBuy.getPickupTimes().clear();
-        for (LocalDateTime time : dto.getPickupTimes()) {
-            GroupBuyPickupTime pickupTime = new GroupBuyPickupTime();
-            pickupTime.setGroupBuy(groupBuy);
-            pickupTime.setPickupTime(time);
-            groupBuy.getPickupTimes().add(pickupTime);
+        if (dto.getPickupTimes() != null) {
+            for (LocalDateTime time : dto.getPickupTimes()) {
+                GroupBuyPickupTime pickupTime = new GroupBuyPickupTime();
+                pickupTime.setGroupBuy(groupBuy);
+                pickupTime.setPickupTime(time);
+                groupBuy.getPickupTimes().add(pickupTime);
+            }
         }
 
         groupBuy.getImages().clear();
