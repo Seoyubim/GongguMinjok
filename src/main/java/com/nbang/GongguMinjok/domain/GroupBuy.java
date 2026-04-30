@@ -117,6 +117,15 @@ public class GroupBuy {
     @Column
     private Integer hostPaymentAmount;
 
+    @Column
+    private Integer participantPaymentAmount;
+
+    @Column
+    private LocalDateTime paymentDeadline;
+
+    @Column
+    private LocalDateTime paymentAmountFixedAt;
+
     // 마감 처리 완료 여부 (스케줄러 중복 실행 방지)
     @Column(nullable = false)
     private boolean deadlineNotified = false;
@@ -160,5 +169,28 @@ public class GroupBuy {
         int participantCount = maxParticipants - 1; // 호스트 제외
         if (participantCount <= 0) return getUnitPrice();
         return getUnitPrice() + (getHostDiscount() / participantCount);
+    }
+    public boolean isPaymentAmountFixed() {
+        return paymentAmountFixedAt != null;
+    }
+
+    public void fixPaymentAmounts(LocalDateTime paymentDeadline) {
+        if (isPaymentAmountFixed()) {
+            return;
+        }
+
+        this.hostPaymentAmount = getHostFinalPrice();
+        this.participantPaymentAmount = getParticipantFinalPrice();
+        this.paymentDeadline = paymentDeadline;
+        this.paymentAmountFixedAt = LocalDateTime.now();
+        this.status = Status.CLOSED;
+    }
+
+    public int getFixedHostPaymentAmount() {
+        return hostPaymentAmount != null ? hostPaymentAmount : getHostFinalPrice();
+    }
+
+    public int getFixedParticipantPaymentAmount() {
+        return participantPaymentAmount != null ? participantPaymentAmount : getParticipantFinalPrice();
     }
 }

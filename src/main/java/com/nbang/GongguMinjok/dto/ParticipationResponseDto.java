@@ -17,6 +17,10 @@ public class ParticipationResponseDto {
     private String groupBuyTitle;
     private Long participantId;
     private String participantNickname;
+    private boolean paymentConfirmed;
+    private Integer paymentAmount;
+    private LocalDateTime paymentDeadline;
+    private LocalDateTime paidAt;
     private LocalDateTime joinedAt;
 
     public static ParticipationResponseDto from(Participation participation) {
@@ -26,6 +30,10 @@ public class ParticipationResponseDto {
         dto.groupBuyTitle = participation.getGroupBuy().getTitle();
         dto.participantId = participation.getParticipant().getId();
         dto.participantNickname = participation.getParticipant().getNickname();
+        dto.paymentConfirmed = participation.isPaymentConfirmed();
+        dto.paymentAmount = participation.getPaymentAmount();
+        dto.paymentDeadline = participation.getPaymentDeadline();
+        dto.paidAt = participation.getPaidAt();
         dto.joinedAt = participation.getJoinedAt();
         return dto;
     }

@@ -44,6 +44,9 @@ public class Participation {
     @Column
     private LocalDateTime paymentDeadline;
 
+    @Column
+    private LocalDateTime paidAt;
+
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime joinedAt;

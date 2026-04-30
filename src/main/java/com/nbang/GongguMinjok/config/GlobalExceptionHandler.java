@@ -23,6 +23,15 @@ public class GlobalExceptionHandler {
     }
 
     // 존재하지 않는 유저
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponseDto> handleIllegalState(IllegalStateException e) {
+        ErrorResponseDto error = new ErrorResponseDto(
+                HttpStatus.BAD_REQUEST.value(),
+                e.getMessage()
+        );
+        return ResponseEntity.badRequest().body(error);
+    }
+
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handleUsernameNotFound(UsernameNotFoundException e) {
         ErrorResponseDto error = new ErrorResponseDto(
