@@ -38,6 +38,10 @@ public class GroupBuyResponseDto {
     private int hostDiscount;
     private int hostFinalPrice;
     private int participantFinalPrice;
+    private Integer hostPaymentAmount;
+    private Integer participantPaymentAmount;
+    private LocalDateTime paymentDeadline;
+    private LocalDateTime paymentAmountFixedAt;
     private Double distance; // 사용자와의 거리(km), 위치 필터 사용 시에만 값 존재
 
     public void setDistance(Double distance) {
@@ -74,7 +78,11 @@ public class GroupBuyResponseDto {
         this.deadline = groupBuy.getDeadline();
         this.unitPrice = groupBuy.getUnitPrice();
         this.hostDiscount = groupBuy.getHostDiscount();
-        this.hostFinalPrice = groupBuy.getHostFinalPrice();
-        this.participantFinalPrice = groupBuy.getParticipantFinalPrice();
+        this.hostFinalPrice = groupBuy.getFixedHostPaymentAmount();
+        this.participantFinalPrice = groupBuy.getFixedParticipantPaymentAmount();
+        this.hostPaymentAmount = groupBuy.getHostPaymentAmount();
+        this.participantPaymentAmount = groupBuy.getParticipantPaymentAmount();
+        this.paymentDeadline = groupBuy.getPaymentDeadline();
+        this.paymentAmountFixedAt = groupBuy.getPaymentAmountFixedAt();
     }
 }

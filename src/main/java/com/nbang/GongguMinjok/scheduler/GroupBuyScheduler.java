@@ -2,9 +2,11 @@ package com.nbang.GongguMinjok.scheduler;
 
 import com.nbang.GongguMinjok.domain.GroupBuy;
 import com.nbang.GongguMinjok.domain.Participation;
+import com.nbang.GongguMinjok.domain.Payment;
 import com.nbang.GongguMinjok.domain.User;
 import com.nbang.GongguMinjok.repository.GroupBuyRepository;
 import com.nbang.GongguMinjok.repository.ParticipationRepository;
+import com.nbang.GongguMinjok.repository.PaymentRepository;
 import com.nbang.GongguMinjok.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +24,7 @@ public class GroupBuyScheduler {
 
     private final GroupBuyRepository groupBuyRepository;
     private final ParticipationRepository participationRepository;
+    private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
 
     @Scheduled(fixedRate = 3600000) // 매 1시간마다 실행
@@ -83,6 +86,8 @@ public class GroupBuyScheduler {
                         groupBuy.getId(), unpaidList.size());
 
                 for (Participation p : unpaidList) {
+                    expireReadyPayments(p);
+
                     User user = p.getParticipant();
                     user.setMannerScore(user.getMannerScore() - 30);
                     userRepository.save(user);
@@ -104,5 +109,17 @@ public class GroupBuyScheduler {
                 }
             }
         }
+    }
+
+    private void expireReadyPayments(Participation participation) {
+        List<Payment> readyPayments = paymentRepository
+                .findByParticipationIdAndStatus(participation.getId(), Payment.Status.READY);
+
+        for (Payment payment : readyPayments) {
+            payment.setStatus(Payment.Status.EXPIRED);
+            payment.setFailReason("Payment deadline expired.");
+        }
+
+        paymentRepository.saveAll(readyPayments);
     }
 }
