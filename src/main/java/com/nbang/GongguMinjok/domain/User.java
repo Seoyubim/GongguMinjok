@@ -57,6 +57,9 @@ public class User {
     @Column(nullable = false)
     private boolean isActive = true;  // 계정 활성화 여부
 
+    @Column
+    private LocalDateTime premiumUntil;
+
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -78,5 +81,9 @@ public class User {
     public enum Role {
         USER,
         ADMIN
+    }
+
+    public boolean isPremiumActive() {
+        return premiumUntil != null && premiumUntil.isAfter(LocalDateTime.now());
     }
 }

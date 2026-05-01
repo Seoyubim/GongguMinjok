@@ -3,6 +3,8 @@ package com.nbang.GongguMinjok.dto;
 import com.nbang.GongguMinjok.domain.User;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 public class UserResponseDto {
 
@@ -14,6 +16,8 @@ public class UserResponseDto {
     private String profileImage;
     private int mannerScore;
     private String mannerGrade;
+    private boolean premiumActive;
+    private LocalDateTime premiumUntil;
 
     // User 엔티티를 받아서 DTO로 변환
     public UserResponseDto(User user) {
@@ -25,5 +29,7 @@ public class UserResponseDto {
         this.profileImage = user.getProfileImage();
         this.mannerScore = user.getMannerScore();
         this.mannerGrade = user.getMannerGrade().name();
+        this.premiumActive = user.isPremiumActive();
+        this.premiumUntil = user.getPremiumUntil();
     }
 }

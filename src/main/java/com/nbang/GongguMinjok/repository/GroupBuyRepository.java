@@ -11,6 +11,8 @@ public interface GroupBuyRepository extends JpaRepository<GroupBuy, Long> {
     List<GroupBuy> findByHostId(Long hostId);
     List<GroupBuy> findByCategory(GroupBuy.Category category);
     List<GroupBuy> findByStatus(GroupBuy.Status status);
+    long countByHostIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(
+            Long hostId, LocalDateTime start, LocalDateTime end);
 
     // Logic A: 인원 미달 만료 처리 대상 (OPEN, CLOSING 모두 포함)
     List<GroupBuy> findByStatusInAndDeadlineBeforeAndDeadlineNotifiedFalse(

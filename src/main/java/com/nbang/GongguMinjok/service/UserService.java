@@ -92,6 +92,8 @@ public class UserService {
                 .email(user.getEmail())
                 .nickname(user.getNickname())
                 .location(user.getLocation())
+                .premiumActive(user.isPremiumActive())
+                .premiumUntil(user.getPremiumUntil())
                 .build();
     }
 }
