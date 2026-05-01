@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +22,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class GroupBuyService {
+
+    private static final int MONTHLY_GROUP_BUY_LIMIT = 3;
 
     private final GroupBuyRepository groupBuyRepository;
     private final UserRepository userRepository;
@@ -79,6 +82,9 @@ public class GroupBuyService {
         User host = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
+        validateMonthlyGroupBuyLimit(host);
+        validateGroupBuyQuantityPolicy(dto);
+
         GroupBuy groupBuy = new GroupBuy();
         groupBuy.setHost(host);
         groupBuy.setTitle(dto.getTitle());
@@ -93,7 +99,7 @@ public class GroupBuyService {
         groupBuy.setDongName(dto.getDongName());
         groupBuy.setCategory(dto.getCategory());
         groupBuy.setDeadline(dto.getDeadline());
-        groupBuy.setMaxReward(15000);
+        groupBuy.setMaxReward(30000);
 
         // save 전에 자식들 먼저 세팅
         for (LocalDateTime time : dto.getPickupTimes()) {
@@ -125,6 +131,7 @@ public class GroupBuyService {
         }
 
         validatePaymentAmountChange(groupBuy, dto);
+        validateGroupBuyQuantityPolicy(dto);
 
         groupBuy.setTitle(dto.getTitle());
         groupBuy.setDescription(dto.getDescription());
@@ -175,6 +182,38 @@ public class GroupBuyService {
     }
 
     // 삭제
+    private void validateGroupBuyQuantityPolicy(GroupBuyRequestDto dto) {
+        if (dto.getMaxParticipants() <= 0) {
+            throw new IllegalArgumentException("모집 인원은 1명 이상이어야 합니다.");
+        }
+
+        if (dto.getTotalQuantity() <= 0) {
+            throw new IllegalArgumentException("총 수량은 1개 이상이어야 합니다.");
+        }
+
+        if (dto.getTotalQuantity() % dto.getMaxParticipants() != 0) {
+            throw new IllegalArgumentException("총 수량은 모집 인원수로 나누어 떨어져야 합니다.");
+        }
+    }
+
+    private void validateMonthlyGroupBuyLimit(User host) {
+        if (host.isPremiumActive()) {
+            return;
+        }
+
+        YearMonth currentMonth = YearMonth.now();
+        LocalDateTime startOfMonth = currentMonth.atDay(1).atStartOfDay();
+        LocalDateTime startOfNextMonth = currentMonth.plusMonths(1).atDay(1).atStartOfDay();
+
+        long monthlyCount = groupBuyRepository
+                .countByHostIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(
+                        host.getId(), startOfMonth, startOfNextMonth);
+
+        if (monthlyCount >= MONTHLY_GROUP_BUY_LIMIT) {
+            throw new IllegalStateException("무료 사용자는 한 달에 공동구매 게시글을 3개까지만 작성할 수 있습니다.");
+        }
+    }
+
     @Transactional
     public void deleteGroupBuy(Long id, String email) {
         GroupBuy groupBuy = groupBuyRepository.findById(id)

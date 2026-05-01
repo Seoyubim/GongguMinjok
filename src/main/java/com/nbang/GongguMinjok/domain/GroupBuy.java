@@ -53,7 +53,7 @@ public class GroupBuy {
 
     // 보상 정책
     @Column(nullable = false)
-    private int maxReward; // 최대 보상 (예: 15000원)
+    private int maxReward; // 최대 보상 (예: 30000// 원)
 
     @Column(nullable = false)
     private int maxParticipants;
@@ -151,12 +151,17 @@ public class GroupBuy {
     // --- 할인 계산 메서드 (DB 미저장) ---
 
     public int getUnitPrice() {
-        if (totalQuantity == 0) return 0;
-        return totalPrice / totalQuantity;
+        if (maxParticipants == 0) return 0;
+        return totalPrice / maxParticipants;
+    }
+
+    public int getQuantityPerParticipant() {
+        if (maxParticipants == 0) return 0;
+        return totalQuantity / maxParticipants;
     }
 
     public int getHostDiscount() {
-        double discountRate = Math.min(maxParticipants * 0.01, 0.10);
+        double discountRate = maxParticipants * 0.10;
         int discount = (int) (getUnitPrice() * discountRate);
         return Math.min(discount, maxReward);
     }
@@ -179,6 +184,8 @@ public class GroupBuy {
             return;
         }
 
+        validateEvenQuantitySplit();
+
         this.hostPaymentAmount = getHostFinalPrice();
         this.participantPaymentAmount = getParticipantFinalPrice();
         this.paymentDeadline = paymentDeadline;
@@ -192,5 +199,12 @@ public class GroupBuy {
 
     public int getFixedParticipantPaymentAmount() {
         return participantPaymentAmount != null ? participantPaymentAmount : getParticipantFinalPrice();
+    }
+
+    private void validateEvenQuantitySplit() {
+        if (maxParticipants <= 0 || totalQuantity <= 0
+                || totalQuantity % maxParticipants != 0) {
+            throw new IllegalStateException("총 수량은 모집 인원수로 나누어 떨어져야 합니다.");
+        }
     }
 }

@@ -3,6 +3,8 @@ package com.nbang.GongguMinjok.dto;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Builder
 public class LoginResponseDto {
@@ -12,4 +14,6 @@ public class LoginResponseDto {
     private String email;
     private String nickname;
     private String location;
+    private boolean premiumActive;
+    private LocalDateTime premiumUntil;
 }
