@@ -129,6 +129,70 @@ function createGroupBuyCard(item) {
   `;
 }
 
+function createClusterCard(item) {
+  const progress = Math.round((item.currentParticipants / item.maxParticipants) * 100);
+
+  const uniqueDates = [...new Set(
+    (item.pickupTimes || []).map(t => {
+      const d = new Date(t);
+      return `${d.getMonth() + 1}/${d.getDate()}`;
+    })
+  )].join(' · ') || '미정';
+
+  const mannerScoreHtml = item.hostMannerScore != null
+    ? `<span class="text-gray">${item.hostMannerScore}점</span>`
+    : '';
+
+  return `
+    <a class="groupbuy-card-link" href="detail.html?id=${item.id}">
+      <div class="cluster-card">
+        <div class="cluster-card-top">
+          <div class="cluster-card-top-left">
+            <span class="cluster-card-badge ${getStatusClass(item.status)}">${getStatusLabel(item.status)}</span>
+            <span class="cluster-card-title">${item.title}</span>
+          </div>
+          <div class="cluster-card-top-right">
+            ${getBadgeEmoji(item.hostMannerGrade)} ${item.hostNickname} ${mannerScoreHtml}
+          </div>
+        </div>
+        <div class="cluster-card-info"><span class="cluster-card-label">금액</span>${formatPrice(item.participantFinalPrice)}</div>
+        <div class="cluster-card-info"><span class="cluster-card-label">장소</span>${item.pickupLocation}</div>
+        <div class="cluster-card-info"><span class="cluster-card-label">픽업일</span>${uniqueDates}</div>
+        <div class="cluster-card-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:${progress}%;"></div>
+          </div>
+          <span class="cluster-card-count">${item.currentParticipants} / ${item.maxParticipants}명</span>
+        </div>
+      </div>
+    </a>
+  `;
+}
+
+function openClusterModal(items, areaName) {
+  const modal = document.getElementById("clusterModal");
+  const title = document.getElementById("clusterModalTitle");
+  const list = document.getElementById("clusterModalList");
+
+  const label = areaName
+    ? `${areaName} 공동구매 (${items.length}개)`
+    : `이 지역 공동구매 (${items.length}개)`;
+
+  title.textContent = label;
+  list.innerHTML = items.map(createClusterCard).join("");
+  modal.classList.remove("hidden");
+}
+
+function bindClusterModalEvents() {
+  const modal = document.getElementById("clusterModal");
+  const closeBtn = document.getElementById("closeClusterModal");
+
+  closeBtn?.addEventListener("click", () => modal.classList.add("hidden"));
+  modal?.addEventListener("click", (e) => {
+    if (e.target === modal) modal.classList.add("hidden");
+  });
+}
+
 async function renderGroupBuys() {
   const filtered = await getFilteredGroupBuys();
   const visibleItems = filtered.slice(0, visibleCount);
@@ -175,7 +239,8 @@ logoutBtn.addEventListener("click", handleLogout);
 async function initPage() {
   renderAuthButtons();
   bindCategoryCheckboxes();
-  await initMap();
+  bindClusterModalEvents();
+  await initMap((items, areaName) => openClusterModal(items, areaName));
   await renderGroupBuys();
 }
 
