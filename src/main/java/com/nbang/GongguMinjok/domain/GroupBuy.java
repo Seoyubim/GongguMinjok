@@ -130,6 +130,9 @@ public class GroupBuy {
     @Column(nullable = false)
     private boolean deadlineNotified = false;
 
+    @Column
+    private LocalDateTime completedAt;
+
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -199,6 +202,11 @@ public class GroupBuy {
 
     public int getFixedParticipantPaymentAmount() {
         return participantPaymentAmount != null ? participantPaymentAmount : getParticipantFinalPrice();
+    }
+
+    public void markAsCompleted() {
+        this.status = Status.COMPLETED;
+        this.completedAt = LocalDateTime.now();
     }
 
     private void validateEvenQuantitySplit() {
