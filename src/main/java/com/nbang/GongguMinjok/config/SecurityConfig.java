@@ -50,8 +50,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/groupbuys/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/groupbuys/host/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/groupbuys/*/participants").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/users/*/reviews").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/groupbuys/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/groupbuys/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/groupbuys/*/reviews").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/groupbuys/*/reviews/can-review").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(

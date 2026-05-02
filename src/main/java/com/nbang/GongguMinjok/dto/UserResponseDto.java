@@ -14,7 +14,7 @@ public class UserResponseDto {
     private String phone;
     private String location;
     private String profileImage;
-    private int mannerScore;
+    private double mannerScore;
     private String mannerGrade;
     private boolean premiumActive;
     private LocalDateTime premiumUntil;

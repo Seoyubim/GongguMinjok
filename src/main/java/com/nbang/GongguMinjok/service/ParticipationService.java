@@ -36,6 +36,10 @@ public class ParticipationService {
         User participant = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
+        if (participant.isRestricted()) {
+            throw new IllegalStateException("매너점수 BLOCKED 등급은 공동구매 활동이 제한됩니다.");
+        }
+
         if (groupBuy.getHost().getId().equals(participant.getId())) {
             throw new IllegalArgumentException("호스트는 참여할 수 없습니다.");
         }

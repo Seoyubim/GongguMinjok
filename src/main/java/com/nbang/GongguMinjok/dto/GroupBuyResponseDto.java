@@ -30,7 +30,7 @@ public class GroupBuyResponseDto {
     private String status;
     private Long hostId;
     private String hostNickname;
-    private int hostMannerScore;
+    private double hostMannerScore;
     private String hostMannerGrade;
     private LocalDateTime createdAt;
     private LocalDateTime deadline;

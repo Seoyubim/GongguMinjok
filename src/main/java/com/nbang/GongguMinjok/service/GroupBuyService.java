@@ -82,6 +82,10 @@ public class GroupBuyService {
         User host = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
+        if (host.isRestricted()) {
+            throw new IllegalStateException("매너점수 BLOCKED 등급은 공동구매 활동이 제한됩니다.");
+        }
+
         validateMonthlyGroupBuyLimit(host);
         validateGroupBuyQuantityPolicy(dto);
 
@@ -128,6 +132,10 @@ public class GroupBuyService {
 
         if (!groupBuy.getHost().getEmail().equals(email)) {
             throw new org.springframework.security.access.AccessDeniedException("수정 권한이 없습니다.");
+        }
+
+        if (groupBuy.getHost().isRestricted()) {
+            throw new IllegalStateException("매너점수 BLOCKED 등급은 공동구매 활동이 제한됩니다.");
         }
 
         validatePaymentAmountChange(groupBuy, dto);
@@ -221,6 +229,10 @@ public class GroupBuyService {
 
         if (!groupBuy.getHost().getEmail().equals(email)) {
             throw new org.springframework.security.access.AccessDeniedException("삭제 권한이 없습니다.");
+        }
+
+        if (groupBuy.getHost().isRestricted()) {
+            throw new IllegalStateException("매너점수 BLOCKED 등급은 공동구매 활동이 제한됩니다.");
         }
 
         groupBuyRepository.delete(groupBuy);
