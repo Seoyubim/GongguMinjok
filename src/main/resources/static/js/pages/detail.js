@@ -580,6 +580,17 @@ checkTokenExpiry();
     if (priceEl) {
       priceEl.textContent = `1인 부담금 ${formatPrice(groupBuy.participantFinalPrice)}`;
     }
+
+    const openModalBtn = document.getElementById("openModal");
+    if (!openModalBtn) return;
+
+    if (groupBuy.status === "EXPIRED") {
+      openModalBtn.textContent = "마감된 공동구매입니다";
+      openModalBtn.disabled = true;
+    } else if (groupBuy.status !== "OPEN" && groupBuy.status !== "CLOSING") {
+      openModalBtn.textContent = "완료된 공동구매입니다";
+      openModalBtn.disabled = true;
+    }
   }
 
   function renderModal(groupBuy) {
