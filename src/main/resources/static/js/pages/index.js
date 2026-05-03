@@ -69,7 +69,7 @@ async function getFilteredGroupBuys() {
       (selectedStatus === "recruiting" && item.status === "OPEN") ||
       (selectedStatus === "closing" && item.status === "CLOSING");
 
-    return matchCategory && matchStatus;
+    return (item.status === "OPEN" || item.status === "CLOSING") && matchCategory && matchStatus;
   });
 }
 

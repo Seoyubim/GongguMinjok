@@ -156,24 +156,26 @@ function renderByZoomLevel(map, groupBuys, overlayList, onClickFn) {
 
 // 메인 지도 클러스터 초기화 — map.js에서 호출
 export function initCluster(map, groupBuys, onClickFn) {
-  renderByZoomLevel(map, groupBuys, overlays, onClickFn);
+  const active = groupBuys.filter(i => i.status === "OPEN" || i.status === "CLOSING");
+  renderByZoomLevel(map, active, overlays, onClickFn);
 
   kakao.maps.event.addListener(map, 'zoom_changed', () => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
-      renderByZoomLevel(map, groupBuys, overlays, onClickFn);
+      renderByZoomLevel(map, active, overlays, onClickFn);
     }, 150);
   });
 }
 
 // 모달 지도 클러스터 초기화 — zoom_changed 포함
 export function initModalCluster(map, groupBuys, onClickFn = null) {
-  renderByZoomLevel(map, groupBuys, modalOverlays, onClickFn);
+  const active = groupBuys.filter(i => i.status === "OPEN" || i.status === "CLOSING");
+  renderByZoomLevel(map, active, modalOverlays, onClickFn);
 
   kakao.maps.event.addListener(map, 'zoom_changed', () => {
     clearTimeout(modalDebounceTimer);
     modalDebounceTimer = setTimeout(() => {
-      renderByZoomLevel(map, groupBuys, modalOverlays, onClickFn);
+      renderByZoomLevel(map, active, modalOverlays, onClickFn);
     }, 150);
   });
 }

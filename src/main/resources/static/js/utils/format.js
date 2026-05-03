@@ -6,6 +6,7 @@ function getStatusLabel(status) {
   if (status === "OPEN") return "모집중";
   if (status === "CLOSING") return "마감임박";
   if (status === "CLOSED" || status === "PAYMENT_COMPLETED" || status === "PICKUP_READY" || status === "COMPLETED") return "완료";
+  if (status === "EXPIRED") return "마감";
   return "";
 }
 
@@ -13,6 +14,7 @@ function getStatusClass(status) {
   if (status === "OPEN") return "badge-recruiting";
   if (status === "CLOSING") return "badge-closing";
   if (status === "CLOSED" || status === "PAYMENT_COMPLETED" || status === "PICKUP_READY" || status === "COMPLETED") return "badge-completed";
+  if (status === "EXPIRED") return "badge-expired";
   return "";
 }
 

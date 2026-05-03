@@ -277,7 +277,6 @@ checkTokenExpiry();
     renderRecruitmentStatus(groupBuy);
     renderParticipants(groupBuy.participants || []);
     renderComments(groupBuy.comments || []);
-    renderTimeSlots(groupBuy.pickupTimes || []);
     renderBottomBar(groupBuy);
     renderModal(groupBuy);
   }
@@ -537,48 +536,21 @@ checkTokenExpiry();
     return commentItem;
   }
 
-  function renderTimeSlots(pickupTimes) {
-    const timeCard = getCardBySectionTitle("🕒 픽업 시간 선택");
-    if (!timeCard) return;
-
-    const timeGrid = timeCard.querySelector(".time-grid");
-    if (!timeGrid) return;
-
-    timeGrid.innerHTML = "";
-
-    if (!pickupTimes.length) {
-      timeGrid.innerHTML = `<p class="small-note">선택 가능한 픽업 시간이 없습니다.</p>`;
-      return;
-    }
-
-    pickupTimes.forEach((dateTimeStr, index) => {
-      const button = document.createElement("button");
-      button.className = "time-box";
-      button.type = "button";
-      button.dataset.time = dateTimeStr;
-
-      if (state.selectedTime === dateTimeStr || (!state.selectedTime && index === 0)) {
-        button.classList.add("active");
-      }
-
-      button.innerHTML = `
-        <div class="time">${escapeHtml(formatPickupTime(dateTimeStr))}</div>
-      `;
-
-      button.addEventListener("click", () => {
-        state.selectedTime = dateTimeStr;
-        updateTimeBoxActive(timeGrid, dateTimeStr);
-        syncModalSelectedTime(dateTimeStr);
-      });
-
-      timeGrid.appendChild(button);
-    });
-  }
-
   function renderBottomBar(groupBuy) {
     const priceEl = document.querySelector(".fixed-bottom .price");
     if (priceEl) {
       priceEl.textContent = `1인 부담금 ${formatPrice(groupBuy.participantFinalPrice)}`;
+    }
+
+    const openModalBtn = document.getElementById("openModal");
+    if (!openModalBtn) return;
+
+    if (groupBuy.status === "EXPIRED") {
+      openModalBtn.textContent = "마감된 공동구매입니다";
+      openModalBtn.disabled = true;
+    } else if (groupBuy.status !== "OPEN" && groupBuy.status !== "CLOSING") {
+      openModalBtn.textContent = "완료된 공동구매입니다";
+      openModalBtn.disabled = true;
     }
   }
 
@@ -614,7 +586,6 @@ checkTokenExpiry();
         btn.addEventListener("click", () => {
           state.selectedTime = dateTimeStr;
           updateTimeBoxActive(modalTimeGrid, dateTimeStr);
-          syncPageSelectedTime(dateTimeStr);
         });
 
         modalTimeGrid.appendChild(btn);
@@ -759,15 +730,6 @@ checkTokenExpiry();
     updateTimeBoxActive(modalGrid, selectedTime);
   }
 
-  function syncPageSelectedTime(selectedTime) {
-    const timeCard = getCardBySectionTitle("🕒 픽업 시간 선택");
-    const pageGrid = timeCard?.querySelector(".time-grid");
-
-    if (!pageGrid) return;
-
-    updateTimeBoxActive(pageGrid, selectedTime);
-  }
-
   function getCardBySectionTitle(titleText) {
     const cards = document.querySelectorAll(".card");
 
@@ -788,7 +750,13 @@ checkTokenExpiry();
 
   function getDeadlineText(groupBuy) {
     if (!groupBuy.deadline) return "미정";
-    return formatDateKorean(new Date(groupBuy.deadline));
+    const date = new Date(groupBuy.deadline);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${year}년 ${month}월 ${day}일 ${hours}:${minutes}`;
   }
 
   function formatDateKorean(date) {
