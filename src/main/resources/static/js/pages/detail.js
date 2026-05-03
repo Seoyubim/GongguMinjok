@@ -277,7 +277,6 @@ checkTokenExpiry();
     renderRecruitmentStatus(groupBuy);
     renderParticipants(groupBuy.participants || []);
     renderComments(groupBuy.comments || []);
-    renderTimeSlots(groupBuy.pickupTimes || []);
     renderBottomBar(groupBuy);
     renderModal(groupBuy);
   }
@@ -537,44 +536,6 @@ checkTokenExpiry();
     return commentItem;
   }
 
-  function renderTimeSlots(pickupTimes) {
-    const timeCard = getCardBySectionTitle("🕒 픽업 시간 선택");
-    if (!timeCard) return;
-
-    const timeGrid = timeCard.querySelector(".time-grid");
-    if (!timeGrid) return;
-
-    timeGrid.innerHTML = "";
-
-    if (!pickupTimes.length) {
-      timeGrid.innerHTML = `<p class="small-note">선택 가능한 픽업 시간이 없습니다.</p>`;
-      return;
-    }
-
-    pickupTimes.forEach((dateTimeStr, index) => {
-      const button = document.createElement("button");
-      button.className = "time-box";
-      button.type = "button";
-      button.dataset.time = dateTimeStr;
-
-      if (state.selectedTime === dateTimeStr || (!state.selectedTime && index === 0)) {
-        button.classList.add("active");
-      }
-
-      button.innerHTML = `
-        <div class="time">${escapeHtml(formatPickupTime(dateTimeStr))}</div>
-      `;
-
-      button.addEventListener("click", () => {
-        state.selectedTime = dateTimeStr;
-        updateTimeBoxActive(timeGrid, dateTimeStr);
-        syncModalSelectedTime(dateTimeStr);
-      });
-
-      timeGrid.appendChild(button);
-    });
-  }
-
   function renderBottomBar(groupBuy) {
     const priceEl = document.querySelector(".fixed-bottom .price");
     if (priceEl) {
@@ -625,7 +586,6 @@ checkTokenExpiry();
         btn.addEventListener("click", () => {
           state.selectedTime = dateTimeStr;
           updateTimeBoxActive(modalTimeGrid, dateTimeStr);
-          syncPageSelectedTime(dateTimeStr);
         });
 
         modalTimeGrid.appendChild(btn);
@@ -768,15 +728,6 @@ checkTokenExpiry();
     if (!modalGrid) return;
 
     updateTimeBoxActive(modalGrid, selectedTime);
-  }
-
-  function syncPageSelectedTime(selectedTime) {
-    const timeCard = getCardBySectionTitle("🕒 픽업 시간 선택");
-    const pageGrid = timeCard?.querySelector(".time-grid");
-
-    if (!pageGrid) return;
-
-    updateTimeBoxActive(pageGrid, selectedTime);
   }
 
   function getCardBySectionTitle(titleText) {
