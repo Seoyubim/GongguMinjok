@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>결제 완료 - 공구의 민족</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/payment.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="container">
+    <div class="header-content">
+      <a href="index.html" class="logo">
+        <img src="images/logo.jpg" alt="공구의 민족 로고" class="logo-image">
+        <h1 class="logo-text">공구의 민족</h1>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="main-content">
+
+  <div class="payment-result-page" id="result-loading">
+    <p style="color:#6b7280; font-size:15px;">결제를 확인하는 중입니다...</p>
+  </div>
+
+  <div class="payment-result-page hidden" id="result-success">
+    <div class="result-icon">✅</div>
+    <h2 class="result-title">결제가 완료되었습니다</h2>
+    <div class="result-info">
+      <div class="result-row">
+        <span>결제 금액</span>
+        <strong id="result-amount"></strong>
+      </div>
+      <div class="result-row">
+        <span>주문번호</span>
+        <span id="result-order-id" class="result-order-id"></span>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="window.location.href='index.html'">홈으로 돌아가기</button>
+  </div>
+
+  <div class="payment-result-page hidden" id="result-fail">
+    <div class="result-icon">❌</div>
+    <h2 class="result-title">결제 승인에 실패했습니다</h2>
+    <p class="result-desc" id="result-error-msg"></p>
+    <div class="result-btn-group">
+      <button class="btn btn-outline" onclick="history.back()">다시 시도하기</button>
+      <button class="btn btn-primary" onclick="window.location.href='index.html'">홈으로</button>
+    </div>
+  </div>
+
+</main>
+
+<script src="js/utils/storage.js"></script>
+<script src="js/pages/success.js"></script>
+</body>
+</html>
