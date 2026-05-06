@@ -8,13 +8,15 @@ checkTokenExpiry();
   const role = params.get('role');
   const groupBuyId = params.get('groupBuyId');
 
-  // TODO: 백엔드 /confirm/widget 엔드포인트 구현 완료 후 임시 처리 제거
-  //       현재는 404(미구현) 또는 네트워크 오류 시 임시 성공 처리
   try {
-    const response = await fetch('/confirm/widget', {
+    const token = localStorage.getItem('token');
+    const response = await fetch('/api/payments/toss/confirm', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ paymentKey, orderId, amount, role, groupBuyId }),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token,
+      },
+      body: JSON.stringify({ paymentKey, orderId, amount: Number(amount) }),
     });
 
     if (response.ok) {
@@ -22,16 +24,10 @@ checkTokenExpiry();
       return;
     }
 
-    // TODO: 백엔드 완성 후 아래 임시 성공 처리 제거하고 showFail 사용
-    if (response.status === 404 || response.status === 405) {
-      showSuccess(orderId, amount);
-    } else {
-      const errorData = await response.json().catch(() => ({}));
-      showFail(errorData.message || '결제 승인에 실패했습니다.');
-    }
+    const errorData = await response.json().catch(() => ({}));
+    showFail(errorData.message || '결제 승인에 실패했습니다.');
   } catch (e) {
-    // TODO: 백엔드 /confirm/widget 완성 후 아래 임시 성공 처리 제거
-    showSuccess(orderId, amount);
+    showFail('네트워크 오류가 발생했습니다.');
   }
 })();
 
