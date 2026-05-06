@@ -545,9 +545,33 @@ checkTokenExpiry();
     const openModalBtn = document.getElementById("openModal");
     if (!openModalBtn) return;
 
+    const userId = localStorage.getItem("userId");
+    const isHost = userId && String(userId) === String(groupBuy.hostId);
+
+    // 임시: localStorage에서 참여 여부 확인
+    // TODO: 백엔드 isCurrentUserParticipant 필드 추가 후 아래 두 줄을 한 줄로 교체
+    // const isParticipant = groupBuy.isCurrentUserParticipant;
+    const participated = JSON.parse(localStorage.getItem("participatedGroupBuys") || "[]");
+    const isParticipant = !isHost && participated.includes(groupBuy.id);
+
     if (groupBuy.status === "EXPIRED") {
       openModalBtn.textContent = "마감된 공동구매입니다";
       openModalBtn.disabled = true;
+    } else if (groupBuy.status === "CLOSED") {
+      if (isHost) {
+        openModalBtn.textContent = "결제하기";
+        openModalBtn.dataset.action = "payment";
+        openModalBtn.dataset.role = "host";
+        openModalBtn.dataset.gbId = groupBuy.id;
+      } else if (isParticipant) {
+        openModalBtn.textContent = "결제하기";
+        openModalBtn.dataset.action = "payment";
+        openModalBtn.dataset.role = "participant";
+        openModalBtn.dataset.gbId = groupBuy.id;
+      } else {
+        openModalBtn.textContent = "마감";
+        openModalBtn.disabled = true;
+      }
     } else if (groupBuy.status !== "OPEN" && groupBuy.status !== "CLOSING") {
       openModalBtn.textContent = "완료된 공동구매입니다";
       openModalBtn.disabled = true;
@@ -599,6 +623,7 @@ checkTokenExpiry();
 
   function bindEvents() {
     bindModalEvents();
+    bindPaymentModalEvents();
     bindCommentSubmit();
     bindPrivateCheck();
   }
@@ -611,6 +636,12 @@ checkTokenExpiry();
 
     if (openModalBtn && modal) {
       openModalBtn.addEventListener("click", () => {
+        // 결제하기 버튼인 경우 결제 확인 모달 열기
+        if (openModalBtn.dataset.action === "payment") {
+          openPaymentModal(openModalBtn.dataset.role);
+          return;
+        }
+
         const isLoggedIn =
           typeof getLoginState === "function" ? getLoginState() : false;
 
@@ -652,6 +683,14 @@ checkTokenExpiry();
         if (!state.selectedTime) {
           showToast("픽업 시간을 선택해 주세요.");
           return;
+        }
+
+        // 임시: 참여 기록 localStorage에 저장
+        // TODO: 백엔드 참여 API 연동 후 아래 4줄 제거
+        const participated = JSON.parse(localStorage.getItem("participatedGroupBuys") || "[]");
+        if (state.groupBuy?.id && !participated.includes(state.groupBuy.id)) {
+          participated.push(state.groupBuy.id);
+          localStorage.setItem("participatedGroupBuys", JSON.stringify(participated));
         }
 
         showToast(`${state.selectedTime} 픽업 시간으로 참여를 신청했습니다.`);
@@ -697,6 +736,92 @@ checkTokenExpiry();
 
       input.value = "";
       showToast("댓글이 등록되었습니다.");
+    });
+  }
+
+  const TOSS_CLIENT_KEY = "test_ck_pP2YxJ4K87qv9b6gpBnJVRGZwXLO";
+
+  function openPaymentModal(role) {
+    const groupBuy = state.groupBuy;
+    if (!groupBuy) return;
+
+    const modal = document.getElementById("paymentModal");
+    const roleEl = document.getElementById("payment-modal-role");
+    const titleEl = document.getElementById("payment-modal-title");
+    const amountEl = document.getElementById("payment-modal-amount");
+    const confirmBtn = document.getElementById("payment-modal-btn");
+
+    if (roleEl) roleEl.textContent = role === "host" ? "호스트 결제 (전체 금액)" : "참여자 결제";
+    if (titleEl) titleEl.textContent = groupBuy.title;
+
+    // TODO: 호스트 결제 금액은 백엔드 팀과 확정 후 groupBuy.hostPaymentAmount 등으로 교체
+    const amount = role === "host"
+      ? groupBuy.totalPrice
+      : (groupBuy.participantPaymentAmount ?? groupBuy.participantFinalPrice);
+    if (amountEl) amountEl.textContent = formatPrice(amount);
+
+    if (confirmBtn) {
+      confirmBtn.dataset.role = role;
+      confirmBtn.dataset.amount = amount;
+    }
+
+    if (modal) modal.classList.remove("hidden");
+  }
+
+  function bindPaymentModalEvents() {
+    const modal = document.getElementById("paymentModal");
+    const closeBtn = document.getElementById("closePaymentModal");
+    const confirmBtn = document.getElementById("payment-modal-btn");
+
+    if (closeBtn) {
+      closeBtn.addEventListener("click", () => {
+        modal?.classList.add("hidden");
+      });
+    }
+
+    if (modal) {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.classList.add("hidden");
+      });
+    }
+
+    if (confirmBtn) {
+      confirmBtn.addEventListener("click", () => {
+        const role = confirmBtn.dataset.role;
+        const amount = Number(confirmBtn.dataset.amount);
+        requestTossPayment(role, amount);
+      });
+    }
+  }
+
+  function requestTossPayment(role, amount) {
+    const groupBuy = state.groupBuy;
+    const userId = localStorage.getItem("userId");
+
+    if (!userId) {
+      showToast("로그인이 필요합니다.");
+      window.location.href = "login.html";
+      return;
+    }
+
+    const roleCode = role === "host" ? "H" : "P";
+    const orderId = `GB-${groupBuy.id}-${roleCode}-${userId}-${Date.now()}`;
+
+    const tossPayments = TossPayments(TOSS_CLIENT_KEY);
+    const payment = tossPayments.payment({ customerKey: "U-" + userId });
+
+    payment.requestPayment({
+      method: "VIRTUAL_ACCOUNT",
+      amount: { currency: "KRW", value: amount },
+      orderId,
+      orderName: groupBuy.title,
+      successUrl: `${window.location.origin}/success.html?role=${role}&groupBuyId=${groupBuy.id}`,
+      failUrl: `${window.location.origin}/fail.html`,
+      customerName: localStorage.getItem("userNickname") || "구매자",
+    }).catch((e) => {
+      if (e.code !== "USER_CANCEL") {
+        showToast(e.message || "결제 중 오류가 발생했습니다.");
+      }
     });
   }
 
