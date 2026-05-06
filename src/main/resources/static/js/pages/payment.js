@@ -52,7 +52,7 @@ const TOSS_CLIENT_KEY = 'test_ck_pP2YxJ4K87qv9b6gpBnJVRGZwXLO';
 
   // 토스 결제위젯 초기화
   const tossPayments = TossPayments(TOSS_CLIENT_KEY);
-  const widgets = tossPayments.widgets({ customerKey: String(userId) });
+  const widgets = tossPayments.widgets({ customerKey: 'U-' + userId });
 
   await widgets.setAmount({ currency: 'KRW', value: amount });
 
