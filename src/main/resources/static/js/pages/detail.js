@@ -3,6 +3,8 @@ checkTokenExpiry();
   const state = {
     groupBuy: null,
     selectedTime: null,
+    selectedTimeId: null,
+    participants: [],
     pickupMap: null,
     pickupLocationMarker: null,
     pickupCurrentLocationMarker: null
@@ -247,7 +249,16 @@ checkTokenExpiry();
       }
 
       state.groupBuy = groupBuy;
-      state.selectedTime = getInitialSelectedTime(groupBuy);
+      const firstTime = groupBuy.pickupTimes?.[0];
+      state.selectedTime = firstTime?.pickupTime ?? null;
+      state.selectedTimeId = firstTime?.id ?? null;
+
+      try {
+        const participants = await fetch(`/api/groupbuys/${groupBuy.id}/participants`);
+        state.participants = participants.ok ? await participants.json() : [];
+      } catch {
+        state.participants = [];
+      }
 
       renderDetail(groupBuy);
       bindEvents();
@@ -275,7 +286,7 @@ checkTokenExpiry();
     renderBasicInfo(groupBuy);
     renderGroupBuyInfo(groupBuy);
     renderRecruitmentStatus(groupBuy);
-    renderParticipants(groupBuy.participants || []);
+    renderParticipants(state.participants);
     renderComments(groupBuy.comments || []);
     renderBottomBar(groupBuy);
     renderModal(groupBuy);
@@ -547,12 +558,7 @@ checkTokenExpiry();
 
     const userId = localStorage.getItem("userId");
     const isHost = userId && String(userId) === String(groupBuy.hostId);
-
-    // 임시: localStorage에서 참여 여부 확인
-    // TODO: 백엔드 isCurrentUserParticipant 필드 추가 후 아래 두 줄을 한 줄로 교체
-    // const isParticipant = groupBuy.isCurrentUserParticipant;
-    const participated = JSON.parse(localStorage.getItem("participatedGroupBuys") || "[]");
-    const isParticipant = !isHost && participated.includes(groupBuy.id);
+    const isParticipant = !isHost && state.participants.some(p => String(p.participantId) === String(userId));
 
     if (groupBuy.status === "EXPIRED") {
       openModalBtn.textContent = "마감된 공동구매입니다";
@@ -575,6 +581,12 @@ checkTokenExpiry();
     } else if (groupBuy.status !== "OPEN" && groupBuy.status !== "CLOSING") {
       openModalBtn.textContent = "완료된 공동구매입니다";
       openModalBtn.disabled = true;
+    } else if (isHost) {
+      openModalBtn.textContent = "내 공동구매";
+      openModalBtn.disabled = true;
+    } else if (isParticipant) {
+      openModalBtn.textContent = "참여 완료";
+      openModalBtn.disabled = true;
     }
   }
 
@@ -596,19 +608,24 @@ checkTokenExpiry();
     if (modalTimeGrid) {
       modalTimeGrid.innerHTML = "";
 
-      (groupBuy.pickupTimes || []).forEach((dateTimeStr, index) => {
+      (groupBuy.pickupTimes || []).forEach((timeItem, index) => {
+        const timeId = timeItem.id;
+        const dateTimeStr = timeItem.pickupTime;
+
         const btn = document.createElement("button");
         btn.className = "time-box";
         btn.type = "button";
         btn.dataset.time = dateTimeStr;
+        btn.dataset.timeId = timeId;
         btn.textContent = formatPickupTime(dateTimeStr);
 
-        if (state.selectedTime === dateTimeStr || (!state.selectedTime && index === 0)) {
+        if (state.selectedTimeId === timeId || (!state.selectedTimeId && index === 0)) {
           btn.classList.add("active");
         }
 
         btn.addEventListener("click", () => {
           state.selectedTime = dateTimeStr;
+          state.selectedTimeId = timeId;
           updateTimeBoxActive(modalTimeGrid, dateTimeStr);
         });
 
@@ -670,7 +687,7 @@ checkTokenExpiry();
     }
 
     if (modalConfirmBtn) {
-      modalConfirmBtn.addEventListener("click", () => {
+      modalConfirmBtn.addEventListener("click", async () => {
         const isLoggedIn =
           typeof getLoginState === "function" ? getLoginState() : false;
 
@@ -685,16 +702,37 @@ checkTokenExpiry();
           return;
         }
 
-        // 임시: 참여 기록 localStorage에 저장
-        // TODO: 백엔드 참여 API 연동 후 아래 4줄 제거
-        const participated = JSON.parse(localStorage.getItem("participatedGroupBuys") || "[]");
-        if (state.groupBuy?.id && !participated.includes(state.groupBuy.id)) {
-          participated.push(state.groupBuy.id);
-          localStorage.setItem("participatedGroupBuys", JSON.stringify(participated));
-        }
+        const token = localStorage.getItem("token");
+        try {
+          const response = await fetch(`/api/groupbuys/${state.groupBuy.id}/join`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + token,
+            },
+            body: JSON.stringify({ pickupTimeId: state.selectedTimeId }),
+          });
 
-        showToast(`${state.selectedTime} 픽업 시간으로 참여를 신청했습니다.`);
-        modal.classList.add("hidden");
+          if (response.ok) {
+            showToast("참여가 완료되었습니다.");
+            modal.classList.add("hidden");
+
+            // 참여 후 최신 상태 반영
+            const [updatedGroupBuy, updatedParticipants] = await Promise.all([
+              fetch(`/api/groupbuys/${state.groupBuy.id}`).then(r => r.json()),
+              fetch(`/api/groupbuys/${state.groupBuy.id}/participants`).then(r => r.json()),
+            ]);
+            state.groupBuy = updatedGroupBuy;
+            state.participants = updatedParticipants;
+            renderBottomBar(updatedGroupBuy);
+            renderParticipants(updatedParticipants);
+          } else {
+            const errorData = await response.json().catch(() => ({}));
+            showToast(errorData.message || "참여에 실패했습니다.");
+          }
+        } catch {
+          showToast("네트워크 오류가 발생했습니다.");
+        }
       });
     }
   }
@@ -868,7 +906,7 @@ checkTokenExpiry();
 
   function getPickupDateText(pickupTimes) {
     if (Array.isArray(pickupTimes) && pickupTimes.length > 0) {
-      return formatDateKorean(new Date(pickupTimes[0]));
+      return formatDateKorean(new Date(pickupTimes[0].pickupTime));
     }
     return "미정";
   }
