@@ -545,9 +545,33 @@ checkTokenExpiry();
     const openModalBtn = document.getElementById("openModal");
     if (!openModalBtn) return;
 
+    const userId = localStorage.getItem("userId");
+    const isHost = userId && String(userId) === String(groupBuy.hostId);
+
+    // 임시: localStorage에서 참여 여부 확인
+    // TODO: 백엔드 isCurrentUserParticipant 필드 추가 후 아래 두 줄을 한 줄로 교체
+    // const isParticipant = groupBuy.isCurrentUserParticipant;
+    const participated = JSON.parse(localStorage.getItem("participatedGroupBuys") || "[]");
+    const isParticipant = !isHost && participated.includes(groupBuy.id);
+
     if (groupBuy.status === "EXPIRED") {
       openModalBtn.textContent = "마감된 공동구매입니다";
       openModalBtn.disabled = true;
+    } else if (groupBuy.status === "CLOSED") {
+      if (isHost) {
+        openModalBtn.textContent = "결제하기";
+        openModalBtn.dataset.action = "payment";
+        openModalBtn.dataset.role = "host";
+        openModalBtn.dataset.gbId = groupBuy.id;
+      } else if (isParticipant) {
+        openModalBtn.textContent = "결제하기";
+        openModalBtn.dataset.action = "payment";
+        openModalBtn.dataset.role = "participant";
+        openModalBtn.dataset.gbId = groupBuy.id;
+      } else {
+        openModalBtn.textContent = "마감";
+        openModalBtn.disabled = true;
+      }
     } else if (groupBuy.status !== "OPEN" && groupBuy.status !== "CLOSING") {
       openModalBtn.textContent = "완료된 공동구매입니다";
       openModalBtn.disabled = true;
@@ -611,6 +635,12 @@ checkTokenExpiry();
 
     if (openModalBtn && modal) {
       openModalBtn.addEventListener("click", () => {
+        // 결제하기 버튼인 경우 결제 페이지로 이동
+        if (openModalBtn.dataset.action === "payment") {
+          window.location.href = `payment.html?id=${openModalBtn.dataset.gbId}&role=${openModalBtn.dataset.role}`;
+          return;
+        }
+
         const isLoggedIn =
           typeof getLoginState === "function" ? getLoginState() : false;
 
@@ -652,6 +682,14 @@ checkTokenExpiry();
         if (!state.selectedTime) {
           showToast("픽업 시간을 선택해 주세요.");
           return;
+        }
+
+        // 임시: 참여 기록 localStorage에 저장
+        // TODO: 백엔드 참여 API 연동 후 아래 4줄 제거
+        const participated = JSON.parse(localStorage.getItem("participatedGroupBuys") || "[]");
+        if (state.groupBuy?.id && !participated.includes(state.groupBuy.id)) {
+          participated.push(state.groupBuy.id);
+          localStorage.setItem("participatedGroupBuys", JSON.stringify(participated));
         }
 
         showToast(`${state.selectedTime} 픽업 시간으로 참여를 신청했습니다.`);
