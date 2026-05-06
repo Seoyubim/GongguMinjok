@@ -22,6 +22,8 @@ public class ParticipationResponseDto {
     private LocalDateTime paymentDeadline;
     private LocalDateTime paidAt;
     private LocalDateTime joinedAt;
+    private Long pickupTimeId;
+    private LocalDateTime pickupTime;
 
     public static ParticipationResponseDto from(Participation participation) {
         ParticipationResponseDto dto = new ParticipationResponseDto();
@@ -35,6 +37,10 @@ public class ParticipationResponseDto {
         dto.paymentDeadline = participation.getPaymentDeadline();
         dto.paidAt = participation.getPaidAt();
         dto.joinedAt = participation.getJoinedAt();
+        if (participation.getPickupTime() != null) {
+            dto.pickupTimeId = participation.getPickupTime().getId();
+            dto.pickupTime = participation.getPickupTime().getPickupTime();
+        }
         return dto;
     }
 }

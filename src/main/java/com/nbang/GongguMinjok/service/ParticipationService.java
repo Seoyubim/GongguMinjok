@@ -1,9 +1,11 @@
 package com.nbang.GongguMinjok.service;
 
 import com.nbang.GongguMinjok.domain.GroupBuy;
+import com.nbang.GongguMinjok.domain.GroupBuyPickupTime;
 import com.nbang.GongguMinjok.domain.Participation;
 import com.nbang.GongguMinjok.domain.User;
 import com.nbang.GongguMinjok.dto.ParticipationResponseDto;
+import com.nbang.GongguMinjok.repository.GroupBuyPickupTimeRepository;
 import com.nbang.GongguMinjok.repository.GroupBuyRepository;
 import com.nbang.GongguMinjok.repository.ParticipationRepository;
 import com.nbang.GongguMinjok.repository.UserRepository;
@@ -22,9 +24,10 @@ public class ParticipationService {
     private final ParticipationRepository participationRepository;
     private final GroupBuyRepository groupBuyRepository;
     private final UserRepository userRepository;
+    private final GroupBuyPickupTimeRepository groupBuyPickupTimeRepository;
 
     @Transactional
-    public ParticipationResponseDto join(Long groupBuyId, String email) {
+    public ParticipationResponseDto join(Long groupBuyId, String email, Long pickupTimeId) {
         GroupBuy groupBuy = groupBuyRepository.findById(groupBuyId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
 
@@ -52,9 +55,23 @@ public class ParticipationService {
             throw new IllegalArgumentException("정원이 초과되었습니다.");
         }
 
+        if (!groupBuy.getPickupTimes().isEmpty() && pickupTimeId == null) {
+            throw new IllegalArgumentException("픽업 시간을 선택해주세요.");
+        }
+
+        GroupBuyPickupTime pickupTime = null;
+        if (pickupTimeId != null) {
+            pickupTime = groupBuyPickupTimeRepository.findById(pickupTimeId)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 픽업 시간입니다."));
+            if (!pickupTime.getGroupBuy().getId().equals(groupBuyId)) {
+                throw new IllegalArgumentException("해당 공동구매의 픽업 시간이 아닙니다.");
+            }
+        }
+
         Participation participation = new Participation();
         participation.setGroupBuy(groupBuy);
         participation.setParticipant(participant);
+        participation.setPickupTime(pickupTime);
         participationRepository.save(participation);
 
         groupBuy.setCurrentParticipants(groupBuy.getCurrentParticipants() + 1);
