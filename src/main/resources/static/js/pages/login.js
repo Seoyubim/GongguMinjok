@@ -40,6 +40,8 @@ loginForm.addEventListener("submit", async (event) => {
     const data = await response.json();
     localStorage.setItem("token", data.accessToken);
     localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("userId", data.id);
+    localStorage.setItem("userNickname", data.nickname);
     showToast("로그인되었습니다.");
 
     setTimeout(() => {
