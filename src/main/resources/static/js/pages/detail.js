@@ -3,6 +3,7 @@ checkTokenExpiry();
   const state = {
     groupBuy: null,
     selectedTime: null,
+    selectedTimeId: null,
     participants: [],
     pickupMap: null,
     pickupLocationMarker: null,
@@ -248,7 +249,9 @@ checkTokenExpiry();
       }
 
       state.groupBuy = groupBuy;
-      state.selectedTime = getInitialSelectedTime(groupBuy);
+      const firstTime = groupBuy.pickupTimes?.[0];
+      state.selectedTime = firstTime?.pickupTime ?? null;
+      state.selectedTimeId = firstTime?.id ?? null;
 
       try {
         const participants = await fetch(`/api/groupbuys/${groupBuy.id}/participants`);
@@ -605,19 +608,24 @@ checkTokenExpiry();
     if (modalTimeGrid) {
       modalTimeGrid.innerHTML = "";
 
-      (groupBuy.pickupTimes || []).forEach((dateTimeStr, index) => {
+      (groupBuy.pickupTimes || []).forEach((timeItem, index) => {
+        const timeId = timeItem.id;
+        const dateTimeStr = timeItem.pickupTime;
+
         const btn = document.createElement("button");
         btn.className = "time-box";
         btn.type = "button";
         btn.dataset.time = dateTimeStr;
+        btn.dataset.timeId = timeId;
         btn.textContent = formatPickupTime(dateTimeStr);
 
-        if (state.selectedTime === dateTimeStr || (!state.selectedTime && index === 0)) {
+        if (state.selectedTimeId === timeId || (!state.selectedTimeId && index === 0)) {
           btn.classList.add("active");
         }
 
         btn.addEventListener("click", () => {
           state.selectedTime = dateTimeStr;
+          state.selectedTimeId = timeId;
           updateTimeBoxActive(modalTimeGrid, dateTimeStr);
         });
 
@@ -702,6 +710,7 @@ checkTokenExpiry();
               "Content-Type": "application/json",
               "Authorization": "Bearer " + token,
             },
+            body: JSON.stringify({ pickupTimeId: state.selectedTimeId }),
           });
 
           if (response.ok) {
@@ -897,7 +906,7 @@ checkTokenExpiry();
 
   function getPickupDateText(pickupTimes) {
     if (Array.isArray(pickupTimes) && pickupTimes.length > 0) {
-      return formatDateKorean(new Date(pickupTimes[0]));
+      return formatDateKorean(new Date(pickupTimes[0].pickupTime));
     }
     return "미정";
   }
