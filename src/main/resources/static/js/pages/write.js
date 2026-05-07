@@ -81,7 +81,7 @@ function dismissDraft() {
 
 // 이미지 업로드 미지원 안내
 function alertImageUpload() {
-  alert('이미지 업로드는 추후 지원 예정입니다.');
+  showToast('이미지 업로드는 추후 지원 예정입니다.');
   return false;
 }
 
@@ -425,7 +425,7 @@ function saveDraft() {
     pickupTimes: pickupTimes.slice()
   };
   localStorage.setItem('groupbuy_draft', JSON.stringify(draft));
-  alert('임시저장 되었습니다.');
+  showToast('임시저장 되었습니다.');
 }
 
 function searchAddress() {
@@ -497,7 +497,7 @@ function submitGroupBuy() {
     localStorage.removeItem('groupbuy_draft');
     window.location.href = 'index.html';
   }).catch((err) => {
-    alert(err.message);
+    showToast(err.message || '등록에 실패했습니다.');
     nextBtn.disabled = false;
     nextBtn.textContent = '등록하기';
   });

@@ -76,7 +76,7 @@ function createGroupBuyCard(item) {
   const progress = (item.currentParticipants / item.maxParticipants) * 100;
   const imageUrl = item.imageUrls?.[0] || "";
   const distanceText = item.distance != null ? item.distance.toFixed(1) + "km" : "";
-  const pickupTimeText = item.pickupTimes?.[0] ? formatPickupTime(item.pickupTimes[0]) : "";
+  const pickupTimeText = item.pickupTimes?.[0]?.pickupTime ? formatPickupTime(item.pickupTimes[0].pickupTime) : "";
   const mannerScoreHtml = item.hostMannerScore != null
     ? `<span class="text-gray">${item.hostMannerScore}</span>`
     : "";
@@ -133,7 +133,7 @@ function createClusterCard(item) {
 
   const uniqueDates = [...new Set(
     (item.pickupTimes || []).map(t => {
-      const d = new Date(t);
+      const d = new Date(t.pickupTime);
       return `${d.getMonth() + 1}/${d.getDate()}`;
     })
   )].join(' · ') || '미정';
