@@ -42,7 +42,7 @@ public class GroupBuyScheduler {
      */
     private void processClosingGroupBuys(LocalDateTime now) {
         List<GroupBuy> targets = groupBuyRepository
-                .findByStatusAndDeadlineAfterAndDeadlineBefore(
+                .findByStatusAndDeadlineAfterAndDeadlineBeforeAndDeletedFalse(
                         GroupBuy.Status.OPEN, now, now.plusHours(24));
 
         for (GroupBuy groupBuy : targets) {
@@ -58,7 +58,7 @@ public class GroupBuyScheduler {
      */
     private void processExpiredGroupBuys(LocalDateTime now) {
         List<GroupBuy> targets = groupBuyRepository
-                .findByStatusInAndDeadlineBeforeAndDeadlineNotifiedFalse(
+                .findByStatusInAndDeadlineBeforeAndDeadlineNotifiedFalseAndDeletedFalse(
                         List.of(GroupBuy.Status.OPEN, GroupBuy.Status.CLOSING), now);
 
         for (GroupBuy groupBuy : targets) {
@@ -74,7 +74,7 @@ public class GroupBuyScheduler {
      * Logic B: CLOSED(정원 충족) 상태에서 결제 기한 초과 미확정 참여자 처리 또는 전원 결제 완료 시 PAYMENT_COMPLETED 전환
      */
     private void processUnpaidParticipants(LocalDateTime now) {
-        List<GroupBuy> closedGroupBuys = groupBuyRepository.findByStatus(GroupBuy.Status.CLOSED);
+        List<GroupBuy> closedGroupBuys = groupBuyRepository.findByStatusAndDeletedFalse(GroupBuy.Status.CLOSED);
 
         for (GroupBuy groupBuy : closedGroupBuys) {
             List<Participation> unpaidList = participationRepository
