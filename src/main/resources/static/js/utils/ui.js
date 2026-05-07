@@ -1,3 +1,9 @@
+function handleLogout() {
+  logout();
+  sessionStorage.setItem('logoutToast', 'true');
+  window.location.href = 'index.html';
+}
+
   function showToast(message) {
     const toast = document.getElementById("toast");
     if (!toast) return;

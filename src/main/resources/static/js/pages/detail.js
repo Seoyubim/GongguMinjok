@@ -221,6 +221,7 @@ checkTokenExpiry();
       mypageBtn.classList.remove("hidden");
       logoutBtn.classList.remove("hidden");
       writeBtn?.classList.remove("hidden");
+      logoutBtn.addEventListener("click", handleLogout);
     } else {
       loginBtn.classList.remove("hidden");
       mypageBtn.classList.add("hidden");
