@@ -551,13 +551,14 @@ checkTokenExpiry();
   function renderBottomBar(groupBuy) {
     const priceEl = document.querySelector(".fixed-bottom .price");
     if (priceEl) {
-      priceEl.textContent = `1인 부담금 ${formatPrice(groupBuy.participantFinalPrice)}`;
+      priceEl.textContent = `1인 부담금\n${formatPrice(groupBuy.participantFinalPrice)}`;
     }
 
     const openModalBtn = document.getElementById("openModal");
     if (!openModalBtn) return;
 
-    const userId = localStorage.getItem("userId");
+    const isLoggedIn = typeof getLoginState === "function" ? getLoginState() : false;
+    const userId = isLoggedIn ? localStorage.getItem("userId") : null;
     const isHost = userId && String(userId) === String(groupBuy.hostId);
     const isParticipant = !isHost && state.participants.some(p => String(p.participantId) === String(userId));
 
@@ -583,7 +584,7 @@ checkTokenExpiry();
       openModalBtn.textContent = "완료된 공동구매입니다";
       openModalBtn.disabled = true;
     } else if (isHost) {
-      openModalBtn.textContent = "내 공동구매";
+      openModalBtn.textContent = "수정하기";
       openModalBtn.disabled = true;
     } else if (isParticipant) {
       openModalBtn.textContent = "참여 완료";
