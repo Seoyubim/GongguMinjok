@@ -129,7 +129,7 @@
         </div>
 
         <div class="fgroup hidden" id="cr-link-group">
-          <label class="flabel">제품 링크</label>
+          <label class="flabel">제품 링크 <span class="req">*</span></label>
           <input class="finput" id="cr-link" type="url" placeholder="https://...">
           <div class="err-msg" id="cr-link-err">제품 링크를 입력해 주세요.</div>
         </div>
@@ -236,8 +236,11 @@
   </div>
 </main>
 
+<div id="toast" class="toast"></div>
+
 <script src="js/api/groupBuyApi.js"></script>
 <script src="js/utils/storage.js"></script>
+<script src="js/utils/ui.js"></script>
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="js/pages/write.js"></script>
 </body>

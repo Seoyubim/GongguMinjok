@@ -1,6 +1,11 @@
 import { initMap } from "../utils/map.js";
 checkTokenExpiry();
 
+if (sessionStorage.getItem('logoutToast')) {
+  sessionStorage.removeItem('logoutToast');
+  showToast('로그아웃되었습니다.');
+}
+
 const groupbuyGrid = document.getElementById("groupbuyGrid");
 const groupCount = document.getElementById("groupCount");
 const tabButtons = document.querySelectorAll(".tab-trigger");
@@ -34,12 +39,6 @@ function renderAuthButtons() {
     logoutBtn.classList.add("hidden");
     writeBtn?.classList.add("hidden");
   }
-}
-
-function handleLogout() {
-  logout();
-  renderAuthButtons();
-  showToast("로그아웃되었습니다.");
 }
 
 function bindCategoryCheckboxes() {

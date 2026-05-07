@@ -141,7 +141,7 @@ function calcPrice() {
   const hostPriceEl = document.getElementById('cr-host-price');
   const participantPriceEl = document.getElementById('cr-participant-price');
   if (total > 0) {
-    const discountRate = Math.min(head * 0.10, 1.0);
+    const discountRate = Math.min((head - 1) * 0.10, 1.0);
     const discountAmount = Math.min(Math.floor(perPerson * discountRate), 30000);
     const discountPct = Math.round(discountRate * 100);
     discEl.textContent = `${discountPct}% → ${discountAmount.toLocaleString()}원`;
@@ -377,7 +377,7 @@ function renderPreview() {
   const deadlineRaw = document.getElementById('cr-deadline').value;
   const deadlineLabel = deadlineRaw ? deadlineRaw.replace('T', ' ') : '';
   const perPerson = Math.ceil(total / parseInt(head));
-  const discountRate = Math.min(parseInt(head) * 0.10, 1.0);
+  const discountRate = Math.min((parseInt(head) - 1) * 0.10, 1.0);
   const discountAmount = Math.min(Math.floor(perPerson * discountRate), 30000);
   const discountPct = Math.round(discountRate * 100);
   const discountText = `${discountPct}% → ${discountAmount.toLocaleString()}원`;
@@ -464,11 +464,7 @@ function searchAddress() {
 
 const logoutBtn = document.getElementById('logoutBtn');
 if (logoutBtn) {
-  logoutBtn.addEventListener('click', () => {
-    logout();
-    showToast('로그아웃되었습니다.');
-    window.location.href = 'index.html';
-  });
+  logoutBtn.addEventListener('click', handleLogout);
 }
 
 function submitGroupBuy() {
