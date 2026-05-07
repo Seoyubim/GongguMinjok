@@ -551,7 +551,7 @@ checkTokenExpiry();
   function renderBottomBar(groupBuy) {
     const priceEl = document.querySelector(".fixed-bottom .price");
     if (priceEl) {
-      priceEl.textContent = `1인 부담금 ${formatPrice(groupBuy.participantFinalPrice)}`;
+      priceEl.textContent = `1인 부담금\n${formatPrice(groupBuy.participantFinalPrice)}`;
     }
 
     const openModalBtn = document.getElementById("openModal");

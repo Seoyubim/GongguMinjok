@@ -158,8 +158,12 @@
   font-size: 1.125rem;
   font-weight: 700;
   color: #16a34a;
-  white-space: nowrap;
-  min-width: 11rem;
+  white-space: pre-line;
+  flex-shrink: 0;
+}
+
+.detail-bottom-container #openModal {
+  flex: 0 1 calc(100% - 9rem);
 }
 
 .time-warning {
