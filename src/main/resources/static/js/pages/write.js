@@ -141,8 +141,8 @@ function calcPrice() {
   const hostPriceEl = document.getElementById('cr-host-price');
   const participantPriceEl = document.getElementById('cr-participant-price');
   if (total > 0) {
-    const discountRate = Math.min(head * 0.01, 0.10);
-    const discountAmount = Math.min(Math.floor(perPerson * discountRate), 15000);
+    const discountRate = Math.min(head * 0.10, 1.0);
+    const discountAmount = Math.min(Math.floor(perPerson * discountRate), 30000);
     const discountPct = Math.round(discountRate * 100);
     discEl.textContent = `${discountPct}% → ${discountAmount.toLocaleString()}원`;
     hostPriceEl.textContent = (perPerson - discountAmount).toLocaleString() + ' 원';
@@ -227,7 +227,7 @@ function validateStep(step) {
     }
     const title = document.getElementById('cr-title').value.trim();
     const titleErr = document.getElementById('cr-title-err');
-    if (title.length < 5) {
+    if (title.length < 2) {
       titleErr.style.display = 'block';
       valid = false;
     } else {
@@ -243,11 +243,21 @@ function validateStep(step) {
     }
     const desc = document.getElementById('cr-desc').value.trim();
     const descErr = document.getElementById('cr-desc-err');
-    if (desc.length < 10) {
+    if (desc.length < 5) {
       descErr.style.display = 'block';
       valid = false;
     } else {
       descErr.style.display = 'none';
+    }
+    if (selectedType === 'COUPANG_LINK') {
+      const link = document.getElementById('cr-link').value.trim();
+      const linkErr = document.getElementById('cr-link-err');
+      if (!link) {
+        linkErr.style.display = 'block';
+        valid = false;
+      } else {
+        linkErr.style.display = 'none';
+      }
     }
   }
 
@@ -262,7 +272,13 @@ function validateStep(step) {
     }
     const qty = document.getElementById('cr-qty').value;
     const qtyErr = document.getElementById('cr-qty-err');
+    const head = parseInt(document.getElementById('cr-head').value) || 1;
     if (!qty || parseInt(qty) <= 0) {
+      qtyErr.textContent = '총 수량을 입력해 주세요.';
+      qtyErr.style.display = 'block';
+      valid = false;
+    } else if (parseInt(qty) % head !== 0) {
+      qtyErr.textContent = `총 수량은 최대 인원(${head}명)으로 나누어 떨어져야 합니다.`;
       qtyErr.style.display = 'block';
       valid = false;
     } else {
@@ -361,8 +377,8 @@ function renderPreview() {
   const deadlineRaw = document.getElementById('cr-deadline').value;
   const deadlineLabel = deadlineRaw ? deadlineRaw.replace('T', ' ') : '';
   const perPerson = Math.ceil(total / parseInt(head));
-  const discountRate = Math.min(parseInt(head) * 0.01, 0.10);
-  const discountAmount = Math.min(Math.floor(perPerson * discountRate), 15000);
+  const discountRate = Math.min(parseInt(head) * 0.10, 1.0);
+  const discountAmount = Math.min(Math.floor(perPerson * discountRate), 30000);
   const discountPct = Math.round(discountRate * 100);
   const discountText = `${discountPct}% → ${discountAmount.toLocaleString()}원`;
 
@@ -444,6 +460,15 @@ function searchAddress() {
       });
     }
   }).open();
+}
+
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', () => {
+    logout();
+    showToast('로그아웃되었습니다.');
+    window.location.href = 'index.html';
+  });
 }
 
 function submitGroupBuy() {

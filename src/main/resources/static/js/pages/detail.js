@@ -221,6 +221,11 @@ checkTokenExpiry();
       mypageBtn.classList.remove("hidden");
       logoutBtn.classList.remove("hidden");
       writeBtn?.classList.remove("hidden");
+      logoutBtn.addEventListener("click", () => {
+        logout();
+        showToast("로그아웃되었습니다.");
+        window.location.href = "index.html";
+      });
     } else {
       loginBtn.classList.remove("hidden");
       mypageBtn.classList.add("hidden");
