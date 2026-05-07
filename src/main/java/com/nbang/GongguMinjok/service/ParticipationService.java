@@ -5,7 +5,6 @@ import com.nbang.GongguMinjok.domain.GroupBuyPickupTime;
 import com.nbang.GongguMinjok.domain.Participation;
 import com.nbang.GongguMinjok.domain.User;
 import com.nbang.GongguMinjok.dto.ParticipationResponseDto;
-import com.nbang.GongguMinjok.repository.GroupBuyPickupTimeRepository;
 import com.nbang.GongguMinjok.repository.GroupBuyRepository;
 import com.nbang.GongguMinjok.repository.ParticipationRepository;
 import com.nbang.GongguMinjok.repository.UserRepository;
@@ -24,11 +23,15 @@ public class ParticipationService {
     private final ParticipationRepository participationRepository;
     private final GroupBuyRepository groupBuyRepository;
     private final UserRepository userRepository;
-    private final GroupBuyPickupTimeRepository groupBuyPickupTimeRepository;
+
+    @Transactional
+    public ParticipationResponseDto join(Long groupBuyId, String email) {
+        return join(groupBuyId, email, null);
+    }
 
     @Transactional
     public ParticipationResponseDto join(Long groupBuyId, String email, Long pickupTimeId) {
-        GroupBuy groupBuy = groupBuyRepository.findById(groupBuyId)
+        GroupBuy groupBuy = groupBuyRepository.findByIdAndDeletedFalse(groupBuyId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
 
         if (groupBuy.getStatus() != GroupBuy.Status.OPEN
@@ -38,10 +41,6 @@ public class ParticipationService {
 
         User participant = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
-
-        if (participant.isRestricted()) {
-            throw new IllegalStateException("매너점수 BLOCKED 등급은 공동구매 활동이 제한됩니다.");
-        }
 
         if (groupBuy.getHost().getId().equals(participant.getId())) {
             throw new IllegalArgumentException("호스트는 참여할 수 없습니다.");
@@ -55,23 +54,16 @@ public class ParticipationService {
             throw new IllegalArgumentException("정원이 초과되었습니다.");
         }
 
-        if (!groupBuy.getPickupTimes().isEmpty() && pickupTimeId == null) {
-            throw new IllegalArgumentException("픽업 시간을 선택해주세요.");
-        }
-
-        GroupBuyPickupTime pickupTime = null;
-        if (pickupTimeId != null) {
-            pickupTime = groupBuyPickupTimeRepository.findById(pickupTimeId)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 픽업 시간입니다."));
-            if (!pickupTime.getGroupBuy().getId().equals(groupBuyId)) {
-                throw new IllegalArgumentException("해당 공동구매의 픽업 시간이 아닙니다.");
-            }
-        }
-
         Participation participation = new Participation();
         participation.setGroupBuy(groupBuy);
         participation.setParticipant(participant);
-        participation.setPickupTime(pickupTime);
+        if (pickupTimeId != null) {
+            GroupBuyPickupTime pickupTime = groupBuy.getPickupTimes().stream()
+                    .filter(time -> time.getId().equals(pickupTimeId))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("해당 공동구매의 픽업 시간이 아닙니다."));
+            participation.setPickupTime(pickupTime);
+        }
         participationRepository.save(participation);
 
         groupBuy.setCurrentParticipants(groupBuy.getCurrentParticipants() + 1);
@@ -99,7 +91,7 @@ public class ParticipationService {
 
     @Transactional
     public void cancel(Long groupBuyId, String email) {
-        GroupBuy groupBuy = groupBuyRepository.findById(groupBuyId)
+        GroupBuy groupBuy = groupBuyRepository.findByIdAndDeletedFalse(groupBuyId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
 
         User participant = userRepository.findByEmail(email)

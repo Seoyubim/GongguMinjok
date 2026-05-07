@@ -53,7 +53,7 @@ public class GroupBuy {
 
     // 보상 정책
     @Column(nullable = false)
-    private int maxReward; // 최대 보상 (예: 30000// 원)
+    private int maxReward; // 최대 보상 (예: 15000원)
 
     @Column(nullable = false)
     private int maxParticipants;
@@ -130,9 +130,6 @@ public class GroupBuy {
     @Column(nullable = false)
     private boolean deadlineNotified = false;
 
-    @Column
-    private LocalDateTime completedAt;
-
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -140,6 +137,15 @@ public class GroupBuy {
     @LastModifiedDate
     @Column
     private LocalDateTime updatedAt;
+
+    @Column(nullable = false)
+    private boolean deleted = false;
+
+    @Column
+    private LocalDateTime deletedAt;
+
+    @Column
+    private LocalDateTime completedAt;
 
     public enum Status {
         OPEN,              // 현재 인원을 모집 중인 상태
@@ -164,7 +170,10 @@ public class GroupBuy {
     }
 
     public int getHostDiscount() {
-        double discountRate = maxParticipants * 0.10;
+        int participantCount = maxParticipants - 1;
+        if (participantCount <= 0) return 0;
+
+        double discountRate = participantCount * 0.10;
         int discount = (int) (getUnitPrice() * discountRate);
         return Math.min(discount, maxReward);
     }
@@ -202,11 +211,6 @@ public class GroupBuy {
 
     public int getFixedParticipantPaymentAmount() {
         return participantPaymentAmount != null ? participantPaymentAmount : getParticipantFinalPrice();
-    }
-
-    public void markAsCompleted() {
-        this.status = Status.COMPLETED;
-        this.completedAt = LocalDateTime.now();
     }
 
     private void validateEvenQuantitySplit() {
