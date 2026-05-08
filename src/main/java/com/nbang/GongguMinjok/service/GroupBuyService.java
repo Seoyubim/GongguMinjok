@@ -3,11 +3,13 @@ package com.nbang.GongguMinjok.service;
 import com.nbang.GongguMinjok.domain.GroupBuy;
 import com.nbang.GongguMinjok.domain.GroupBuyImage;
 import com.nbang.GongguMinjok.domain.GroupBuyPickupTime;
+import com.nbang.GongguMinjok.domain.Participation;
 import com.nbang.GongguMinjok.domain.User;
 import com.nbang.GongguMinjok.dto.DistanceRange;
 import com.nbang.GongguMinjok.dto.GroupBuyRequestDto;
 import com.nbang.GongguMinjok.dto.GroupBuyResponseDto;
 import com.nbang.GongguMinjok.repository.GroupBuyRepository;
+import com.nbang.GongguMinjok.repository.ParticipationRepository;
 import com.nbang.GongguMinjok.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +31,7 @@ public class GroupBuyService {
 
     private final GroupBuyRepository groupBuyRepository;
     private final UserRepository userRepository;
+    private final ParticipationRepository participationRepository;
 
     // 전체 목록 조회 (위치 필터/정렬 선택적 적용)
     @Transactional(readOnly = true)
@@ -85,6 +90,14 @@ public class GroupBuyService {
         validateMonthlyGroupBuyLimit(host);
         validateGroupBuyQuantityPolicy(dto);
 
+        LocalDateTime now = LocalDateTime.now();
+        if (dto.getDeadline() == null || dto.getDeadline().isBefore(now)) {
+            throw new IllegalArgumentException("마감일은 현재 시간 이후여야 합니다.");
+        }
+        if (dto.getDeadline().isAfter(now.plusMonths(3))) {
+            throw new IllegalArgumentException("마감일은 생성 시점으로부터 최대 3개월 이내여야 합니다.");
+        }
+
         GroupBuy groupBuy = new GroupBuy();
         groupBuy.setHost(host);
         groupBuy.setTitle(dto.getTitle());
@@ -99,9 +112,11 @@ public class GroupBuyService {
         groupBuy.setDongName(dto.getDongName());
         groupBuy.setCategory(dto.getCategory());
         groupBuy.setDeadline(dto.getDeadline());
+        groupBuy.setOriginalDeadline(dto.getDeadline());
         groupBuy.setMaxReward(30000);
 
         // save 전에 자식들 먼저 세팅
+        validatePickupTimes(dto.getPickupTimes(), dto.getDeadline());
         for (LocalDateTime time : dto.getPickupTimes()) {
             GroupBuyPickupTime pickupTime = new GroupBuyPickupTime();
             pickupTime.setGroupBuy(groupBuy);  // 아직 id 없는 부모를 참조
@@ -130,20 +145,98 @@ public class GroupBuyService {
             throw new org.springframework.security.access.AccessDeniedException("수정 권한이 없습니다.");
         }
 
-        validatePaymentAmountChange(groupBuy, dto);
-        validateGroupBuyQuantityPolicy(dto);
+        if (groupBuy.getHost().isRestricted()) {
+            throw new IllegalStateException("매너점수 BLOCKED 등급은 공동구매 활동이 제한됩니다.");
+        }
 
+        GroupBuy.Status status = groupBuy.getStatus();
+
+        if (status == GroupBuy.Status.CLOSING ||
+                status == GroupBuy.Status.CLOSED ||
+                status == GroupBuy.Status.PAYMENT_COMPLETED ||
+                status == GroupBuy.Status.COMPLETED ||
+                status == GroupBuy.Status.EXPIRED) {
+            throw new IllegalStateException("현재 상태에서는 공동구매를 수정할 수 없습니다.");
+        }
+
+        LocalDateTime newDeadline = dto.getDeadline();
+        if (newDeadline != null && !newDeadline.equals(groupBuy.getDeadline())) {
+            if (newDeadline.isBefore(groupBuy.getDeadline())) {
+                throw new IllegalArgumentException("마감 시간은 현재보다 이전으로 변경할 수 없습니다.");
+            }
+            if (newDeadline.isAfter(groupBuy.getOriginalDeadline().plusDays(7))) {
+                throw new IllegalArgumentException("마감 시간은 최초 마감일 기준 7일을 초과할 수 없습니다.");
+            }
+        }
+
+        if (status == GroupBuy.Status.PICKUP_READY) {
+            List<String> currentUrls = groupBuy.getImages().stream()
+                    .sorted(Comparator.comparingInt(GroupBuyImage::getOrderIndex))
+                    .map(GroupBuyImage::getImageUrl)
+                    .collect(Collectors.toList());
+            List<String> dtoUrls = dto.getImageUrls() != null ? dto.getImageUrls() : List.of();
+
+            boolean otherFieldChanged =
+                    !java.util.Objects.equals(dto.getTitle(), groupBuy.getTitle()) ||
+                    !java.util.Objects.equals(dto.getDescription(), groupBuy.getDescription()) ||
+                    !java.util.Objects.equals(dto.getPickupLocation(), groupBuy.getPickupLocation()) ||
+                    !java.util.Objects.equals(dto.getLat(), groupBuy.getLat()) ||
+                    !java.util.Objects.equals(dto.getLng(), groupBuy.getLng()) ||
+                    !java.util.Objects.equals(dto.getDongName(), groupBuy.getDongName()) ||
+                    !java.util.Objects.equals(dto.getDeadline(), groupBuy.getDeadline()) ||
+                    dto.getCategory() != groupBuy.getCategory() ||
+                    !currentUrls.equals(dtoUrls);
+
+            if (otherFieldChanged) {
+                throw new IllegalStateException("픽업 대기 상태에서는 픽업 시간만 수정할 수 있습니다.");
+            }
+
+            validatePickupTimes(dto.getPickupTimes(), groupBuy.getDeadline());
+            Set<LocalDateTime> selectedByParticipants = participationRepository.findByGroupBuyId(groupBuy.getId())
+                    .stream()
+                    .filter(p -> p.getPickupTime() != null)
+                    .map(p -> p.getPickupTime().getPickupTime())
+                    .collect(Collectors.toSet());
+            Set<LocalDateTime> newPickupTimes = new HashSet<>(dto.getPickupTimes());
+            for (GroupBuyPickupTime existing : groupBuy.getPickupTimes()) {
+                if (!newPickupTimes.contains(existing.getPickupTime()) && selectedByParticipants.contains(existing.getPickupTime())) {
+                    throw new IllegalArgumentException("참여자가 선택한 픽업 시간은 삭제할 수 없습니다.");
+                }
+            }
+            groupBuy.getPickupTimes().clear();
+            for (LocalDateTime time : dto.getPickupTimes()) {
+                GroupBuyPickupTime pickupTime = new GroupBuyPickupTime();
+                pickupTime.setGroupBuy(groupBuy);
+                pickupTime.setPickupTime(time);
+                groupBuy.getPickupTimes().add(pickupTime);
+            }
+
+            return new GroupBuyResponseDto(groupBuyRepository.save(groupBuy));
+        }
+
+        // OPEN, HOST_PURCHASED
         groupBuy.setTitle(dto.getTitle());
         groupBuy.setDescription(dto.getDescription());
-        groupBuy.setProductType(dto.getProductType());
-        groupBuy.setTotalPrice(dto.getTotalPrice());
-        groupBuy.setTotalQuantity(dto.getTotalQuantity());
-        groupBuy.setMaxParticipants(dto.getMaxParticipants());
         groupBuy.setPickupLocation(dto.getPickupLocation());
-        groupBuy.setCategory(dto.getCategory());
+        groupBuy.setLat(dto.getLat());
+        groupBuy.setLng(dto.getLng());
+        groupBuy.setDongName(dto.getDongName());
         groupBuy.setDeadline(dto.getDeadline());
+        groupBuy.setCategory(dto.getCategory());
 
         // 픽업 시간 교체 (orphanRemoval = true 로 기존 것 자동 삭제)
+        validatePickupTimes(dto.getPickupTimes(), groupBuy.getDeadline());
+        Set<LocalDateTime> selectedByParticipants = participationRepository.findByGroupBuyId(groupBuy.getId())
+                .stream()
+                .filter(p -> p.getPickupTime() != null)
+                .map(p -> p.getPickupTime().getPickupTime())
+                .collect(Collectors.toSet());
+        Set<LocalDateTime> newPickupTimes = new HashSet<>(dto.getPickupTimes());
+        for (GroupBuyPickupTime existing : groupBuy.getPickupTimes()) {
+            if (!newPickupTimes.contains(existing.getPickupTime()) && selectedByParticipants.contains(existing.getPickupTime())) {
+                throw new IllegalArgumentException("참여자가 선택한 픽업 시간은 삭제할 수 없습니다.");
+            }
+        }
         groupBuy.getPickupTimes().clear();
         for (LocalDateTime time : dto.getPickupTimes()) {
             GroupBuyPickupTime pickupTime = new GroupBuyPickupTime();
@@ -193,6 +286,20 @@ public class GroupBuyService {
 
         if (dto.getTotalQuantity() % dto.getMaxParticipants() != 0) {
             throw new IllegalArgumentException("총 수량은 모집 인원수로 나누어 떨어져야 합니다.");
+        }
+    }
+
+    private void validatePickupTimes(List<LocalDateTime> pickupTimes, LocalDateTime deadline) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime maxAllowed = deadline.plusDays(14);
+
+        for (LocalDateTime time : pickupTimes) {
+            if (time.isBefore(now)) {
+                throw new IllegalArgumentException("픽업 시간은 현재 시간 이후여야 합니다.");
+            }
+            if (time.isAfter(maxAllowed)) {
+                throw new IllegalArgumentException("픽업 시간은 마감일로부터 14일 이내여야 합니다.");
+            }
         }
     }
 
