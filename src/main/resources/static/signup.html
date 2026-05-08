@@ -62,7 +62,10 @@
           <input type="tel" id="phone" placeholder="010-1234-5678">
 
           <label>지역</label>
-          <input type="text" id="location" placeholder="예: 봉선동">
+          <input type="hidden" id="location">
+          <button type="button" id="btn-search-addr" class="addr-search-btn">🔍 주소 검색</button>
+          <p id="addr-err" class="field-error"></p>
+          <div id="addr-result" class="addr-result hidden"></div>
 
           <label>프로필 사진 (선택)</label>
           <input type="file" id="profile-image" accept="image/*">
@@ -84,6 +87,7 @@
 
   <div id="signup-toast" class="toast">회원가입이 완료되었습니다!</div>
 
+  <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   <script src="js/api/authApi.js"></script>
   <script src="js/pages/signup.js"></script>
 </body>
