@@ -834,9 +834,10 @@ checkTokenExpiry();
     }
   }
 
-  function requestTossPayment(role, amount) {
+  async function requestTossPayment(role, amount) {
     const groupBuy = state.groupBuy;
     const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
 
     if (!userId) {
       showToast("로그인이 필요합니다.");
@@ -844,20 +845,34 @@ checkTokenExpiry();
       return;
     }
 
-    const roleCode = role === "host" ? "H" : "P";
-    const orderId = `GB-${groupBuy.id}-${roleCode}-${userId}-${Date.now()}`;
+    let readyData;
+    try {
+      const res = await fetch(`/api/groupbuys/${groupBuy.id}/payments/ready`, {
+        method: "POST",
+        headers: { Authorization: "Bearer " + token }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.message || "결제 준비에 실패했습니다.");
+        return;
+      }
+      readyData = await res.json();
+    } catch (e) {
+      showToast("결제 준비 중 오류가 발생했습니다.");
+      return;
+    }
 
     const tossPayments = TossPayments(TOSS_CLIENT_KEY);
     const payment = tossPayments.payment({ customerKey: "U-" + userId });
 
     payment.requestPayment({
-      method: "VIRTUAL_ACCOUNT",
-      amount: { currency: "KRW", value: amount },
-      orderId,
+      method: "CARD",
+      amount: { currency: "KRW", value: readyData.amount },
+      orderId: readyData.orderId,
       orderName: groupBuy.title,
       successUrl: `${window.location.origin}/success.html?role=${role}&groupBuyId=${groupBuy.id}`,
       failUrl: `${window.location.origin}/fail.html`,
-      customerName: localStorage.getItem("userNickname") || "구매자",
+      customerName: "",
     }).catch((e) => {
       if (e.code !== "USER_CANCEL") {
         showToast(e.message || "결제 중 오류가 발생했습니다.");
