@@ -1,6 +1,11 @@
 import { initMap } from "../utils/map.js";
 checkTokenExpiry();
 
+if (sessionStorage.getItem('logoutToast')) {
+  sessionStorage.removeItem('logoutToast');
+  showToast('로그아웃되었습니다.');
+}
+
 const groupbuyGrid = document.getElementById("groupbuyGrid");
 const groupCount = document.getElementById("groupCount");
 const tabButtons = document.querySelectorAll(".tab-trigger");
@@ -34,12 +39,6 @@ function renderAuthButtons() {
     logoutBtn.classList.add("hidden");
     writeBtn?.classList.add("hidden");
   }
-}
-
-function handleLogout() {
-  logout();
-  renderAuthButtons();
-  showToast("로그아웃되었습니다.");
 }
 
 function bindCategoryCheckboxes() {
@@ -77,7 +76,7 @@ function createGroupBuyCard(item) {
   const progress = (item.currentParticipants / item.maxParticipants) * 100;
   const imageUrl = item.imageUrls?.[0] || "";
   const distanceText = item.distance != null ? item.distance.toFixed(1) + "km" : "";
-  const pickupTimeText = item.pickupTimes?.[0] ? formatPickupTime(item.pickupTimes[0]) : "";
+  const pickupTimeText = item.pickupTimes?.[0]?.pickupTime ? formatPickupTime(item.pickupTimes[0].pickupTime) : "";
   const mannerScoreHtml = item.hostMannerScore != null
     ? `<span class="text-gray">${item.hostMannerScore}</span>`
     : "";
@@ -134,7 +133,7 @@ function createClusterCard(item) {
 
   const uniqueDates = [...new Set(
     (item.pickupTimes || []).map(t => {
-      const d = new Date(t);
+      const d = new Date(t.pickupTime);
       return `${d.getMonth() + 1}/${d.getDate()}`;
     })
   )].join(' · ') || '미정';

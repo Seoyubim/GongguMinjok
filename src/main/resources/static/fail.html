@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>결제 실패 - 공구의 민족</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/payment.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="container">
+    <div class="header-content">
+      <a href="index.html" class="logo">
+        <img src="images/logo.jpg" alt="공구의 민족 로고" class="logo-image">
+        <h1 class="logo-text">공구의 민족</h1>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="main-content">
+  <div class="payment-result-page">
+    <div class="result-icon">❌</div>
+    <h2 class="result-title">결제에 실패했습니다</h2>
+    <p class="result-desc" id="fail-message"></p>
+    <p class="result-code" id="fail-code"></p>
+    <div class="result-btn-group">
+      <button class="btn btn-outline" onclick="history.back()">다시 시도하기</button>
+      <button class="btn btn-primary" onclick="window.location.href='index.html'">홈으로</button>
+    </div>
+  </div>
+</main>
+
+<script src="js/pages/fail.js"></script>
+</body>
+</html>

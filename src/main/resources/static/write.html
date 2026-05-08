@@ -17,7 +17,8 @@
         <h1 class="logo-text">공구의 민족</h1>
       </a>
       <div class="header-actions">
-        <a href="mypage.html" class="btn btn-outline">마이페이지</a>
+        <a href="mypage.html" id="mypageBtn" class="btn btn-outline">마이페이지</a>
+        <button id="logoutBtn" class="btn btn-outline" type="button">로그아웃</button>
       </div>
     </div>
   </div>
@@ -90,7 +91,7 @@
           <label class="flabel">제목 <span class="req">*</span></label>
           <input class="finput" id="cr-title" maxlength="40" placeholder="예) 코스트코 세제 소분 나눔" oninput="ccnt('cr-title','cr-tc',40)">
           <div class="char-cnt"><span id="cr-tc">0</span>/40</div>
-          <div class="err-msg" id="cr-title-err">제목을 입력해 주세요. (5자 이상)</div>
+          <div class="err-msg" id="cr-title-err">제목을 입력해 주세요. (2자 이상)</div>
         </div>
 
         <div class="fgroup">
@@ -124,12 +125,13 @@
           <label class="flabel">상세 설명 <span class="req">*</span></label>
           <textarea class="ftarea" id="cr-desc" maxlength="500" placeholder="상품 정보, 소분 방식 등 자세히 적어주세요" oninput="ccnt('cr-desc','cr-dc',500)"></textarea>
           <div class="char-cnt"><span id="cr-dc">0</span>/500</div>
-          <div class="err-msg" id="cr-desc-err">설명을 입력해 주세요. (10자 이상)</div>
+          <div class="err-msg" id="cr-desc-err">설명을 입력해 주세요. (5자 이상)</div>
         </div>
 
         <div class="fgroup hidden" id="cr-link-group">
-          <label class="flabel">제품 링크</label>
+          <label class="flabel">제품 링크 <span class="req">*</span></label>
           <input class="finput" id="cr-link" type="url" placeholder="https://...">
+          <div class="err-msg" id="cr-link-err">제품 링크를 입력해 주세요.</div>
         </div>
 
         <div class="fgroup">
@@ -234,8 +236,11 @@
   </div>
 </main>
 
+<div id="toast" class="toast"></div>
+
 <script src="js/api/groupBuyApi.js"></script>
 <script src="js/utils/storage.js"></script>
+<script src="js/utils/ui.js"></script>
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="js/pages/write.js"></script>
 </body>

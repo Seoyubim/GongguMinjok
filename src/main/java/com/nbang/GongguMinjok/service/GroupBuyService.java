@@ -36,7 +36,7 @@ public class GroupBuyService {
     // 전체 목록 조회 (위치 필터/정렬 선택적 적용)
     @Transactional(readOnly = true)
     public List<GroupBuyResponseDto> getGroupBuys(Double userLat, Double userLng, DistanceRange distanceRange) {
-        List<GroupBuy> all = groupBuyRepository.findAllByOrderByCreatedAtDesc();
+        List<GroupBuy> all = groupBuyRepository.findAllByDeletedFalseOrderByCreatedAtDesc();
 
         if (userLat == null || userLng == null) {
             return all.stream().map(GroupBuyResponseDto::new).collect(Collectors.toList());
@@ -76,7 +76,7 @@ public class GroupBuyService {
     // 단건 조회
     @Transactional(readOnly = true)
     public GroupBuyResponseDto getGroupBuy(Long id) {
-        GroupBuy groupBuy = groupBuyRepository.findById(id)
+        GroupBuy groupBuy = groupBuyRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
         return new GroupBuyResponseDto(groupBuy);
     }
@@ -86,10 +86,6 @@ public class GroupBuyService {
     public GroupBuyResponseDto createGroupBuy(GroupBuyRequestDto dto, String email) {
         User host = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
-
-        if (host.isRestricted()) {
-            throw new IllegalStateException("매너점수 BLOCKED 등급은 공동구매 활동이 제한됩니다.");
-        }
 
         validateMonthlyGroupBuyLimit(host);
         validateGroupBuyQuantityPolicy(dto);
@@ -142,7 +138,7 @@ public class GroupBuyService {
     // 수정
     @Transactional
     public GroupBuyResponseDto updateGroupBuy(Long id, GroupBuyRequestDto dto, String email) {
-        GroupBuy groupBuy = groupBuyRepository.findById(id)
+        GroupBuy groupBuy = groupBuyRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
 
         if (!groupBuy.getHost().getEmail().equals(email)) {
@@ -327,24 +323,22 @@ public class GroupBuyService {
 
     @Transactional
     public void deleteGroupBuy(Long id, String email) {
-        GroupBuy groupBuy = groupBuyRepository.findById(id)
+        GroupBuy groupBuy = groupBuyRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
 
         if (!groupBuy.getHost().getEmail().equals(email)) {
             throw new org.springframework.security.access.AccessDeniedException("삭제 권한이 없습니다.");
         }
 
-        if (groupBuy.getHost().isRestricted()) {
-            throw new IllegalStateException("매너점수 BLOCKED 등급은 공동구매 활동이 제한됩니다.");
-        }
-
-        groupBuyRepository.delete(groupBuy);
+        groupBuy.setDeleted(true);
+        groupBuy.setDeletedAt(LocalDateTime.now());
+        groupBuyRepository.save(groupBuy);
     }
 
     // 특정 호스트가 올린 공동구매 목록
     @Transactional(readOnly = true)
     public List<GroupBuyResponseDto> getGroupBuysByHost(Long hostId) {
-        return groupBuyRepository.findByHostId(hostId)
+        return groupBuyRepository.findByHostIdAndDeletedFalse(hostId)
                 .stream()
                 .map(GroupBuyResponseDto::new)
                 .collect(Collectors.toList());
@@ -355,7 +349,7 @@ public class GroupBuyService {
     public List<GroupBuyResponseDto> getMyGroupBuys(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
-        return groupBuyRepository.findByHostId(user.getId())
+        return groupBuyRepository.findByHostIdAndDeletedFalse(user.getId())
                 .stream()
                 .map(GroupBuyResponseDto::new)
                 .collect(Collectors.toList());
