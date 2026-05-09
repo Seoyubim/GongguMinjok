@@ -3,6 +3,7 @@ package com.nbang.GongguMinjok.service;
 import com.nbang.GongguMinjok.domain.GroupBuy;
 import com.nbang.GongguMinjok.domain.Participation;
 import com.nbang.GongguMinjok.domain.Payment;
+import com.nbang.GongguMinjok.domain.Settlement;
 import com.nbang.GongguMinjok.dto.PaymentConfirmRequestDto;
 import com.nbang.GongguMinjok.dto.PaymentConfirmResponseDto;
 import com.nbang.GongguMinjok.dto.PaymentFailRequestDto;
@@ -11,6 +12,7 @@ import com.nbang.GongguMinjok.dto.PaymentResponseDto;
 import com.nbang.GongguMinjok.repository.GroupBuyRepository;
 import com.nbang.GongguMinjok.repository.ParticipationRepository;
 import com.nbang.GongguMinjok.repository.PaymentRepository;
+import com.nbang.GongguMinjok.repository.SettlementRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -23,6 +25,7 @@ import org.springframework.web.client.RestClientResponseException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -35,6 +38,7 @@ public class PaymentService {
     private final ParticipationRepository participationRepository;
     private final PaymentRepository paymentRepository;
     private final GroupBuyRepository groupBuyRepository;
+    private final SettlementRepository settlementRepository;
     private final RestClient restClient = RestClient.create();
 
     @Value("${toss.payments.secret-key:}")
@@ -78,6 +82,19 @@ public class PaymentService {
         if (isAllParticipantsPaid(groupBuy.getId())) {
             groupBuy.setStatus(GroupBuy.Status.PAYMENT_COMPLETED);
             groupBuyRepository.save(groupBuy);
+
+            boolean settlementExists = settlementRepository.findByGroupBuyId(groupBuy.getId()).isPresent();
+            if (!settlementExists) {
+                List<Participation> allParticipations = participationRepository.findByGroupBuyId(groupBuy.getId());
+                int totalAmount = allParticipations.stream()
+                        .mapToInt(p -> p.getPaymentAmount() != null ? p.getPaymentAmount() : 0)
+                        .sum();
+                Settlement settlement = new Settlement();
+                settlement.setGroupBuy(groupBuy);
+                settlement.setTotalAmount(totalAmount);
+                settlement.setStatus(Settlement.Status.PENDING);
+                settlementRepository.save(settlement);
+            }
         }
 
         return new PaymentConfirmResponseDto(payment);

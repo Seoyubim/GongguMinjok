@@ -138,6 +138,9 @@ public class GroupBuy {
     @Column
     private LocalDateTime updatedAt;
 
+    @Column
+    private LocalDateTime completedAt;
+
     public enum Status {
         OPEN,              // 현재 인원을 모집 중인 상태
         CLOSING,           // 마감 24시간 전 상태
