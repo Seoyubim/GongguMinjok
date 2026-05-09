@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>공동구매 만들기 - 공구의 민족</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/write.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="container">
+    <div class="header-content">
+      <a href="index.html" class="logo">
+        <img src="images/logo.jpg" alt="공구의 민족 로고" class="logo-image">
+        <h1 class="logo-text">공구의 민족</h1>
+      </a>
+      <div class="header-actions">
+        <a href="mypage.html" id="mypageBtn" class="btn btn-outline">마이페이지</a>
+        <button id="logoutBtn" class="btn btn-outline" type="button">로그아웃</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="main-content">
+  <div class="page" id="pg-create">
+
+    <div class="draft-modal" id="cr-draft-modal">
+      <div class="draft-modal-box">
+        <div class="draft-modal-title">이전에 작성 중인 내용이 있습니다.</div>
+        <div class="draft-modal-desc">불러오시겠어요?</div>
+        <div class="draft-modal-btns">
+          <button class="btn btn-outline" onclick="dismissDraft()">아니요</button>
+          <button class="btn btn-primary" onclick="applyDraft()">예</button>
+        </div>
+      </div>
+    </div>
+
+    <nav class="tnav">
+      <button class="tnav-back" onclick="go('list')">←</button>
+      <span class="tnav-title">공동구매 수정</span>
+      <button class="tnav-icon" onclick="saveDraft()">임시저장</button>
+    </nav>
+
+    <div class="step-bar">
+      <div class="step-track" id="cr-step-track">
+        <div class="step-item active" id="cr-si-1">
+          <div class="step-circle">1</div>
+          <span class="step-lbl">기본정보</span>
+        </div>
+        <div class="step-item" id="cr-si-2">
+          <div class="step-circle">2</div>
+          <span class="step-lbl">구매설정</span>
+        </div>
+        <div class="step-item" id="cr-si-3">
+          <div class="step-circle">3</div>
+          <span class="step-lbl">픽업설정</span>
+        </div>
+        <div class="step-item" id="cr-si-4">
+          <div class="step-circle">4</div>
+          <span class="step-lbl">미리보기</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-cont active" id="cr-s1">
+
+      <div class="card">
+        <div class="sec-title">📝 게시글 정보</div>
+
+        <div class="fgroup">
+          <label class="flabel">제목 <span class="req">*</span></label>
+          <input class="finput" id="cr-title" maxlength="40" placeholder="예) 코스트코 세제 소분 나눔" oninput="ccnt('cr-title','cr-tc',40)">
+          <div class="char-cnt"><span id="cr-tc">0</span>/40</div>
+          <div class="err-msg" id="cr-title-err">제목을 입력해 주세요. (2자 이상)</div>
+        </div>
+
+        <div class="fgroup">
+          <label class="flabel">카테고리 <span class="req">*</span></label>
+          <select class="finput" id="cr-category">
+            <option value="">카테고리 선택</option>
+            <option value="ELECTRONICS">전자제품</option>
+            <option value="HOME_APPLIANCES">가전제품</option>
+            <option value="FURNITURE_INTERIOR">가구/인테리어</option>
+            <option value="HOME_KITCHEN">생활/주방용품</option>
+            <option value="BABY_KIDS">유아/아동</option>
+            <option value="WOMENS_CLOTHING">여성의류</option>
+            <option value="WOMENS_ACCESSORIES">여성잡화</option>
+            <option value="MENS_FASHION_ACCESSORIES">남성패션/잡화</option>
+            <option value="BEAUTY_PERSONAL_CARE">뷰티/개인관리</option>
+            <option value="SPORTS_LEISURE">스포츠/레저</option>
+            <option value="HOBBIES_GAMES_MUSIC">취미/게임/음악</option>
+            <option value="BOOKS">도서</option>
+            <option value="TICKETS_VOUCHERS">티켓/상품권</option>
+            <option value="E_COUPONS">전자쿠폰</option>
+            <option value="PROCESSED_FOODS">가공식품</option>
+            <option value="HEALTH_SUPPLEMENTS">건강식품/영양제</option>
+            <option value="PET_SUPPLIES">반려동물용품</option>
+            <option value="PLANTS">식물</option>
+            <option value="OTHERS">기타</option>
+          </select>
+          <div class="err-msg" id="cr-category-err">카테고리를 선택해 주세요.</div>
+        </div>
+
+        <div class="fgroup">
+          <label class="flabel">상세 설명 <span class="req">*</span></label>
+          <textarea class="ftarea" id="cr-desc" maxlength="500" placeholder="상품 정보, 소분 방식 등 자세히 적어주세요" oninput="ccnt('cr-desc','cr-dc',500)"></textarea>
+          <div class="char-cnt"><span id="cr-dc">0</span>/500</div>
+          <div class="err-msg" id="cr-desc-err">설명을 입력해 주세요. (5자 이상)</div>
+        </div>
+
+        <div class="fgroup hidden" id="cr-link-group">
+          <label class="flabel">제품 링크 <span class="req">*</span></label>
+          <input class="finput" id="cr-link" type="url" placeholder="https://...">
+          <div class="err-msg" id="cr-link-err">제품 링크를 입력해 주세요.</div>
+        </div>
+
+        <div class="fgroup">
+          <label class="flabel">상품 이미지</label>
+          <input type="file" id="cr-images" accept="image/*" multiple onclick="return alertImageUpload()">
+        </div>
+      </div>
+
+    </div>
+
+    <div class="step-cont" id="cr-s2">
+
+      <div class="card">
+        <div class="sec-title">⏰ 모집 마감일 <span class="req">*</span></div>
+        <div class="fgroup">
+          <input class="finput" id="cr-deadline" type="datetime-local" onchange="updatePickupMin()">
+          <div class="err-msg" id="cr-deadline-err">모집 마감일을 입력해 주세요.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="step-cont" id="cr-s3">
+
+      <div class="card">
+        <div class="sec-title">📍 픽업 장소 <span class="req">*</span></div>
+        <input type="hidden" id="cr-addr">
+        <button class="addr-search-btn" type="button" onclick="searchAddress()">🔍 주소 검색</button>
+        <div class="err-msg" id="cr-addr-err" style="margin-top:8px">픽업 장소를 검색해 주세요.</div>
+        <div class="addr-result hidden" id="cr-addr-result"></div>
+      </div>
+
+      <div class="card">
+        <div class="sec-title">📅 픽업 가능 시간 <span class="req">*</span></div>
+        <div class="fgroup">
+          <div class="pickup-row">
+            <input type="datetime-local" id="cr-pdatetime" class="finput">
+            <button class="btn btn-outline btn-sm" onclick="addPickupTime()">+ 추가</button>
+          </div>
+          <div class="err-msg" id="cr-pickup-err">픽업 시간을 1개 이상 추가해 주세요.</div>
+        </div>
+        <div id="cr-pickup-list" class="pickup-list"></div>
+      </div>
+
+    </div>
+
+    <div class="step-cont" id="cr-s4">
+      <div class="card" id="preview">
+      </div>
+    </div>
+
+    <div class="bot-cta">
+      <button id="cr-prev-btn" class="btn btn-outline hidden" onclick="crPrev()">← 이전</button>
+      <button id="cr-next-btn" class="btn btn-primary" onclick="crNext()">다음 단계 →</button>
+    </div>
+
+  </div>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script src="js/api/groupBuyApi.js"></script>
+<script src="js/utils/storage.js"></script>
+<script src="js/utils/ui.js"></script>
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script src="js/pages/write.js"></script>
+
+</body>
+</html>
