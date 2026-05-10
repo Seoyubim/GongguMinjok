@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__notion-personal__API-retrieve-a-page",
+      "mcp__notion-team__API-post-search",
+      "mcp__notion-team__API-get-block-children",
+      "Bash(python3 *)",
+      "Bash(python *)",
+      "Bash(Out-File -FilePath C:\\\\Users\\\\jinbe\\\\temp\\\\notion_output.txt -Encoding utf8)",
+      "Bash(Get-Content C:\\\\Users\\\\jinbe\\\\temp\\\\notion_output.txt)",
+      "Bash(python -c ' *)",
+      "Read(//tmp/**)",
+      "Bash(out-file -encoding utf8 C:\\\\Users\\\\jinbe\\\\temp\\\\notion_structure.txt)",
+      "Bash(Get-Content C:\\\\Users\\\\jinbe\\\\temp\\\\notion_structure.txt)"
+    ]
+  }
+}

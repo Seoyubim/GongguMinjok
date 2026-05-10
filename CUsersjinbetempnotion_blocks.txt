@@ -1,0 +1,164 @@
+[heading_1] 🔷 이 브랜치에서 구현한 것 한눈에 보기
+[heading_2] 배경 — 왜 이 기능이 필요한가?
+[paragraph] 기존 updateGroupBuy()는 상태 체크 없이 모든 필드를 수정할 수 있었다. 이로 인해 아래 문제가 발생했다.
+[bulleted_list_item] 결제 진행 중(CLOSED)인 공구의 금액을 수정할 수 있었음
+[bulleted_list_item] 픽업 대기 상태에서 픽업 장소를 바꾸는 등 참여자에게 피해를 줄 수 있었음
+[bulleted_list_item] 마감일을 단축하거나 무제한 연장할 수 있었음
+[bulleted_list_item] 과거 시간으로 픽업 시간을 추가할 수 있었음
+[bulleted_list_item] 참여자가 이미 선택한 픽업 시간을 삭제할 수 있었음
+[paragraph] 이번 브랜치에서 위 문제들을 모두 해결했다.
+[divider] ---
+[heading_2] 변경된 파일 목록
+[table] (표 블록)
+[divider] ---
+[heading_1] 🔷 1단계 — GroupBuy.java (Entity 수정)
+[paragraph] 경로: src/main/java/com/nbang/GongguMinjok/domain/GroupBuy.java
+[heading_2] 핵심 변경 포인트
+[paragraph] 1. HOST_PURCHASED 상태 추가
+[paragraph] 기존 7개 상태에서 8개로 확장되었다. HOST_PURCHASED는 정원 충족 + 전원 결제 완료 후 호스트가 실제로 상품을 구매 완료한 상태를 의미한다. 이 상태에서도 일부 필드 수정이 허용된다.
+[code] 상태 전환 흐름:
+OPEN → CLOSING → CLOSED → PAYMENT_COMPLETED → HOST_PURCHASED → PICKUP_READY → COMPLETED
+                                                                                    ↘ EXPIRED
+[paragraph] 2. originalDeadline 필드 추가
+[paragraph] 최초 게시글 생성 시 입력된 deadline 값을 별도로 저장한다. @Column(updatable = false)로 선언되어 있어 이후 어떤 수정도 DB에 반영되지 않는다.
+[paragraph] 이 필드가 필요한 이유: deadline을 연장할 때 "최대 7일"을 현재 deadline 기준으로 잡으면, 7일씩 계속 연장하는 우회가 가능해진다. originalDeadline을 기준으로 잡으면 이 문제가 해결된다.
+[code] 예시:
+originalDeadline = 2026-05-01
+current deadline = 2026-05-06 (한 번 연장된 상태)
+새 deadline 요청 = 2026-05-09 → originalDeadline + 7일(2026-05-08) 초과 → 예외
+[heading_2] 추가된 코드
+[code] public enum Status {
+    OPEN,
+    CLOSING,
+    CLOSED,
+    PAYMENT_COMPLETED,
+    HOST_PURCHASED,    // 신규: 호스트가 상품 구매 완료한 상태
+    PICKUP_READY,
+    COMPLETED,
+    EXPIRED
+}
+
+@Column(updatable = false)
+private LocalDateTime originalDeadline;
+[divider] ---
+[heading_1] 🔷 2단계 — GroupBuyService.java (Service 수정)
+[paragraph] 경로: src/main/java/com/nbang/GongguMinjok/service/GroupBuyService.java
+[heading_2] 2-1. createGroupBuy() — originalDeadline 세팅 + deadline 3개월 제한
+[code] // deadline 3개월 제한
+if (dto.getDeadline().isAfter(LocalDateTime.now().plusMonths(3))) {
+    throw new IllegalArgumentException("마감일은 생성 시점으로부터 최대 3개월 이내여야 합니다.");
+}
+
+groupBuy.setDeadline(dto.getDeadline());
+groupBuy.setOriginalDeadline(dto.getDeadline()); // 최초 마감일 고정 저장
+[heading_2] 2-2. updateGroupBuy() — 상태별 수정 제한
+[paragraph] 수정 불가 상태:
+[table] (표 블록)
+[code] if (status == GroupBuy.Status.CLOSING
+        || status == GroupBuy.Status.CLOSED
+        || status == GroupBuy.Status.PAYMENT_COMPLETED
+        || status == GroupBuy.Status.COMPLETED
+        || status == GroupBuy.Status.EXPIRED) {
+    throw new IllegalStateException("현재 상태에서는 공동구매를 수정할 수 없습니다.");
+}
+[paragraph] PICKUP_READY 상태 — 픽업 시간만 수정 가능:
+[code] if (status == GroupBuy.Status.PICKUP_READY) {
+    boolean otherFieldChanged =
+        !Objects.equals(dto.getTitle(), groupBuy.getTitle()) ||
+        !Objects.equals(dto.getDescription(), groupBuy.getDescription()) ||
+        // ... 나머지 필드 체크
+        !currentUrls.equals(dtoUrls);
+
+    if (otherFieldChanged) {
+        throw new IllegalStateException("픽업 대기 상태에서는 픽업 시간만 수정할 수 있습니다.");
+    }
+    groupBuy.getPickupTimes().clear();
+    for (LocalDateTime time : dto.getPickupTimes()) {
+        GroupBuyPickupTime pickupTime = new GroupBuyPickupTime();
+        pickupTime.setGroupBuy(groupBuy);
+        pickupTime.setPickupTime(time);
+        groupBuy.getPickupTimes().add(pickupTime);
+    }
+    return new GroupBuyResponseDto(groupBuyRepository.save(groupBuy));
+}
+[heading_2] 2-3. 허용 필드 제한 (OPEN, HOST_PURCHASED)
+[table] (표 블록)
+[heading_2] 2-4. deadline 수정 제한
+[code] if (dto.getDeadline() != null && !dto.getDeadline().equals(groupBuy.getDeadline())) {
+    if (dto.getDeadline().isBefore(groupBuy.getDeadline())) {
+        throw new IllegalArgumentException("마감 시간은 현재보다 이전으로 변경할 수 없습니다.");
+    }
+    if (groupBuy.getOriginalDeadline() != null
+            && dto.getDeadline().isAfter(groupBuy.getOriginalDeadline().plusDays(7))) {
+        throw new IllegalArgumentException("마감 시간은 최초 마감일 기준 7일을 초과할 수 없습니다.");
+    }
+}
+[quote] originalDeadline이 null인 경우 (이 필드 추가 이전에 생성된 기존 데이터): 7일 초과 검증을 건너뛰고 단축 여부만 체크한다. NPE 방지를 위한 처리다.
+[heading_2] 2-5. validatePickupTimes() — 픽업 시간 검증
+[paragraph] createGroupBuy()와 updateGroupBuy() 모두에서 픽업 시간 처리 직전에 호출된다.
+[code] private void validatePickupTimes(List<LocalDateTime> pickupTimes, LocalDateTime deadline) {
+    LocalDateTime now = LocalDateTime.now();
+    LocalDateTime maxAllowed = deadline.plusDays(14);
+
+    for (LocalDateTime time : pickupTimes) {
+        if (time.isBefore(now)) {
+            throw new IllegalArgumentException("픽업 시간은 현재 시간 이후여야 합니다.");
+        }
+        if (time.isAfter(maxAllowed)) {
+            throw new IllegalArgumentException("픽업 시간은 마감일로부터 14일 이내여야 합니다.");
+        }
+    }
+}
+[heading_2] 2-6. 픽업 시간 삭제 시 참여자 선택 시간 보호
+[paragraph] 기존 clear() 후 전체 교체 방식은 참여자가 이미 선택한 픽업 시간도 같이 지워지는 문제가 있었다.
+[code] Set<Long> usedPickupTimeIds = participationRepository.findByGroupBuyId(groupBuy.getId())
+        .stream()
+        .filter(p -> p.getPickupTime() != null)
+        .map(p -> p.getPickupTime().getId())
+        .collect(Collectors.toSet());
+
+List<LocalDateTime> newTimes = dto.getPickupTimes();
+for (GroupBuyPickupTime existing : groupBuy.getPickupTimes()) {
+    boolean isRemoved = newTimes.stream()
+            .noneMatch(t -> t.equals(existing.getPickupTime()));
+    if (isRemoved && usedPickupTimeIds.contains(existing.getId())) {
+        throw new IllegalArgumentException("참여자가 선택한 픽업 시간은 삭제할 수 없습니다.");
+    }
+}
+
+groupBuy.getPickupTimes().clear();
+for (LocalDateTime time : dto.getPickupTimes()) {
+    GroupBuyPickupTime pickupTime = new GroupBuyPickupTime();
+    pickupTime.setGroupBuy(groupBuy);
+    pickupTime.setPickupTime(time);
+    groupBuy.getPickupTimes().add(pickupTime);
+}
+[divider] ---
+[heading_1] 🔷 전체 검증 로직 흐름
+[code] updateGroupBuy() 호출
+    ↓
+1. 호스트 권한 체크
+    ↓
+2. 상태 체크
+   CLOSING/CLOSED/PAYMENT_COMPLETED/COMPLETED/EXPIRED → 예외
+   PICKUP_READY → 픽업 시간 외 변경 시 예외, 픽업 시간만 교체 후 return
+   OPEN/HOST_PURCHASED → 아래 계속
+    ↓
+3. deadline 검증 → 단축/7일 초과 시 예외
+    ↓
+4. 픽업 시간 검증 → 과거/14일 초과 시 예외
+    ↓
+5. 참여자 선택 픽업 시간 삭제 여부 검사
+    ↓
+6. 허용 필드만 반영 후 저장
+[divider] ---
+[heading_1] 🔷 예외 케이스 정리
+[table] (표 블록)
+[divider] ---
+[heading_1] 🔷 Postman 테스트 방법
+[heading_2] 테스트 시나리오
+[table] (표 블록)
+[heading_2] DB 상태 세팅 방법 (테스트용)
+[code] UPDATE group_buys SET status = 'CLOSING' WHERE id = 1;
+UPDATE group_buys SET status = 'PICKUP_READY' WHERE id = 1;
+SELECT id, deadline, original_deadline FROM group_buys WHERE id = 1;

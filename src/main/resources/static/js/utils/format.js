@@ -5,7 +5,11 @@ function formatPrice(price) {
 function getStatusLabel(status) {
   if (status === "OPEN") return "모집중";
   if (status === "CLOSING") return "마감임박";
-  if (status === "CLOSED" || status === "PAYMENT_COMPLETED" || status === "PICKUP_READY" || status === "COMPLETED") return "완료";
+  if (status === "CLOSED") return "결제중";
+  if (status === "PAYMENT_COMPLETED") return "결제완료";
+  if (status === "HOST_PURCHASED") return "구매완료";
+  if (status === "PICKUP_READY") return "픽업대기";
+  if (status === "COMPLETED") return "완료";
   if (status === "EXPIRED") return "마감";
   return "";
 }
@@ -13,7 +17,7 @@ function getStatusLabel(status) {
 function getStatusClass(status) {
   if (status === "OPEN") return "badge-recruiting";
   if (status === "CLOSING") return "badge-closing";
-  if (status === "CLOSED" || status === "PAYMENT_COMPLETED" || status === "PICKUP_READY" || status === "COMPLETED") return "badge-completed";
+  if (status === "CLOSED" || status === "PAYMENT_COMPLETED" || status === "HOST_PURCHASED" || status === "PICKUP_READY" || status === "COMPLETED") return "badge-completed";
   if (status === "EXPIRED") return "badge-expired";
   return "";
 }
@@ -55,11 +59,12 @@ function formatPickupTime(dateTimeStr) {
 
 function getBadgeEmoji(grade) {
   const emojis = {
-    LEGEND: "👑",
-    GREAT:  "😄",
-    GOOD:   "🙂",
-    SOSO:   "😐",
-    BAD:    "😢",
+    LEGEND:  "👑",
+    GREAT:   "😄",
+    GOOD:    "🙂",
+    SOSO:    "😐",
+    BAD:     "😢",
+    BLOCKED: "🚫",
   };
   return emojis[grade] ?? "";
   /* 이미지로 전환 시 위 return을 아래로 교체:

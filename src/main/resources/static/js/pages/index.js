@@ -68,7 +68,7 @@ async function getFilteredGroupBuys() {
       (selectedStatus === "recruiting" && item.status === "OPEN") ||
       (selectedStatus === "closing" && item.status === "CLOSING");
 
-    return (item.status === "OPEN" || item.status === "CLOSING" || item.status === "CLOSED") && matchCategory && matchStatus;
+    return (item.status === "OPEN" || item.status === "CLOSING" || item.status === "COMPLETED") && matchCategory && matchStatus;
   });
 }
 
@@ -78,7 +78,7 @@ function createGroupBuyCard(item) {
   const distanceText = item.distance != null ? item.distance.toFixed(1) + "km" : "";
   const pickupTimeText = item.pickupTimes?.[0]?.pickupTime ? formatPickupTime(item.pickupTimes[0].pickupTime) : "";
   const mannerScoreHtml = item.hostMannerScore != null
-    ? `<span class="text-gray">${item.hostMannerScore}</span>`
+    ? `<span class="text-gray">${Number(item.hostMannerScore).toFixed(1)}</span>`
     : "";
 
   return `
@@ -139,7 +139,7 @@ function createClusterCard(item) {
   )].join(' · ') || '미정';
 
   const mannerScoreHtml = item.hostMannerScore != null
-    ? `<span class="text-gray">${item.hostMannerScore}점</span>`
+    ? `<span class="text-gray">${Number(item.hostMannerScore).toFixed(1)}점</span>`
     : '';
 
   return `
