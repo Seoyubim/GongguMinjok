@@ -154,6 +154,7 @@ public class GroupBuyService {
         if (status == GroupBuy.Status.CLOSING ||
                 status == GroupBuy.Status.CLOSED ||
                 status == GroupBuy.Status.PAYMENT_COMPLETED ||
+                status == GroupBuy.Status.PENDING ||
                 status == GroupBuy.Status.COMPLETED ||
                 status == GroupBuy.Status.EXPIRED) {
             throw new IllegalStateException("현재 상태에서는 공동구매를 수정할 수 없습니다.");
@@ -257,6 +258,40 @@ public class GroupBuyService {
             }
         }
 
+        return new GroupBuyResponseDto(groupBuyRepository.save(groupBuy));
+    }
+
+    @Transactional
+    public GroupBuyResponseDto completeHostPurchase(Long id, String email) {
+        GroupBuy groupBuy = groupBuyRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
+
+        if (!groupBuy.getHost().getEmail().equals(email)) {
+            throw new org.springframework.security.access.AccessDeniedException("호스트만 주문 완료 처리할 수 있습니다.");
+        }
+
+        if (groupBuy.getStatus() != GroupBuy.Status.PAYMENT_COMPLETED) {
+            throw new IllegalStateException("전원 결제 완료 상태에서만 주문 완료 처리할 수 있습니다.");
+        }
+
+        groupBuy.setStatus(GroupBuy.Status.HOST_PURCHASED);
+        return new GroupBuyResponseDto(groupBuyRepository.save(groupBuy));
+    }
+
+    @Transactional
+    public GroupBuyResponseDto markPickupReady(Long id, String email) {
+        GroupBuy groupBuy = groupBuyRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
+
+        if (!groupBuy.getHost().getEmail().equals(email)) {
+            throw new org.springframework.security.access.AccessDeniedException("호스트만 수령 완료 처리할 수 있습니다.");
+        }
+
+        if (groupBuy.getStatus() != GroupBuy.Status.HOST_PURCHASED) {
+            throw new IllegalStateException("호스트 주문 완료 상태에서만 수령 완료 처리할 수 있습니다.");
+        }
+
+        groupBuy.setStatus(GroupBuy.Status.PICKUP_READY);
         return new GroupBuyResponseDto(groupBuyRepository.save(groupBuy));
     }
 
