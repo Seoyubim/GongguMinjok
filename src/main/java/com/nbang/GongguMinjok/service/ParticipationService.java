@@ -135,7 +135,7 @@ public class ParticipationService {
     public PickupResponseDto completePickup(Long groupBuyId, String email) {
         Participation participation = participationRepository
                 .findByGroupBuyIdAndParticipantEmail(groupBuyId, email)
-                .orElseThrow(() -> new IllegalArgumentException("참여 내역을 찾을 수 없습니다."));
+                .orElseThrow(() -> new org.springframework.security.access.AccessDeniedException("해당 공동구매 참여자만 픽업 완료 처리할 수 있습니다."));
 
         GroupBuy groupBuy = participation.getGroupBuy();
         if (groupBuy.getStatus() != GroupBuy.Status.PICKUP_READY) {
@@ -149,8 +149,10 @@ public class ParticipationService {
         participation.setPickupCompletedAt(LocalDateTime.now());
         participationRepository.save(participation);
 
-        boolean allCompleted = participationRepository.findByGroupBuyId(groupBuyId)
-                .stream()
+        List<Participation> allParticipations = participationRepository.findByGroupBuyId(groupBuyId);
+        int expectedParticipantCount = groupBuy.getMaxParticipants() - 1;
+        boolean allCompleted = allParticipations.size() == expectedParticipantCount
+                && allParticipations.stream()
                 .allMatch(p -> p.getPickupCompletedAt() != null);
 
         if (allCompleted) {
