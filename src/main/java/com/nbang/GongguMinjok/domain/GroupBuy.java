@@ -157,7 +157,8 @@ public class GroupBuy {
         PAYMENT_COMPLETED, // 모든 참여자의 결제가 완료된 상태
         HOST_PURCHASED,    // 호스트가 상품을 구매한 상태
         PICKUP_READY,      // 호스트가 물건을 수령하여 픽업이 가능한 상태
-        COMPLETED,         // 픽업이 모두 종료된 상태
+        PENDING,           // 픽업이 모두 종료되어 정산 대기 중인 상태
+        COMPLETED,         // 정산까지 완료된 상태
         EXPIRED            // 모집 미달, 미결제, 취소 등으로 인해 만료된 상태
     }
 
