@@ -3,6 +3,8 @@ checkTokenExpiry();
   const state = {
     groupBuy: null,
     selectedTime: null,
+    selectedTimeId: null,
+    participants: [],
     pickupMap: null,
     pickupLocationMarker: null,
     pickupCurrentLocationMarker: null
@@ -219,6 +221,7 @@ checkTokenExpiry();
       mypageBtn.classList.remove("hidden");
       logoutBtn.classList.remove("hidden");
       writeBtn?.classList.remove("hidden");
+      logoutBtn.addEventListener("click", handleLogout);
     } else {
       loginBtn.classList.remove("hidden");
       mypageBtn.classList.add("hidden");
@@ -247,7 +250,16 @@ checkTokenExpiry();
       }
 
       state.groupBuy = groupBuy;
-      state.selectedTime = getInitialSelectedTime(groupBuy);
+      const firstTime = groupBuy.pickupTimes?.[0];
+      state.selectedTime = firstTime?.pickupTime ?? null;
+      state.selectedTimeId = firstTime?.id ?? null;
+
+      try {
+        const participants = await fetch(`/api/groupbuys/${groupBuy.id}/participants`);
+        state.participants = participants.ok ? await participants.json() : [];
+      } catch {
+        state.participants = [];
+      }
 
       renderDetail(groupBuy);
       bindEvents();
@@ -275,9 +287,8 @@ checkTokenExpiry();
     renderBasicInfo(groupBuy);
     renderGroupBuyInfo(groupBuy);
     renderRecruitmentStatus(groupBuy);
-    renderParticipants(groupBuy.participants || []);
+    renderParticipants(state.participants);
     renderComments(groupBuy.comments || []);
-    renderTimeSlots(groupBuy.pickupTimes || []);
     renderBottomBar(groupBuy);
     renderModal(groupBuy);
   }
@@ -311,7 +322,7 @@ checkTokenExpiry();
 
       if (spans[1]) {
         if (groupBuy.hostMannerGrade != null) {
-          spans[1].textContent = `${getBadgeEmoji(groupBuy.hostMannerGrade)} ${groupBuy.hostMannerScore}`;
+          spans[1].textContent = `${getBadgeEmoji(groupBuy.hostMannerGrade)} ${Number(groupBuy.hostMannerScore).toFixed(1)}`;
         }
       }
     }
@@ -423,7 +434,7 @@ checkTokenExpiry();
       row.innerHTML = `
         <div class="avatar-circle-md">${escapeHtml(avatarText)}</div>
         <span class="small-note">${escapeHtml(participantName)}</span>
-        <span class="small-note">${participantBadge}${participantScore !== null ? ` ${participantScore}` : ""}</span>
+        <span class="small-note">${participantBadge}${participantScore !== null ? ` ${Number(participantScore).toFixed(1)}` : ""}</span>
         <span class="small-note">${escapeHtml(participantTime)}</span>
       `;
 
@@ -537,48 +548,92 @@ checkTokenExpiry();
     return commentItem;
   }
 
-  function renderTimeSlots(pickupTimes) {
-    const timeCard = getCardBySectionTitle("🕒 픽업 시간 선택");
-    if (!timeCard) return;
-
-    const timeGrid = timeCard.querySelector(".time-grid");
-    if (!timeGrid) return;
-
-    timeGrid.innerHTML = "";
-
-    if (!pickupTimes.length) {
-      timeGrid.innerHTML = `<p class="small-note">선택 가능한 픽업 시간이 없습니다.</p>`;
-      return;
-    }
-
-    pickupTimes.forEach((dateTimeStr, index) => {
-      const button = document.createElement("button");
-      button.className = "time-box";
-      button.type = "button";
-      button.dataset.time = dateTimeStr;
-
-      if (state.selectedTime === dateTimeStr || (!state.selectedTime && index === 0)) {
-        button.classList.add("active");
-      }
-
-      button.innerHTML = `
-        <div class="time">${escapeHtml(formatPickupTime(dateTimeStr))}</div>
-      `;
-
-      button.addEventListener("click", () => {
-        state.selectedTime = dateTimeStr;
-        updateTimeBoxActive(timeGrid, dateTimeStr);
-        syncModalSelectedTime(dateTimeStr);
-      });
-
-      timeGrid.appendChild(button);
-    });
-  }
-
   function renderBottomBar(groupBuy) {
     const priceEl = document.querySelector(".fixed-bottom .price");
     if (priceEl) {
-      priceEl.textContent = `1인 부담금 ${formatPrice(groupBuy.participantFinalPrice)}`;
+      priceEl.textContent = `1인 부담금\n${formatPrice(groupBuy.participantFinalPrice)}`;
+    }
+
+    const openModalBtn = document.getElementById("openModal");
+    if (!openModalBtn) return;
+
+    const isLoggedIn = typeof getLoginState === "function" ? getLoginState() : false;
+    const userId = isLoggedIn ? localStorage.getItem("userId") : null;
+    const isHost = userId && String(userId) === String(groupBuy.hostId);
+    const isParticipant = !isHost && state.participants.some(p => String(p.participantId) === String(userId));
+
+    delete openModalBtn.dataset.action;
+    delete openModalBtn.dataset.role;
+    delete openModalBtn.dataset.gbId;
+    openModalBtn.disabled = false;
+
+    const { status } = groupBuy;
+
+    if (status === "EXPIRED") {
+      openModalBtn.textContent = "마감된 공동구매입니다";
+      openModalBtn.disabled = true;
+
+    } else if (status === "COMPLETED") {
+      openModalBtn.textContent = "완료된 공동구매입니다";
+      openModalBtn.disabled = true;
+
+    } else if (status === "PICKUP_READY" || status === "HOST_PURCHASED") {
+      if (isHost || isParticipant) {
+        openModalBtn.textContent = "픽업시간 변경";
+        openModalBtn.dataset.action = "pickup-time";
+        openModalBtn.dataset.gbId = groupBuy.id;
+      } else {
+        openModalBtn.textContent = "마감";
+        openModalBtn.disabled = true;
+      }
+
+    } else if (status === "PAYMENT_COMPLETED") {
+      if (isHost) {
+        openModalBtn.textContent = "주문완료";
+        openModalBtn.dataset.action = "host-purchase";
+        openModalBtn.dataset.gbId = groupBuy.id;
+      } else if (isParticipant) {
+        openModalBtn.textContent = "결제 완료";
+        openModalBtn.disabled = true;
+      } else {
+        openModalBtn.textContent = "마감";
+        openModalBtn.disabled = true;
+      }
+
+    } else if (status === "CLOSED") {
+      if (isHost) {
+        openModalBtn.textContent = "참여자 결제 대기 중";
+        openModalBtn.disabled = true;
+      } else if (isParticipant) {
+        const myParticipation = state.participants.find(p => String(p.participantId) === String(userId));
+        if (myParticipation?.paymentConfirmed) {
+          openModalBtn.textContent = "결제 완료";
+          openModalBtn.disabled = true;
+        } else {
+          openModalBtn.textContent = "결제하기";
+          openModalBtn.dataset.action = "payment";
+          openModalBtn.dataset.role = "participant";
+          openModalBtn.dataset.gbId = groupBuy.id;
+        }
+      } else {
+        openModalBtn.textContent = "마감";
+        openModalBtn.disabled = true;
+      }
+
+    } else if (status === "OPEN" || status === "CLOSING") {
+      if (isHost) {
+        openModalBtn.textContent = "수정하기";
+        if (status === "OPEN") {
+          openModalBtn.dataset.action = "edit";
+          openModalBtn.dataset.gbId = groupBuy.id;
+        } else {
+          openModalBtn.disabled = true;
+        }
+      } else if (isParticipant) {
+        openModalBtn.textContent = "참여 취소";
+        openModalBtn.dataset.action = "cancel";
+        openModalBtn.dataset.gbId = groupBuy.id;
+      }
     }
   }
 
@@ -600,21 +655,25 @@ checkTokenExpiry();
     if (modalTimeGrid) {
       modalTimeGrid.innerHTML = "";
 
-      (groupBuy.pickupTimes || []).forEach((dateTimeStr, index) => {
+      (groupBuy.pickupTimes || []).forEach((timeItem, index) => {
+        const timeId = timeItem.id;
+        const dateTimeStr = timeItem.pickupTime;
+
         const btn = document.createElement("button");
         btn.className = "time-box";
         btn.type = "button";
         btn.dataset.time = dateTimeStr;
+        btn.dataset.timeId = timeId;
         btn.textContent = formatPickupTime(dateTimeStr);
 
-        if (state.selectedTime === dateTimeStr || (!state.selectedTime && index === 0)) {
+        if (state.selectedTimeId === timeId || (!state.selectedTimeId && index === 0)) {
           btn.classList.add("active");
         }
 
         btn.addEventListener("click", () => {
           state.selectedTime = dateTimeStr;
+          state.selectedTimeId = timeId;
           updateTimeBoxActive(modalTimeGrid, dateTimeStr);
-          syncPageSelectedTime(dateTimeStr);
         });
 
         modalTimeGrid.appendChild(btn);
@@ -628,6 +687,7 @@ checkTokenExpiry();
 
   function bindEvents() {
     bindModalEvents();
+    bindPaymentModalEvents();
     bindCommentSubmit();
     bindPrivateCheck();
   }
@@ -639,7 +699,60 @@ checkTokenExpiry();
     const modalConfirmBtn = modal?.querySelector(".btn.btn-primary.btn-full");
 
     if (openModalBtn && modal) {
-      openModalBtn.addEventListener("click", () => {
+      openModalBtn.addEventListener("click", async () => {
+        const action = openModalBtn.dataset.action;
+        const gbId = openModalBtn.dataset.gbId;
+
+        if (action === "payment") {
+          openPaymentModal(openModalBtn.dataset.role);
+          return;
+        }
+
+        if (action === "edit") {
+          location.href = `edit.html?id=${gbId}`;
+          return;
+        }
+
+        if (action === "host-purchase" || action === "pickup-time") {
+          showToast("준비 중입니다.");
+          return;
+        }
+
+        if (action === "cancel") {
+          const confirmModal = document.getElementById("confirmModal");
+          const okBtn = document.getElementById("confirmModalOk");
+          const cancelBtn = document.getElementById("confirmModalCancel");
+          confirmModal.classList.remove("hidden");
+          okBtn.onclick = async () => {
+            confirmModal.classList.add("hidden");
+            const token = localStorage.getItem("token");
+            try {
+              const response = await fetch(`/api/groupbuys/${gbId}/cancel`, {
+                method: "DELETE",
+                headers: { "Authorization": "Bearer " + token },
+              });
+              if (response.ok) {
+                showToast("참여가 취소되었습니다.");
+                const [updatedGroupBuy, updatedParticipants] = await Promise.all([
+                  fetch(`/api/groupbuys/${gbId}`).then(r => r.json()),
+                  fetch(`/api/groupbuys/${gbId}/participants`).then(r => r.json()),
+                ]);
+                state.groupBuy = updatedGroupBuy;
+                state.participants = updatedParticipants;
+                renderBottomBar(updatedGroupBuy);
+                renderParticipants(updatedParticipants);
+              } else {
+                const errorData = await response.json().catch(() => ({}));
+                showToast(errorData.message || "취소에 실패했습니다.");
+              }
+            } catch {
+              showToast("네트워크 오류가 발생했습니다.");
+            }
+          };
+          cancelBtn.onclick = () => confirmModal.classList.add("hidden");
+          return;
+        }
+
         const isLoggedIn =
           typeof getLoginState === "function" ? getLoginState() : false;
 
@@ -668,7 +781,7 @@ checkTokenExpiry();
     }
 
     if (modalConfirmBtn) {
-      modalConfirmBtn.addEventListener("click", () => {
+      modalConfirmBtn.addEventListener("click", async () => {
         const isLoggedIn =
           typeof getLoginState === "function" ? getLoginState() : false;
 
@@ -683,8 +796,37 @@ checkTokenExpiry();
           return;
         }
 
-        showToast(`${state.selectedTime} 픽업 시간으로 참여를 신청했습니다.`);
-        modal.classList.add("hidden");
+        const token = localStorage.getItem("token");
+        try {
+          const response = await fetch(`/api/groupbuys/${state.groupBuy.id}/join`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + token,
+            },
+            body: JSON.stringify({ pickupTimeId: state.selectedTimeId }),
+          });
+
+          if (response.ok) {
+            showToast("참여가 완료되었습니다.");
+            modal.classList.add("hidden");
+
+            // 참여 후 최신 상태 반영
+            const [updatedGroupBuy, updatedParticipants] = await Promise.all([
+              fetch(`/api/groupbuys/${state.groupBuy.id}`).then(r => r.json()),
+              fetch(`/api/groupbuys/${state.groupBuy.id}/participants`).then(r => r.json()),
+            ]);
+            state.groupBuy = updatedGroupBuy;
+            state.participants = updatedParticipants;
+            renderBottomBar(updatedGroupBuy);
+            renderParticipants(updatedParticipants);
+          } else {
+            const errorData = await response.json().catch(() => ({}));
+            showToast(errorData.message || "참여에 실패했습니다.");
+          }
+        } catch {
+          showToast("네트워크 오류가 발생했습니다.");
+        }
       });
     }
   }
@@ -729,6 +871,107 @@ checkTokenExpiry();
     });
   }
 
+  const TOSS_CLIENT_KEY = "test_ck_pP2YxJ4K87qv9b6gpBnJVRGZwXLO";
+
+  function openPaymentModal(role) {
+    const groupBuy = state.groupBuy;
+    if (!groupBuy) return;
+
+    const modal = document.getElementById("paymentModal");
+    const roleEl = document.getElementById("payment-modal-role");
+    const titleEl = document.getElementById("payment-modal-title");
+    const amountEl = document.getElementById("payment-modal-amount");
+    const confirmBtn = document.getElementById("payment-modal-btn");
+
+    if (roleEl) roleEl.textContent = role === "host" ? "호스트 결제 (전체 금액)" : "참여자 결제";
+    if (titleEl) titleEl.textContent = groupBuy.title;
+
+    // TODO: 호스트 결제 금액은 백엔드 팀과 확정 후 groupBuy.hostPaymentAmount 등으로 교체
+    const amount = role === "host"
+      ? groupBuy.totalPrice
+      : (groupBuy.participantPaymentAmount ?? groupBuy.participantFinalPrice);
+    if (amountEl) amountEl.textContent = formatPrice(amount);
+
+    if (confirmBtn) {
+      confirmBtn.dataset.role = role;
+      confirmBtn.dataset.amount = amount;
+    }
+
+    if (modal) modal.classList.remove("hidden");
+  }
+
+  function bindPaymentModalEvents() {
+    const modal = document.getElementById("paymentModal");
+    const closeBtn = document.getElementById("closePaymentModal");
+    const confirmBtn = document.getElementById("payment-modal-btn");
+
+    if (closeBtn) {
+      closeBtn.addEventListener("click", () => {
+        modal?.classList.add("hidden");
+      });
+    }
+
+    if (modal) {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.classList.add("hidden");
+      });
+    }
+
+    if (confirmBtn) {
+      confirmBtn.addEventListener("click", () => {
+        const role = confirmBtn.dataset.role;
+        const amount = Number(confirmBtn.dataset.amount);
+        requestTossPayment(role, amount);
+      });
+    }
+  }
+
+  async function requestTossPayment(role, amount) {
+    const groupBuy = state.groupBuy;
+    const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
+
+    if (!userId) {
+      showToast("로그인이 필요합니다.");
+      window.location.href = "login.html";
+      return;
+    }
+
+    let readyData;
+    try {
+      const res = await fetch(`/api/groupbuys/${groupBuy.id}/payments/ready`, {
+        method: "POST",
+        headers: { Authorization: "Bearer " + token }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.message || "결제 준비에 실패했습니다.");
+        return;
+      }
+      readyData = await res.json();
+    } catch (e) {
+      showToast("결제 준비 중 오류가 발생했습니다.");
+      return;
+    }
+
+    const tossPayments = TossPayments(TOSS_CLIENT_KEY);
+    const payment = tossPayments.payment({ customerKey: "U-" + userId });
+
+    payment.requestPayment({
+      method: "CARD",
+      amount: { currency: "KRW", value: readyData.amount },
+      orderId: readyData.orderId,
+      orderName: groupBuy.title,
+      successUrl: `${window.location.origin}/success.html?role=${role}&groupBuyId=${groupBuy.id}`,
+      failUrl: `${window.location.origin}/fail.html`,
+      customerName: "",
+    }).catch((e) => {
+      if (e.code !== "USER_CANCEL") {
+        showToast(e.message || "결제 중 오류가 발생했습니다.");
+      }
+    });
+  }
+
   function bindPrivateCheck() {
     const privateCheck = document.getElementById("privateCheck");
     if (!privateCheck) return;
@@ -759,15 +1002,6 @@ checkTokenExpiry();
     updateTimeBoxActive(modalGrid, selectedTime);
   }
 
-  function syncPageSelectedTime(selectedTime) {
-    const timeCard = getCardBySectionTitle("🕒 픽업 시간 선택");
-    const pageGrid = timeCard?.querySelector(".time-grid");
-
-    if (!pageGrid) return;
-
-    updateTimeBoxActive(pageGrid, selectedTime);
-  }
-
   function getCardBySectionTitle(titleText) {
     const cards = document.querySelectorAll(".card");
 
@@ -781,14 +1015,20 @@ checkTokenExpiry();
 
   function getPickupDateText(pickupTimes) {
     if (Array.isArray(pickupTimes) && pickupTimes.length > 0) {
-      return formatDateKorean(new Date(pickupTimes[0]));
+      return formatDateKorean(new Date(pickupTimes[0].pickupTime));
     }
     return "미정";
   }
 
   function getDeadlineText(groupBuy) {
     if (!groupBuy.deadline) return "미정";
-    return formatDateKorean(new Date(groupBuy.deadline));
+    const date = new Date(groupBuy.deadline);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${year}년 ${month}월 ${day}일 ${hours}:${minutes}`;
   }
 
   function formatDateKorean(date) {

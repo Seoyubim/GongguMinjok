@@ -1,9 +1,11 @@
 package com.nbang.GongguMinjok.service;
 
 import com.nbang.GongguMinjok.domain.GroupBuy;
+import com.nbang.GongguMinjok.domain.GroupBuyPickupTime;
 import com.nbang.GongguMinjok.domain.Participation;
 import com.nbang.GongguMinjok.domain.User;
 import com.nbang.GongguMinjok.dto.ParticipationResponseDto;
+import com.nbang.GongguMinjok.dto.PickupResponseDto;
 import com.nbang.GongguMinjok.repository.GroupBuyRepository;
 import com.nbang.GongguMinjok.repository.ParticipationRepository;
 import com.nbang.GongguMinjok.repository.UserRepository;
@@ -25,7 +27,12 @@ public class ParticipationService {
 
     @Transactional
     public ParticipationResponseDto join(Long groupBuyId, String email) {
-        GroupBuy groupBuy = groupBuyRepository.findById(groupBuyId)
+        return join(groupBuyId, email, null);
+    }
+
+    @Transactional
+    public ParticipationResponseDto join(Long groupBuyId, String email, Long pickupTimeId) {
+        GroupBuy groupBuy = groupBuyRepository.findByIdAndDeletedFalse(groupBuyId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
 
         if (groupBuy.getStatus() != GroupBuy.Status.OPEN
@@ -51,6 +58,13 @@ public class ParticipationService {
         Participation participation = new Participation();
         participation.setGroupBuy(groupBuy);
         participation.setParticipant(participant);
+        if (pickupTimeId != null) {
+            GroupBuyPickupTime pickupTime = groupBuy.getPickupTimes().stream()
+                    .filter(time -> time.getId().equals(pickupTimeId))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("해당 공동구매의 픽업 시간이 아닙니다."));
+            participation.setPickupTime(pickupTime);
+        }
         participationRepository.save(participation);
 
         groupBuy.setCurrentParticipants(groupBuy.getCurrentParticipants() + 1);
@@ -78,7 +92,7 @@ public class ParticipationService {
 
     @Transactional
     public void cancel(Long groupBuyId, String email) {
-        GroupBuy groupBuy = groupBuyRepository.findById(groupBuyId)
+        GroupBuy groupBuy = groupBuyRepository.findByIdAndDeletedFalse(groupBuyId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
 
         User participant = userRepository.findByEmail(email)
@@ -115,6 +129,42 @@ public class ParticipationService {
         return participationRepository.findByParticipantId(participant.getId()).stream()
                 .map(ParticipationResponseDto::from)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public PickupResponseDto completePickup(Long groupBuyId, String email) {
+        Participation participation = participationRepository
+                .findByGroupBuyIdAndParticipantEmail(groupBuyId, email)
+                .orElseThrow(() -> new org.springframework.security.access.AccessDeniedException("해당 공동구매 참여자만 픽업 완료 처리할 수 있습니다."));
+
+        GroupBuy groupBuy = participation.getGroupBuy();
+        if (groupBuy.getStatus() != GroupBuy.Status.PICKUP_READY) {
+            throw new IllegalStateException("픽업 가능 상태가 아닙니다.");
+        }
+
+        if (participation.getPickupCompletedAt() != null) {
+            throw new IllegalStateException("이미 픽업 완료 처리되었습니다.");
+        }
+
+        participation.setPickupCompletedAt(LocalDateTime.now());
+        participationRepository.save(participation);
+
+        List<Participation> allParticipations = participationRepository.findByGroupBuyId(groupBuyId);
+        int expectedParticipantCount = groupBuy.getMaxParticipants() - 1;
+        boolean allCompleted = allParticipations.size() == expectedParticipantCount
+                && allParticipations.stream()
+                .allMatch(p -> p.getPickupCompletedAt() != null);
+
+        if (allCompleted) {
+            groupBuy.setStatus(GroupBuy.Status.PENDING);
+            groupBuyRepository.save(groupBuy);
+        }
+
+        return new PickupResponseDto(
+                participation.getId(),
+                participation.getPickupCompletedAt(),
+                allCompleted,
+                groupBuy.getStatus().name());
     }
 
 }

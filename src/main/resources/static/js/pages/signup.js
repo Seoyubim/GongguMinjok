@@ -13,9 +13,36 @@ const signupToast        = document.getElementById('signup-toast');
 
 let timerInterval  = null;
 let isEmailVerified = false;
+let selectedLat = null;
+let selectedLng = null;
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function searchAddress() {
+  new daum.Postcode({
+    oncomplete: (data) => {
+      const addr = data.roadAddress || data.jibunAddress;
+      const addrErr = document.getElementById('addr-err');
+      const resultEl = document.getElementById('addr-result');
+      fetch(`https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(addr)}`, {
+        headers: { Authorization: 'KakaoAK 6862dc8015e382acfd29f23b95906a08' }
+      }).then(res => res.json()).then(json => {
+        if (json.documents && json.documents.length > 0) {
+          selectedLat = parseFloat(json.documents[0].y);
+          selectedLng = parseFloat(json.documents[0].x);
+          document.getElementById('location').value = addr;
+          addrErr.textContent = '';
+          resultEl.textContent = '주소: ' + addr;
+          resultEl.classList.remove('hidden');
+        } else {
+          addrErr.textContent = '주소 좌표를 가져오지 못했습니다. 다시 검색해 주세요.';
+          resultEl.classList.add('hidden');
+        }
+      });
+    }
+  }).open();
 }
 
 document.querySelectorAll('.btn-pw-toggle').forEach(btn => {
@@ -34,6 +61,8 @@ document.querySelectorAll('.btn-pw-toggle').forEach(btn => {
 emailInput.addEventListener('input', () => {
   btnSendCode.disabled = !isValidEmail(emailInput.value.trim());
 });
+
+document.getElementById('btn-search-addr').addEventListener('click', searchAddress);
 
 document.getElementById('phone').addEventListener('input', (e) => {
   const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
@@ -153,12 +182,17 @@ signupForm.addEventListener('submit', async (e) => {
     return;
   }
 
+  if (!selectedLat || !selectedLng) {
+    formError.textContent = '주소 검색을 통해 지역을 선택해주세요.';
+    return;
+  }
+
   const submitBtn = signupForm.querySelector('.btn-signup');
   submitBtn.disabled = true;
   submitBtn.textContent = '처리 중...';
 
   try {
-    await signupUser({ email, password, passwordConfirm, nickname, phone, location });
+    await signupUser({ email, password, passwordConfirm, nickname, phone, location, lat: selectedLat, lng: selectedLng });
 
     signupToast.classList.add('show');
     setTimeout(() => { window.location.href = 'login.html'; }, 2000);

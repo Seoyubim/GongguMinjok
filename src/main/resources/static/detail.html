@@ -98,9 +98,6 @@
       </div>
 
       <div class="card">
-        <h3 class="section-title">🕒 픽업 시간 선택</h3>
-        <div class="time-grid"></div>
-        <p class="time-notice">* 참여 시 원하는 시간대를 선택해 주세요</p>
         <p class="time-warning">
           <strong>⚠️ 노쇼 주의!</strong><br />
           픽업 불참 시 매너 점수가 차감됩니다.<br />
@@ -144,6 +141,37 @@
     </div>
   </div>
 
+  <div id="paymentModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>결제 전 확인</h3>
+        <button id="closePaymentModal" type="button">✕</button>
+      </div>
+      <div class="modal-section">
+        <strong id="payment-modal-role"></strong>
+        <p id="payment-modal-title" style="margin-top:8px; font-size:15px;"></p>
+      </div>
+      <div class="modal-price">
+        <strong id="payment-modal-amount"></strong>
+        <p>* 결제 완료 후 취소 불가</p>
+      </div>
+      <button id="payment-modal-btn" class="btn btn-primary btn-full" type="button">결제하기</button>
+    </div>
+  </div>
+
+  <div id="confirmModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>참여 취소</h3>
+      </div>
+      <p class="modal-desc">정말 참여를 취소하시겠습니까?</p>
+      <div style="display:flex; gap:8px; margin-top:16px;">
+        <button id="confirmModalCancel" class="btn btn-outline btn-full" type="button">취소</button>
+        <button id="confirmModalOk" class="btn btn-primary btn-full" type="button">확인</button>
+      </div>
+    </div>
+  </div>
+
   <div id="pickupMapModal" class="map-modal hidden">
     <div class="map-modal-content">
       <button id="closePickupMapBtn" class="map-modal-close" type="button" aria-label="지도 닫기">×</button>
@@ -168,6 +196,7 @@
     onload="window.kakaoSdkReady = true;"
     onerror="console.error('카카오맵 SDK 스크립트 로드 실패');"
   ></script>
+  <script src="https://js.tosspayments.com/v2/standard"></script>
   <script src="js/pages/detail.js"></script>
 </body>
 </html>

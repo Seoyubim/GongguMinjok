@@ -1,6 +1,8 @@
 package com.nbang.GongguMinjok.controller;
 
+import com.nbang.GongguMinjok.dto.ParticipationRequestDto;
 import com.nbang.GongguMinjok.dto.ParticipationResponseDto;
+import com.nbang.GongguMinjok.dto.PickupResponseDto;
 import com.nbang.GongguMinjok.service.ParticipationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +22,11 @@ public class ParticipationController {
     @PostMapping("/groupbuys/{groupBuyId}/join")
     public ResponseEntity<ParticipationResponseDto> join(
             @PathVariable Long groupBuyId,
+            @RequestBody(required = false) ParticipationRequestDto request,
             @AuthenticationPrincipal UserDetails userDetails) {
         String email = userDetails.getUsername();
-        return ResponseEntity.ok(participationService.join(groupBuyId, email));
+        Long pickupTimeId = (request != null) ? request.getPickupTimeId() : null;
+        return ResponseEntity.ok(participationService.join(groupBuyId, email, pickupTimeId));
     }
 
     @DeleteMapping("/groupbuys/{groupBuyId}/cancel")
@@ -45,5 +49,12 @@ public class ParticipationController {
             @AuthenticationPrincipal UserDetails userDetails) {
         String email = userDetails.getUsername();
         return ResponseEntity.ok(participationService.getMyParticipations(email));
+    }
+
+    @PostMapping("/groupbuys/{groupBuyId}/pickup/complete")
+    public ResponseEntity<PickupResponseDto> completePickup(
+            @PathVariable Long groupBuyId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(participationService.completePickup(groupBuyId, userDetails.getUsername()));
     }
 }

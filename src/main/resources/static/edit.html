@@ -40,7 +40,7 @@
 
     <nav class="tnav">
       <button class="tnav-back" onclick="go('list')">←</button>
-      <span class="tnav-title">공동구매 만들기</span>
+      <span class="tnav-title">공동구매 수정</span>
       <button class="tnav-icon" onclick="saveDraft()">임시저장</button>
     </nav>
 
@@ -66,23 +66,6 @@
     </div>
 
     <div class="step-cont active" id="cr-s1">
-
-      <div class="card">
-        <div class="sec-title">🛒 구매 유형 <span class="req">*</span></div>
-        <div class="type-grid">
-          <div class="type-card" onclick="crType(this,'COUPANG_LINK')">
-            <div class="tc-icon">🛒</div>
-            <div class="tc-lbl">온라인 마켓</div>
-            <div class="tc-desc">쿠팡·네이버 링크 공유</div>
-          </div>
-          <div class="type-card" onclick="crType(this,'DIRECT_DELIVERY')">
-            <div class="tc-icon">🌾</div>
-            <div class="tc-lbl">산지 직배송</div>
-            <div class="tc-desc">농·수산물 대량구매</div>
-          </div>
-        </div>
-        <div class="err-msg" id="cr-type-err">구매 유형을 선택해 주세요.</div>
-      </div>
 
       <div class="card">
         <div class="sec-title">📝 게시글 정보</div>
@@ -145,51 +128,6 @@
     <div class="step-cont" id="cr-s2">
 
       <div class="card">
-        <div class="sec-title">👥 모집 인원</div>
-        <div class="fgroup fgroup-row">
-          <label class="flabel">최대 모집 인원 <span class="req">*</span></label>
-          <div class="stepper stepper-sm">
-            <button onclick="stepV('cr-head',-1,2,20)">−</button>
-            <input type="number" id="cr-head" value="4" min="2" max="20" oninput="calcPrice()">
-            <button onclick="stepV('cr-head',1,2,20)">＋</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="sec-title">💰 금액 설정</div>
-        <div class="fgroup">
-          <label class="flabel">총 금액 (원) <span class="req">*</span></label>
-          <input class="finput" id="cr-total" type="number" min="1" placeholder="예) 100000" oninput="if(parseInt(this.value)<0)this.value=''; calcPrice()">
-          <div class="err-msg" id="cr-total-err">총 금액을 입력해 주세요.</div>
-        </div>
-        <div class="fgroup">
-          <label class="flabel">총 수량 <span class="req">*</span></label>
-          <input class="finput" id="cr-qty" type="number" min="1" placeholder="예) 10" oninput="if(parseInt(this.value)<0)this.value=''">
-          <div class="err-msg" id="cr-qty-err">총 수량을 입력해 주세요.</div>
-        </div>
-        <div class="info-box">
-          <div class="split-row">
-            <span>인당 기준 금액</span>
-            <span class="text-lime" id="cr-pp-val">— 원</span>
-          </div>
-          <div class="split-row" style="margin-top:8px">
-            <span>호스트 예상 할인</span>
-            <span class="text-lime" id="cr-host-disc">— </span>
-          </div>
-          <hr style="border:none;border-top:1px solid #e5e7eb;margin:10px 0">
-          <div class="split-row">
-            <span>호스트 실제 결제</span>
-            <span class="text-lime" id="cr-host-price">— 원</span>
-          </div>
-          <div class="split-row" style="margin-top:8px">
-            <span>참여자 실제 결제 <span style="font-size:11px;color:#9ca3af">(할인분 분담)</span></span>
-            <span class="text-lime" id="cr-participant-price">— 원</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
         <div class="sec-title">⏰ 모집 마감일 <span class="req">*</span></div>
         <div class="fgroup">
           <input class="finput" id="cr-deadline" type="datetime-local" onchange="updatePickupMin()">
@@ -243,5 +181,6 @@
 <script src="js/utils/ui.js"></script>
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="js/pages/write.js"></script>
+
 </body>
 </html>
