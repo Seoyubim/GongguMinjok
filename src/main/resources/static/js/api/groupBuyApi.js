@@ -1,5 +1,9 @@
-async function getGroupBuys() {
-  const response = await fetch('/api/groupbuys');
+async function getGroupBuys(userLat, userLng) {
+  let url = '/api/groupbuys';
+  if (userLat != null && userLng != null) {
+    url += `?userLat=${userLat}&userLng=${userLng}`;
+  }
+  const response = await fetch(url);
   if (!response.ok) {
     throw new Error('공동구매 목록을 불러오는데 실패했습니다.');
   }

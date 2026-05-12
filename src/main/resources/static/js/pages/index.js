@@ -21,6 +21,11 @@ const loadMoreWrap = document.getElementById("loadMoreWrap");
 
 let selectedCategories = [];
 let selectedStatus = "all";
+let selectedRadius = "neighborhood";
+
+let userLat = null;
+let userLng = null;
+let allGroupBuys = [];
 
 const ITEMS_PER_PAGE = 20;
 let visibleCount = ITEMS_PER_PAGE;
@@ -56,10 +61,22 @@ function bindCategoryCheckboxes() {
   });
 }
 
-async function getFilteredGroupBuys() {
-  const groupBuys = await getGroupBuys();
+async function initUserLocation() {
+  return new Promise(resolve => {
+    if (!navigator.geolocation) { resolve(); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        userLat = pos.coords.latitude;
+        userLng = pos.coords.longitude;
+        resolve();
+      },
+      () => resolve()
+    );
+  });
+}
 
-  return groupBuys.filter((item) => {
+function getFilteredGroupBuys() {
+  let filtered = allGroupBuys.filter((item) => {
     const matchCategory =
       selectedCategories.length === 0 || selectedCategories.includes(item.category);
 
@@ -68,15 +85,50 @@ async function getFilteredGroupBuys() {
       (selectedStatus === "recruiting" && item.status === "OPEN") ||
       (selectedStatus === "closing" && item.status === "CLOSING");
 
-    return (item.status === "OPEN" || item.status === "CLOSING" || item.status === "COMPLETED") && matchCategory && matchStatus;
+    const matchRadius = selectedRadius === "neighborhood"
+      ? true
+      : (item.distance != null && item.distance <= Number(selectedRadius));
+
+    return item.status !== "EXPIRED" && matchCategory && matchStatus && matchRadius;
   });
+
+  if (selectedRadius === "neighborhood") {
+    filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  } else {
+    filtered.sort((a, b) => (a.distance || 0) - (b.distance || 0));
+  }
+
+  return filtered;
+}
+
+function getMainStatusLabel(status) {
+  if (status === "OPEN") return "모집중";
+  if (status === "CLOSING") return "마감임박";
+  if (status === "CLOSED" || status === "PAYMENT_COMPLETED" || status === "HOST_PURCHASED" || status === "PICKUP_READY" || status === "PENDING") return "진행중";
+  if (status === "COMPLETED") return "완료";
+  return "";
+}
+
+function getMainStatusClass(status) {
+  if (status === "OPEN") return "badge-recruiting";
+  if (status === "CLOSING") return "badge-closing";
+  if (status === "CLOSED" || status === "PAYMENT_COMPLETED" || status === "HOST_PURCHASED" || status === "PICKUP_READY" || status === "PENDING") return "badge-progress";
+  if (status === "COMPLETED") return "badge-completed";
+  return "";
 }
 
 function createGroupBuyCard(item) {
   const progress = (item.currentParticipants / item.maxParticipants) * 100;
   const imageUrl = item.imageUrls?.[0] || "";
   const distanceText = item.distance != null ? item.distance.toFixed(1) + "km" : "";
-  const pickupTimeText = item.pickupTimes?.[0]?.pickupTime ? formatPickupTime(item.pickupTimes[0].pickupTime) : "";
+  const pickupTimeText = (item.pickupTimes || []).length > 0
+    ? [...new Set(
+        item.pickupTimes.map(t => {
+          const d = new Date(t.pickupTime);
+          return `${d.getMonth() + 1}/${d.getDate()}`;
+        })
+      )].join(' · ')
+    : "";
   const mannerScoreHtml = item.hostMannerScore != null
     ? `<span class="text-gray">${Number(item.hostMannerScore).toFixed(1)}</span>`
     : "";
@@ -86,8 +138,8 @@ function createGroupBuyCard(item) {
       <div class="groupbuy-card">
         <div class="card-image">
           <img src="${imageUrl}" alt="${item.title}">
-          <div class="card-badge ${getStatusClass(item.status)}">
-            ${getStatusLabel(item.status)}
+          <div class="card-badge ${getMainStatusClass(item.status)}">
+            ${getMainStatusLabel(item.status)}
           </div>
           <div class="card-category">${getCategoryLabel(item.category)}</div>
         </div>
@@ -193,7 +245,7 @@ function bindClusterModalEvents() {
 }
 
 async function renderGroupBuys() {
-  const filtered = await getFilteredGroupBuys();
+  const filtered = getFilteredGroupBuys();
   const visibleItems = filtered.slice(0, visibleCount);
 
   groupCount.textContent = "";
@@ -228,6 +280,17 @@ tabButtons.forEach((button) => {
   });
 });
 
+const radiusButtons = document.querySelectorAll(".radius-trigger");
+radiusButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    radiusButtons.forEach((btn) => btn.classList.remove("active"));
+    button.classList.add("active");
+    selectedRadius = button.dataset.radius;
+    visibleCount = ITEMS_PER_PAGE;
+    renderGroupBuys();
+  });
+});
+
 loadMoreBtn.addEventListener("click", () => {
   visibleCount += ITEMS_PER_PAGE;
   renderGroupBuys();
@@ -239,8 +302,10 @@ async function initPage() {
   renderAuthButtons();
   bindCategoryCheckboxes();
   bindClusterModalEvents();
+  await initUserLocation();
+  allGroupBuys = await getGroupBuys(userLat, userLng);
   await initMap((items, areaName) => openClusterModal(items, areaName));
-  await renderGroupBuys();
+  renderGroupBuys();
 }
 
 initPage();
