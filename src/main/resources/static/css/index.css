@@ -170,6 +170,10 @@
   background: #ef4444;
 }
 
+.badge-progress {
+  background: #9ca3af;
+}
+
 .badge-completed {
   background: #3b82f6;
 }
