@@ -10,13 +10,13 @@ public class PickupResponseDto {
     private final Long participationId;
     private final LocalDateTime pickupCompletedAt;
     private final boolean allPickupCompleted;
-    private final SettlementResponseDto settlement;
+    private final String groupBuyStatus;
 
     public PickupResponseDto(Long participationId, LocalDateTime pickupCompletedAt,
-                             boolean allPickupCompleted, SettlementResponseDto settlement) {
+                             boolean allPickupCompleted, String groupBuyStatus) {
         this.participationId = participationId;
         this.pickupCompletedAt = pickupCompletedAt;
         this.allPickupCompleted = allPickupCompleted;
-        this.settlement = settlement;
+        this.groupBuyStatus = groupBuyStatus;
     }
 }

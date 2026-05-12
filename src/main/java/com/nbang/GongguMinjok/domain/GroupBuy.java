@@ -53,7 +53,7 @@ public class GroupBuy {
 
     // 보상 정책
     @Column(nullable = false)
-    private int maxReward; // 최대 보상 (예: 30000// 원)
+    private int maxReward; // 최대 보상 (예: 15000원)
 
     @Column(nullable = false)
     private int maxParticipants;
@@ -113,6 +113,9 @@ public class GroupBuy {
     @Column(nullable = false)
     private LocalDateTime deadline;
 
+    @Column(updatable = false)
+    private LocalDateTime originalDeadline;
+
     // 확정된 호스트 결제 금액 (정원 충족 시점에 고정)
     @Column
     private Integer hostPaymentAmount;
@@ -138,6 +141,12 @@ public class GroupBuy {
     @Column
     private LocalDateTime updatedAt;
 
+    @Column(nullable = false)
+    private boolean deleted = false;
+
+    @Column
+    private LocalDateTime deletedAt;
+
     @Column
     private LocalDateTime completedAt;
 
@@ -146,8 +155,10 @@ public class GroupBuy {
         CLOSING,           // 마감 24시간 전 상태
         CLOSED,            // 정원이 모두 찼으며, 현재 결제 대기 중인 상태
         PAYMENT_COMPLETED, // 모든 참여자의 결제가 완료된 상태
+        HOST_PURCHASED,    // 호스트가 상품을 구매한 상태
         PICKUP_READY,      // 호스트가 물건을 수령하여 픽업이 가능한 상태
-        COMPLETED,         // 픽업이 모두 종료된 상태
+        PENDING,           // 픽업이 모두 종료되어 정산 대기 중인 상태
+        COMPLETED,         // 정산까지 완료된 상태
         EXPIRED            // 모집 미달, 미결제, 취소 등으로 인해 만료된 상태
     }
 
@@ -164,7 +175,10 @@ public class GroupBuy {
     }
 
     public int getHostDiscount() {
-        double discountRate = maxParticipants * 0.10;
+        int participantCount = maxParticipants - 1;
+        if (participantCount <= 0) return 0;
+
+        double discountRate = participantCount * 0.10;
         int discount = (int) (getUnitPrice() * discountRate);
         return Math.min(discount, maxReward);
     }

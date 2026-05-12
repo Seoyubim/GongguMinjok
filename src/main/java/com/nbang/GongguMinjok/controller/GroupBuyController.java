@@ -51,6 +51,22 @@ public class GroupBuyController {
         return ResponseEntity.ok(groupBuyService.updateGroupBuy(id, dto, userDetails.getUsername()));
     }
 
+    // POST /api/groupbuys/{id}/host-purchase
+    @PostMapping("/{id}/host-purchase")
+    public ResponseEntity<GroupBuyResponseDto> completeHostPurchase(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(groupBuyService.completeHostPurchase(id, userDetails.getUsername()));
+    }
+
+    // POST /api/groupbuys/{id}/pickup-ready
+    @PostMapping("/{id}/pickup-ready")
+    public ResponseEntity<GroupBuyResponseDto> markPickupReady(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(groupBuyService.markPickupReady(id, userDetails.getUsername()));
+    }
+
     // DELETE /api/groupbuys/{id}
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteGroupBuy(

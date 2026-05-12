@@ -2,13 +2,12 @@ package com.nbang.GongguMinjok.dto;
 
 import com.nbang.GongguMinjok.domain.GroupBuy;
 import com.nbang.GongguMinjok.domain.GroupBuyImage;
-import com.nbang.GongguMinjok.domain.GroupBuyPickupTime;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.Comparator;
 
 @Getter
 public class GroupBuyResponseDto {
@@ -24,13 +23,13 @@ public class GroupBuyResponseDto {
     private Double lat;
     private Double lng;
     private String dongName;
-    private List<LocalDateTime> pickupTimes;
+    private List<PickupTimeDto> pickupTimes;
     private String category;
     private List<String> imageUrls;
     private String status;
     private Long hostId;
     private String hostNickname;
-    private int hostMannerScore;
+    private double hostMannerScore;
     private String hostMannerGrade;
     private LocalDateTime createdAt;
     private LocalDateTime deadline;
@@ -63,7 +62,7 @@ public class GroupBuyResponseDto {
         this.lng = groupBuy.getLng();
         this.dongName = groupBuy.getDongName();
         this.pickupTimes = groupBuy.getPickupTimes().stream()
-                .map(GroupBuyPickupTime::getPickupTime)
+                .map(PickupTimeDto::new)
                 .collect(Collectors.toList());
         this.category = groupBuy.getCategory().name();
         this.imageUrls = groupBuy.getImages().stream()

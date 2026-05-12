@@ -101,6 +101,11 @@ body {
   background: #65a30d;
 }
 
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .btn-outline {
   background: white;
   color: #374151;

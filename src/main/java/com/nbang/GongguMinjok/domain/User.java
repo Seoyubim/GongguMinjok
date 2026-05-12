@@ -32,30 +32,32 @@ public class User {
     private String nickname;
 
     @Column(nullable = false, unique = true)
-    private String phone;        // 전화번호 (픽업 연락용)
+    private String phone;
 
     @Column(nullable = false)
-    private String location;     // 동네 (예: 봉선동)
+    private String location;
 
     @Column
-    private String profileImage; // 프로필 사진 URL
+    private String profileImage;
 
+    // double로 저장 (0.1 단위 소수점 처리)
+    // 기존 INT 컬럼이 있다면: ALTER TABLE users MODIFY COLUMN manner_score DOUBLE DEFAULT 50.0;
     @Column(nullable = false)
-    private int mannerScore = 50;  // 매너지수 기본값 50점
+    private double mannerScore = 50.0;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private MannerGrade mannerGrade = MannerGrade.SOSO;  // 매너등급
+    private MannerGrade mannerGrade = MannerGrade.GOOD;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private Role role = Role.USER;          // 권한 (기본값: USER)
+    private Role role = Role.USER;
 
     @Column(nullable = false)
-    private boolean emailVerified = false;  // 이메일 인증 여부
+    private boolean emailVerified = false;
 
     @Column(nullable = false)
-    private boolean isActive = true;  // 계정 활성화 여부
+    private boolean isActive = true;
 
     @Column
     private LocalDateTime premiumUntil;
@@ -68,19 +70,37 @@ public class User {
     @Column
     private LocalDateTime updatedAt;
 
-    // 매너등급 enum
     public enum MannerGrade {
-        BAD,    // 0~49: 노쇼 등 부정적 평가 반영 시
-        SOSO,   // 50~69: 기본 시작 등급
-        GOOD,   // 70~89: 긍정 평가 누적 시
-        GREAT,  // 90~99: 높은 신뢰도
-        LEGEND // 100: 최상위 등급
+        BLOCKED, // score < 0: 모든 공동구매 쓰기 활동 제한
+        BAD,     // 0~29
+        SOSO,    // 30~49
+        GOOD,    // 50~69 (계정 생성 기본값)
+        GREAT,   // 70~89
+        LEGEND   // 90~100
     }
 
-    // 권한
     public enum Role {
         USER,
         ADMIN
+    }
+
+    public void updateMannerScore(double delta) {
+        double updated = Math.min(100.0, this.mannerScore + delta);
+        this.mannerScore = updated;
+        this.mannerGrade = resolveGrade(updated);
+    }
+
+    private static MannerGrade resolveGrade(double score) {
+        if (score < 0)  return MannerGrade.BLOCKED;
+        if (score < 30) return MannerGrade.BAD;
+        if (score < 50) return MannerGrade.SOSO;
+        if (score < 70) return MannerGrade.GOOD;
+        if (score < 90) return MannerGrade.GREAT;
+        return MannerGrade.LEGEND;
+    }
+
+    public boolean isRestricted() {
+        return this.mannerGrade == MannerGrade.BLOCKED;
     }
 
     public boolean isPremiumActive() {

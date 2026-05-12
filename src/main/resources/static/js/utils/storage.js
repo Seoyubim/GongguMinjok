@@ -17,6 +17,7 @@ function login() {
 function logout() {
   clearLoginState();
   localStorage.removeItem("token");
+  localStorage.removeItem("userId");
 }
 
 function isLoggedIn() {

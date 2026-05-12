@@ -32,6 +32,10 @@ public class Participation {
     @JoinColumn(name = "user_id", nullable = false)
     private User participant;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pickup_time_id")
+    private GroupBuyPickupTime pickupTime;
+
     // 결제 완료 여부
     @Column(nullable = false)
     private boolean paymentConfirmed = false;

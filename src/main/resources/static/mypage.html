@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,12 +8,13 @@
   <link rel="stylesheet" href="css/common.css">
   <link rel="stylesheet" href="css/mypage.css">
 </head>
+
 <body>
   <header class="header">
     <div class="container">
       <div class="header-content">
         <a href="index.html" class="logo">
-          <img src="images/logo.jpg" alt="공구의 민족 로고" class="logo-image">
+          <img src="images/logo.jpg" class="logo-image">
           <h1 class="logo-text">공구의 민족</h1>
         </a>
 
@@ -26,17 +28,153 @@
 
   <main class="main-content">
     <div class="mypage">
-      <div id="profileCard" class="profile-card"></div>
 
       <div class="tabs">
+
+        <input type="radio" name="tab" id="tab1" checked>
+        <input type="radio" name="tab" id="tab2">
+        <input type="radio" name="tab" id="tab3">
+        <input type="radio" name="tab" id="tab4">
+
         <div class="tabs-list">
-          <button class="tab-trigger active" data-tab="activity">활동 내역</button>
-          <button class="tab-trigger" data-tab="manner">매너 평가</button>
-          <button class="tab-trigger" data-tab="benefit">혜택</button>
+          <label for="tab1" class="tab-trigger">내 정보</label>
+          <label for="tab2" class="tab-trigger">참여한 공동구매</label>
+          <label for="tab3" class="tab-trigger">생성한 공동구매</label>
+          <label for="tab4" class="tab-trigger">공지사항</label>
         </div>
 
-        <div id="mypageTabContent"></div>
+        <div class="tab-content">
+
+          <div class="tab-panel panel1">
+            <div class="profile-card-v2">
+
+              <div class="profile-top">
+                <img src="images/default-profile.png" class="profile-img-lg">
+                <div>
+                  <h2 class="nickname">공구왕</h2>
+                  <p class="email">user@email.com</p>
+
+                  <div class="badge-row">
+                    <span class="badge-chip badge-chip-host">공구 리더</span>
+                    <span class="badge-chip badge-chip-member">활발한 참여자</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="manner-section">
+                <div class="manner-header">
+                  <span>매너 점수</span>
+                  <strong>4.8</strong>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width:96%"></div>
+                </div>
+              </div>
+
+              <div class="premium-box">
+                <div class="premium-text">
+                  <h3>프리미엄 이용하기 🚀</h3>
+                  <p>무료 회원은 월 3회까지만 공동구매 작성이 가능합니다.</p>
+                  <p>프리미엄 가입 시 게시글 작성 제한 없이 이용할 수 있어요.</p>
+                </div>
+                <button class="btn btn-primary">구독하기</button>
+              </div>
+
+              <div class="summary-box">
+                <div><span>참여</span><strong>5</strong></div>
+                <div><span>생성</span><strong>2</strong></div>
+                <div><span>완료</span><strong>3</strong></div>
+              </div>
+
+              <div class="profile-extra">
+                <p><strong>가입일</strong> : 2024.03</p>
+                <p><strong>한줄 소개</strong> : 믿고 거래하는 공구러입니다 😊</p>
+              </div>
+
+              <button class="btn btn-outline btn-full">프로필 수정</button>
+
+            </div>
+          </div>
+
+          <div class="tab-panel panel2">
+            <div class="card-list">
+
+              <div class="group-card">
+                <img src="images/sample1.jpg" class="card-img">
+                <div>
+                  <h3 class="card-title">무선 키보드 공동구매</h3>
+                  <p class="card-info">3 / 5명 참여중</p>
+                  <p class="card-deadline">마감까지 2일</p>
+                </div>
+              </div>
+
+              <div class="group-card">
+                <img src="images/sample2.jpg" class="card-img">
+                <div>
+                  <h3 class="card-title">닭가슴살 공구</h3>
+                  <p class="card-info">5 / 5명 모집완료</p>
+                  <p class="card-deadline done">모집 완료</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="tab-panel panel3">
+            <div class="card-list">
+
+              <div class="group-card">
+                <img src="images/sample3.jpg" class="card-img">
+                <div>
+                  <h3 class="card-title">에어팟 케이스 공동구매</h3>
+                  <p class="card-info">2 / 5명 참여중</p>
+                  <p class="card-deadline">마감까지 5일</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="tab-panel panel4">
+            <div class="notice-box">
+              <h3>공지사항</h3>
+
+              <label for="notice1" class="notice-item">
+                <span class="notice-title">📢 공동구매 정책 변경 안내</span>
+                <span class="notice-date">2026.05.01</span>
+              </label>
+
+              <label for="notice2" class="notice-item">
+                <span class="notice-title">🚀 프리미엄 서비스 출시 안내</span>
+                <span class="notice-date">2026.04.28</span>
+              </label>
+
+            </div>
+          </div>
+
+          <input type="checkbox" id="notice1">
+          <div class="modal">
+            <div class="modal-content">
+              <label for="notice1" class="modal-close">✕</label>
+              <h2>📢 공동구매 정책 변경 안내</h2>
+              <p>2026년 5월부터 무료 회원은 월 3회까지만 공동구매 작성이 가능합니다.</p>
+              <p>프리미엄 회원은 제한 없이 이용 가능합니다.</p>
+            </div>
+          </div>
+
+          <input type="checkbox" id="notice2">
+          <div class="modal">
+            <div class="modal-content">
+              <label for="notice2" class="modal-close">✕</label>
+              <h2>🚀 프리미엄 서비스 출시</h2>
+              <p>프리미엄 가입 시 게시글 무제한 작성이 가능합니다.</p>
+              <p>더 빠른 모집과 특별 배지도 제공됩니다.</p>
+            </div>
+          </div>
+
+        </div>
       </div>
+
     </div>
   </main>
 
@@ -45,6 +183,7 @@
   <script src="js/mock/data.js"></script>
   <script src="js/api/userApi.js"></script>
   <script src="js/utils/storage.js"></script>
+  <script src="js/utils/ui.js"></script>
   <script src="js/pages/mypage.js"></script>
 </body>
 </html>
