@@ -14,8 +14,15 @@ let selectedDongName = '';
   const minDeadline = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 3, 0, 0, 0);
   const deadlineMin = minDeadline.getFullYear() + '-' +
     String(minDeadline.getMonth() + 1).padStart(2, '0') + '-' +
-    String(minDeadline.getDate()).padStart(2, '0') + 'T00:00';
+    String(minDeadline.getDate()).padStart(2, '0');
   document.getElementById('cr-deadline').min = deadlineMin;
+
+  // 마감일 최댓값: 오늘 + 3개월
+  const maxDeadline = new Date(today.getFullYear(), today.getMonth() + 3, today.getDate());
+  const deadlineMax = maxDeadline.getFullYear() + '-' +
+    String(maxDeadline.getMonth() + 1).padStart(2, '0') + '-' +
+    String(maxDeadline.getDate()).padStart(2, '0');
+  document.getElementById('cr-deadline').max = deadlineMax;
 
   // 픽업 datetime 최솟값: 현재 시각
   const pickupMin = today.getFullYear() + '-' +
@@ -159,7 +166,7 @@ function updatePickupMin() {
   const deadlineVal = document.getElementById('cr-deadline').value;
   const pickupInput = document.getElementById('cr-pdatetime');
   if (deadlineVal) {
-    pickupInput.min = deadlineVal;
+    pickupInput.min = deadlineVal + 'T23:59';
   } else {
     const now = new Date();
     pickupInput.min = now.getFullYear() + '-' +
@@ -182,7 +189,7 @@ function addPickupTime() {
     return;
   }
 
-  if (deadlineVal && new Date(val) <= new Date(deadlineVal)) {
+  if (deadlineVal && new Date(val) <= new Date(deadlineVal + 'T23:59')) {
     errEl.textContent = '픽업 시간은 모집 마감일 이후로 설정해 주세요.';
     errEl.style.display = 'block';
     return;
@@ -289,8 +296,19 @@ function validateStep(step) {
     const minDeadline = new Date();
     minDeadline.setDate(minDeadline.getDate() + 3);
     minDeadline.setHours(0, 0, 0, 0);
-    if (!deadline || new Date(deadline) < minDeadline) {
-      deadlineErr.textContent = deadline ? '마감일은 오늘로부터 3일 이후부터 설정 가능합니다.' : '모집 마감일을 입력해 주세요.';
+    const maxDeadline = new Date();
+    maxDeadline.setMonth(maxDeadline.getMonth() + 3);
+    maxDeadline.setHours(23, 59, 59, 999);
+    if (!deadline) {
+      deadlineErr.textContent = '모집 마감일을 입력해 주세요.';
+      deadlineErr.style.display = 'block';
+      valid = false;
+    } else if (new Date(deadline) < minDeadline) {
+      deadlineErr.textContent = '마감일은 오늘로부터 3일 이후부터 설정 가능합니다.';
+      deadlineErr.style.display = 'block';
+      valid = false;
+    } else if (new Date(deadline) > maxDeadline) {
+      deadlineErr.textContent = '마감일은 오늘로부터 3개월 이내로 설정 가능합니다.';
       deadlineErr.style.display = 'block';
       valid = false;
     } else {
@@ -314,7 +332,7 @@ function validateStep(step) {
       valid = false;
     } else {
       const deadlineVal = document.getElementById('cr-deadline').value;
-      if (deadlineVal && pickupTimes.some(dt => new Date(dt) <= new Date(deadlineVal))) {
+      if (deadlineVal && pickupTimes.some(dt => new Date(dt) <= new Date(deadlineVal + 'T23:59'))) {
         pickupErr.textContent = '픽업 시간은 모집 마감일 이후로 설정해 주세요.';
         pickupErr.style.display = 'block';
         valid = false;
@@ -375,7 +393,7 @@ function renderPreview() {
   const head = document.getElementById('cr-head').value;
   const addr = document.getElementById('cr-addr').value.trim();
   const deadlineRaw = document.getElementById('cr-deadline').value;
-  const deadlineLabel = deadlineRaw ? deadlineRaw.replace('T', ' ') : '';
+  const deadlineLabel = deadlineRaw || '';
   const perPerson = Math.ceil(total / parseInt(head));
   const discountRate = Math.min((parseInt(head) - 1) * 0.10, 1.0);
   const discountAmount = Math.min(Math.floor(perPerson * discountRate), 30000);
@@ -484,7 +502,7 @@ function submitGroupBuy() {
     lat: selectedLat,
     lng: selectedLng,
     dongName: selectedDongName,
-    deadline: document.getElementById('cr-deadline').value + ':00',
+    deadline: document.getElementById('cr-deadline').value + 'T23:59:00',
     pickupTimes: pickupTimes.slice(),
     imageUrls: []
   };
