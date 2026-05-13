@@ -18,6 +18,34 @@ async function getGroupBuyById(id) {
   return response.json();
 }
 
+async function updateGroupBuy(id, data) {
+  const token = localStorage.getItem("token");
+  const response = await fetch("/api/groupbuys/" + id, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify(data)
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || "공동구매 수정에 실패했습니다.");
+  }
+
+  return result;
+}
+
+async function getParticipants(groupBuyId) {
+  const response = await fetch('/api/groupbuys/' + groupBuyId + '/participants');
+  if (!response.ok) {
+    throw new Error('참여자 정보를 불러오는데 실패했습니다.');
+  }
+  return response.json();
+}
+
 async function createGroupBuy(data) {
   const token = localStorage.getItem("token");
   const response = await fetch("/api/groupbuys", {
