@@ -194,7 +194,7 @@ public class GroupBuyService {
             }
 
             validatePickupTimes(dto.getPickupTimes(), groupBuy.getDeadline());
-            Set<LocalDateTime> selectedByParticipants = participationRepository.findByGroupBuyId(groupBuy.getId())
+            Set<LocalDateTime> selectedByParticipants = participationRepository.findByGroupBuyIdWithPickupTime(groupBuy.getId())
                     .stream()
                     .filter(p -> p.getPickupTime() != null)
                     .map(p -> p.getPickupTime().getPickupTime())
@@ -236,7 +236,7 @@ public class GroupBuyService {
 
         // 픽업 시간 교체 (orphanRemoval = true 로 기존 것 자동 삭제)
         validatePickupTimes(dto.getPickupTimes(), groupBuy.getDeadline());
-        Set<LocalDateTime> selectedByParticipants = participationRepository.findByGroupBuyId(groupBuy.getId())
+        Set<LocalDateTime> selectedByParticipants = participationRepository.findByGroupBuyIdWithPickupTime(groupBuy.getId())
                 .stream()
                 .filter(p -> p.getPickupTime() != null)
                 .map(p -> p.getPickupTime().getPickupTime())

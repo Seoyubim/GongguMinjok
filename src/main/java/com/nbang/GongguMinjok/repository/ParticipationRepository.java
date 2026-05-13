@@ -2,6 +2,8 @@ package com.nbang.GongguMinjok.repository;
 
 import com.nbang.GongguMinjok.domain.Participation;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,6 +14,14 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
     boolean existsByGroupBuyIdAndParticipantId(Long groupBuyId, Long participantId);
 
     List<Participation> findByGroupBuyId(Long groupBuyId);
+
+    @Query("""
+        SELECT p
+        FROM Participation p
+        LEFT JOIN FETCH p.pickupTime
+        WHERE p.groupBuy.id = :groupBuyId
+    """)
+    List<Participation> findByGroupBuyIdWithPickupTime(@Param("groupBuyId") Long groupBuyId);
 
     List<Participation> findByParticipantId(Long participantId);
 
