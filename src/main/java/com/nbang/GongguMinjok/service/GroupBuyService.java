@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 @Service
@@ -198,18 +199,26 @@ public class GroupBuyService {
                     .filter(p -> p.getPickupTime() != null)
                     .map(p -> p.getPickupTime().getPickupTime())
                     .collect(Collectors.toSet());
-            Set<LocalDateTime> newPickupTimes = new HashSet<>(dto.getPickupTimes());
-            for (GroupBuyPickupTime existing : groupBuy.getPickupTimes()) {
-                if (!newPickupTimes.contains(existing.getPickupTime()) && selectedByParticipants.contains(existing.getPickupTime())) {
-                    throw new IllegalArgumentException("참여자가 선택한 픽업 시간은 삭제할 수 없습니다.");
+            // 1. DTO 시간 + 참여자 선택 시간 합치기
+            Set<LocalDateTime> mergedTimes = new TreeSet<>(dto.getPickupTimes());
+            mergedTimes.addAll(selectedByParticipants);
+
+            // 2. 참여자 미선택 시간만 제거 (clear() 사용 금지)
+            groupBuy.getPickupTimes().removeIf(
+                existing -> !mergedTimes.contains(existing.getPickupTime())
+            );
+
+            // 3. 새로 추가된 시간만 insert
+            Set<LocalDateTime> existingTimes = groupBuy.getPickupTimes().stream()
+                .map(GroupBuyPickupTime::getPickupTime)
+                .collect(Collectors.toSet());
+            for (LocalDateTime time : mergedTimes) {
+                if (!existingTimes.contains(time)) {
+                    GroupBuyPickupTime pickupTime = new GroupBuyPickupTime();
+                    pickupTime.setGroupBuy(groupBuy);
+                    pickupTime.setPickupTime(time);
+                    groupBuy.getPickupTimes().add(pickupTime);
                 }
-            }
-            groupBuy.getPickupTimes().clear();
-            for (LocalDateTime time : dto.getPickupTimes()) {
-                GroupBuyPickupTime pickupTime = new GroupBuyPickupTime();
-                pickupTime.setGroupBuy(groupBuy);
-                pickupTime.setPickupTime(time);
-                groupBuy.getPickupTimes().add(pickupTime);
             }
 
             return new GroupBuyResponseDto(groupBuyRepository.save(groupBuy));
@@ -232,18 +241,26 @@ public class GroupBuyService {
                 .filter(p -> p.getPickupTime() != null)
                 .map(p -> p.getPickupTime().getPickupTime())
                 .collect(Collectors.toSet());
-        Set<LocalDateTime> newPickupTimes = new HashSet<>(dto.getPickupTimes());
-        for (GroupBuyPickupTime existing : groupBuy.getPickupTimes()) {
-            if (!newPickupTimes.contains(existing.getPickupTime()) && selectedByParticipants.contains(existing.getPickupTime())) {
-                throw new IllegalArgumentException("참여자가 선택한 픽업 시간은 삭제할 수 없습니다.");
+        // 1. DTO 시간 + 참여자 선택 시간 합치기
+        Set<LocalDateTime> mergedTimes = new TreeSet<>(dto.getPickupTimes());
+        mergedTimes.addAll(selectedByParticipants);
+
+        // 2. 참여자 미선택 시간만 제거 (clear() 사용 금지)
+        groupBuy.getPickupTimes().removeIf(
+            existing -> !mergedTimes.contains(existing.getPickupTime())
+        );
+
+        // 3. 새로 추가된 시간만 insert
+        Set<LocalDateTime> existingTimes = groupBuy.getPickupTimes().stream()
+            .map(GroupBuyPickupTime::getPickupTime)
+            .collect(Collectors.toSet());
+        for (LocalDateTime time : mergedTimes) {
+            if (!existingTimes.contains(time)) {
+                GroupBuyPickupTime pickupTime = new GroupBuyPickupTime();
+                pickupTime.setGroupBuy(groupBuy);
+                pickupTime.setPickupTime(time);
+                groupBuy.getPickupTimes().add(pickupTime);
             }
-        }
-        groupBuy.getPickupTimes().clear();
-        for (LocalDateTime time : dto.getPickupTimes()) {
-            GroupBuyPickupTime pickupTime = new GroupBuyPickupTime();
-            pickupTime.setGroupBuy(groupBuy);
-            pickupTime.setPickupTime(time);
-            groupBuy.getPickupTimes().add(pickupTime);
         }
 
         groupBuy.getImages().clear();

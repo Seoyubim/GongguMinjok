@@ -33,6 +33,7 @@ public class GroupBuyResponseDto {
     private String hostMannerGrade;
     private LocalDateTime createdAt;
     private LocalDateTime deadline;
+    private LocalDateTime originalDeadline;
     private int unitPrice;
     private int quantityPerParticipant;
     private int hostDiscount;
@@ -76,6 +77,7 @@ public class GroupBuyResponseDto {
         this.hostMannerGrade = groupBuy.getHost().getMannerGrade().name();
         this.createdAt = groupBuy.getCreatedAt();
         this.deadline = groupBuy.getDeadline();
+        this.originalDeadline = groupBuy.getOriginalDeadline();
         this.unitPrice = groupBuy.getUnitPrice();
         this.quantityPerParticipant = groupBuy.getQuantityPerParticipant();
         this.hostDiscount = groupBuy.getHostDiscount();
