@@ -1,165 +1,83 @@
 checkTokenExpiry();
+
+const groupBuyId = new URLSearchParams(location.search).get('id');
+
 let currentStep = 1;
-let selectedType = '';
 let pickupTimes = [];
 let selectedLat = null;
 let selectedLng = null;
 let selectedDongName = '';
+let originalDeadline = null;
+let originalData = null;
+let protectedPickupTimes = [];
 
-// 마감일/픽업 datetime 최솟값 설정
-(() => {
-  const today = new Date();
-
-  // 마감일 최솟값: 오늘 + 3일 00:00
-  const minDeadline = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 3, 0, 0, 0);
-  const deadlineMin = minDeadline.getFullYear() + '-' +
-    String(minDeadline.getMonth() + 1).padStart(2, '0') + '-' +
-    String(minDeadline.getDate()).padStart(2, '0') + 'T00:00';
-  document.getElementById('cr-deadline').min = deadlineMin;
-
-  // 픽업 datetime 최솟값: 현재 시각
-  const pickupMin = today.getFullYear() + '-' +
-    String(today.getMonth() + 1).padStart(2, '0') + '-' +
-    String(today.getDate()).padStart(2, '0') + 'T' +
-    String(today.getHours()).padStart(2, '0') + ':' +
-    String(today.getMinutes()).padStart(2, '0');
-  document.getElementById('cr-pdatetime').min = pickupMin;
-
-  // 임시저장 데이터 있으면 팝업 표시
-  if (localStorage.getItem('groupbuy_draft')) {
-    document.getElementById('cr-draft-modal').style.display = 'flex';
+(async () => {
+  if (!groupBuyId) {
+    window.location.href = 'index.html';
+    return;
   }
-})();
 
-// 임시저장 불러오기
-function applyDraft() {
-  const draft = JSON.parse(localStorage.getItem('groupbuy_draft'));
-  if (!draft) return;
+  const [data, participants] = await Promise.all([
+    getGroupBuyById(groupBuyId),
+    getParticipants(groupBuyId)
+  ]);
+  originalData = data;
 
-  if (draft.type) {
-    const cards = document.querySelectorAll('.type-card');
-    for (const card of cards) {
-      if (card.getAttribute('onclick').indexOf(draft.type) !== -1) {
-        crType(card, draft.type);
-        break;
-      }
-    }
-  }
-  if (draft.title) document.getElementById('cr-title').value = draft.title;
-  if (draft.category) document.getElementById('cr-category').value = draft.category;
-  if (draft.desc) document.getElementById('cr-desc').value = draft.desc;
-  if (draft.total) document.getElementById('cr-total').value = draft.total;
-  if (draft.qty) document.getElementById('cr-qty').value = draft.qty;
-  if (draft.head) document.getElementById('cr-head').value = draft.head;
-  if (draft.addr) {
-    document.getElementById('cr-addr').value = draft.addr;
-    const resultEl = document.getElementById('cr-addr-result');
-    resultEl.textContent = '주소: ' + draft.addr;
-    resultEl.classList.remove('hidden');
-  }
-  if (draft.lat) selectedLat = draft.lat;
-  if (draft.lng) selectedLng = draft.lng;
-  if (draft.dongName) selectedDongName = draft.dongName;
-  if (draft.pickupTimes) {
-    pickupTimes = draft.pickupTimes.slice();
-    renderPickupChips();
-  }
-  if (draft.deadline) document.getElementById('cr-deadline').value = draft.deadline;
+  protectedPickupTimes = participants
+    .filter(p => p.pickupTime !== null)
+    .map(p => p.pickupTime);
+
+  document.getElementById('cr-title').value = data.title;
+  document.getElementById('cr-category').value = data.category;
+  document.getElementById('cr-desc').value = data.description;
+  document.getElementById('cr-deadline').value = data.deadline.slice(0, 10);
 
   ccnt('cr-title', 'cr-tc', 40);
   ccnt('cr-desc', 'cr-dc', 500);
-  calcPrice();
 
-  document.getElementById('cr-draft-modal').style.display = 'none';
-}
+  selectedLat = data.lat;
+  selectedLng = data.lng;
+  selectedDongName = data.dongName;
+  document.getElementById('cr-addr').value = data.pickupLocation;
+  const resultEl = document.getElementById('cr-addr-result');
+  resultEl.textContent = '주소: ' + data.pickupLocation;
+  resultEl.classList.remove('hidden');
 
-// 임시저장 삭제 후 팝업 닫기
-function dismissDraft() {
-  localStorage.removeItem('groupbuy_draft');
-  document.getElementById('cr-draft-modal').style.display = 'none';
-}
+  // API 응답의 픽업 시간은 {id, pickupTime} 객체 배열이라 시간 문자열만 추출
+  pickupTimes = data.pickupTimes.map(pt => pt.pickupTime);
+  renderPickupChips();
 
-// 이미지 업로드 미지원 안내
+  // 마감일 최솟값: 기존 마감일 (단축 불가)
+  document.getElementById('cr-deadline').min = data.deadline.slice(0, 10);
+
+  // 마감일 최댓값: originalDeadline + 7일
+  originalDeadline = data.originalDeadline;
+  const maxDate = new Date(originalDeadline);
+  maxDate.setDate(maxDate.getDate() + 7);
+  document.getElementById('cr-deadline').max = maxDate.toISOString().slice(0, 10);
+
+  updatePickupMin();
+})();
+
 function alertImageUpload() {
   showToast('이미지 업로드는 추후 지원 예정입니다.');
   return false;
 }
 
-// 페이지 이동
 function go(page) {
-  if (page === 'list') {
-    window.location.href = 'index.html';
-  }
+  if (page === 'list') window.location.href = 'index.html';
 }
 
-// 구매 유형 선택
-function crType(el, type) {
-  document.querySelectorAll('.type-card').forEach(card => card.classList.remove('active'));
-  el.classList.add('active');
-  selectedType = type;
-  document.getElementById('cr-type-err').style.display = 'none';
-
-  // 온라인 마켓일 때 제품 링크 필드 표시
-  const linkGroup = document.getElementById('cr-link-group');
-  if (type === 'COUPANG_LINK') {
-    linkGroup.classList.remove('hidden');
-  } else {
-    linkGroup.classList.add('hidden');
-  }
-}
-
-// 글자 수 카운트
 function ccnt(inputId, counterId, max) {
   const len = document.getElementById(inputId).value.length;
   document.getElementById(counterId).textContent = len;
 }
 
-// 스텝퍼 증감
-function stepV(id, dir, min, max) {
-  const input = document.getElementById(id);
-  let val = parseInt(input.value) + dir;
-  if (val < min) val = min;
-  if (val > max) val = max;
-  input.value = val;
-  calcPrice();
-}
-
-// 인당 금액 및 호스트 예상 할인 계산
-function calcPrice() {
-  const totalEl = document.getElementById('cr-total');
-  const headEl = document.getElementById('cr-head');
-  if (!totalEl || !headEl) return;
-  const total = parseInt(totalEl.value) || 0;
-  const head = parseInt(headEl.value) || 1;
-
-  // 인당 예상 금액
-  const perPerson = head > 0 ? Math.ceil(total / head) : 0;
-  document.getElementById('cr-pp-val').textContent = perPerson.toLocaleString() + ' 원';
-
-  // 호스트 예상 할인 및 실제 결제 금액
-  const discEl = document.getElementById('cr-host-disc');
-  const hostPriceEl = document.getElementById('cr-host-price');
-  const participantPriceEl = document.getElementById('cr-participant-price');
-  if (total > 0) {
-    const discountRate = Math.min((head - 1) * 0.10, 1.0);
-    const discountAmount = Math.min(Math.floor(perPerson * discountRate), 30000);
-    const discountPct = Math.round(discountRate * 100);
-    discEl.textContent = `${discountPct}% → ${discountAmount.toLocaleString()}원`;
-    hostPriceEl.textContent = (perPerson - discountAmount).toLocaleString() + ' 원';
-    participantPriceEl.textContent = (perPerson + Math.ceil(discountAmount / (head - 1))).toLocaleString() + ' 원';
-  } else {
-    discEl.textContent = '— ';
-    hostPriceEl.textContent = '— 원';
-    participantPriceEl.textContent = '— 원';
-  }
-}
-
-// 마감일 변경 시 픽업 datetime 최솟값 갱신
 function updatePickupMin() {
   const deadlineVal = document.getElementById('cr-deadline').value;
   const pickupInput = document.getElementById('cr-pdatetime');
   if (deadlineVal) {
-    pickupInput.min = deadlineVal;
+    pickupInput.min = deadlineVal + 'T23:59';
   } else {
     const now = new Date();
     pickupInput.min = now.getFullYear() + '-' +
@@ -170,7 +88,6 @@ function updatePickupMin() {
   }
 }
 
-// 픽업 시간 추가
 function addPickupTime() {
   const val = document.getElementById('cr-pdatetime').value;
   const errEl = document.getElementById('cr-pickup-err');
@@ -182,15 +99,23 @@ function addPickupTime() {
     return;
   }
 
-  if (deadlineVal && new Date(val) <= new Date(deadlineVal)) {
+  if (deadlineVal && new Date(val) <= new Date(deadlineVal + 'T23:59')) {
     errEl.textContent = '픽업 시간은 모집 마감일 이후로 설정해 주세요.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // 픽업 시간은 마감일로부터 14일 이내여야 함 (백엔드 정책과 동일)
+  const maxPickup = new Date(deadlineVal + 'T23:59');
+  maxPickup.setDate(maxPickup.getDate() + 14);
+  if (new Date(val) > maxPickup) {
+    errEl.textContent = '픽업 시간은 마감일로부터 14일 이내로 설정해 주세요.';
     errEl.style.display = 'block';
     return;
   }
 
   const datetime = val + ':00';
   if (pickupTimes.indexOf(datetime) !== -1) return;
-
   pickupTimes.push(datetime);
   renderPickupChips();
   errEl.style.display = 'none';
@@ -210,21 +135,19 @@ function renderPickupChips() {
   });
 }
 
-// 픽업 시간 삭제
 function removePickupTime(idx) {
+  if (protectedPickupTimes.includes(pickupTimes[idx])) {
+    showToast('참여자가 선택한 픽업 시간은 삭제할 수 없습니다.');
+    return;
+  }
   pickupTimes.splice(idx, 1);
   renderPickupChips();
 }
 
-// 단계별 유효성 검사
 function validateStep(step) {
   let valid = true;
 
   if (step === 1) {
-    if (!selectedType) {
-      document.getElementById('cr-type-err').style.display = 'block';
-      valid = false;
-    }
     const title = document.getElementById('cr-title').value.trim();
     const titleErr = document.getElementById('cr-title-err');
     if (title.length < 2) {
@@ -233,6 +156,7 @@ function validateStep(step) {
     } else {
       titleErr.style.display = 'none';
     }
+
     const category = document.getElementById('cr-category').value;
     const categoryErr = document.getElementById('cr-category-err');
     if (!category) {
@@ -241,6 +165,7 @@ function validateStep(step) {
     } else {
       categoryErr.style.display = 'none';
     }
+
     const desc = document.getElementById('cr-desc').value.trim();
     const descErr = document.getElementById('cr-desc-err');
     if (desc.length < 5) {
@@ -249,48 +174,25 @@ function validateStep(step) {
     } else {
       descErr.style.display = 'none';
     }
-    if (selectedType === 'COUPANG_LINK') {
-      const link = document.getElementById('cr-link').value.trim();
-      const linkErr = document.getElementById('cr-link-err');
-      if (!link) {
-        linkErr.style.display = 'block';
-        valid = false;
-      } else {
-        linkErr.style.display = 'none';
-      }
-    }
   }
 
   if (step === 2) {
-    const total = document.getElementById('cr-total').value;
-    const totalErr = document.getElementById('cr-total-err');
-    if (!total || parseInt(total) <= 0) {
-      totalErr.style.display = 'block';
-      valid = false;
-    } else {
-      totalErr.style.display = 'none';
-    }
-    const qty = document.getElementById('cr-qty').value;
-    const qtyErr = document.getElementById('cr-qty-err');
-    const head = parseInt(document.getElementById('cr-head').value) || 1;
-    if (!qty || parseInt(qty) <= 0) {
-      qtyErr.textContent = '총 수량을 입력해 주세요.';
-      qtyErr.style.display = 'block';
-      valid = false;
-    } else if (parseInt(qty) % head !== 0) {
-      qtyErr.textContent = `총 수량은 최대 인원(${head}명)으로 나누어 떨어져야 합니다.`;
-      qtyErr.style.display = 'block';
-      valid = false;
-    } else {
-      qtyErr.style.display = 'none';
-    }
     const deadline = document.getElementById('cr-deadline').value;
     const deadlineErr = document.getElementById('cr-deadline-err');
-    const minDeadline = new Date();
-    minDeadline.setDate(minDeadline.getDate() + 3);
-    minDeadline.setHours(0, 0, 0, 0);
-    if (!deadline || new Date(deadline) < minDeadline) {
-      deadlineErr.textContent = deadline ? '마감일은 오늘로부터 3일 이후부터 설정 가능합니다.' : '모집 마감일을 입력해 주세요.';
+    const originalMin = new Date(originalData.deadline.slice(0, 10));
+    const maxDate = new Date(originalDeadline);
+    maxDate.setDate(maxDate.getDate() + 7);
+
+    if (!deadline) {
+      deadlineErr.textContent = '모집 마감일을 입력해 주세요.';
+      deadlineErr.style.display = 'block';
+      valid = false;
+    } else if (new Date(deadline) < originalMin) {
+      deadlineErr.textContent = '마감일은 기존 마감일보다 이전으로 변경할 수 없습니다.';
+      deadlineErr.style.display = 'block';
+      valid = false;
+    } else if (new Date(deadline) > maxDate) {
+      deadlineErr.textContent = '마감일은 최초 마감일 기준 7일을 초과할 수 없습니다.';
       deadlineErr.style.display = 'block';
       valid = false;
     } else {
@@ -307,6 +209,7 @@ function validateStep(step) {
     } else {
       addrErr.style.display = 'none';
     }
+
     const pickupErr = document.getElementById('cr-pickup-err');
     if (pickupTimes.length === 0) {
       pickupErr.textContent = '픽업 시간을 1개 이상 추가해 주세요.';
@@ -314,8 +217,14 @@ function validateStep(step) {
       valid = false;
     } else {
       const deadlineVal = document.getElementById('cr-deadline').value;
-      if (deadlineVal && pickupTimes.some(dt => new Date(dt) <= new Date(deadlineVal))) {
+      const maxPickup = new Date(deadlineVal + 'T23:59');
+      maxPickup.setDate(maxPickup.getDate() + 14);
+      if (deadlineVal && pickupTimes.some(dt => new Date(dt) <= new Date(deadlineVal + 'T23:59'))) {
         pickupErr.textContent = '픽업 시간은 모집 마감일 이후로 설정해 주세요.';
+        pickupErr.style.display = 'block';
+        valid = false;
+      } else if (pickupTimes.some(dt => new Date(dt) > maxPickup)) {
+        pickupErr.textContent = '픽업 시간은 마감일로부터 14일 이내로 설정해 주세요.';
         pickupErr.style.display = 'block';
         valid = false;
       } else {
@@ -335,21 +244,14 @@ function updateStepUI() {
   }
 
   const prevBtn = document.getElementById('cr-prev-btn');
-  if (currentStep === 1) {
-    prevBtn.classList.add('hidden');
-  } else {
-    prevBtn.classList.remove('hidden');
-  }
+  currentStep === 1 ? prevBtn.classList.add('hidden') : prevBtn.classList.remove('hidden');
 
   const nextBtn = document.getElementById('cr-next-btn');
-  nextBtn.textContent = currentStep === 4 ? '등록하기' : '다음 단계 →';
+  nextBtn.textContent = currentStep === 4 ? '수정하기' : '다음 단계 →';
 }
 
 function crNext() {
-  if (currentStep === 4) {
-    submitGroupBuy();
-    return;
-  }
+  if (currentStep === 4) { submitGroupBuy(); return; }
   if (!validateStep(currentStep)) return;
   if (currentStep === 3) renderPreview();
   currentStep++;
@@ -365,73 +267,33 @@ function crPrev() {
 }
 
 function renderPreview() {
-  const typeLabel = selectedType === 'COUPANG_LINK' ? '온라인 마켓' : '산지 직배송';
   const categoryEl = document.getElementById('cr-category');
   const categoryLabel = categoryEl.options[categoryEl.selectedIndex].text;
   const title = document.getElementById('cr-title').value.trim();
   const desc = document.getElementById('cr-desc').value.trim();
-  const total = parseInt(document.getElementById('cr-total').value);
-  const qty = document.getElementById('cr-qty').value;
-  const head = document.getElementById('cr-head').value;
   const addr = document.getElementById('cr-addr').value.trim();
-  const deadlineRaw = document.getElementById('cr-deadline').value;
-  const deadlineLabel = deadlineRaw ? deadlineRaw.replace('T', ' ') : '';
-  const perPerson = Math.ceil(total / parseInt(head));
-  const discountRate = Math.min((parseInt(head) - 1) * 0.10, 1.0);
-  const discountAmount = Math.min(Math.floor(perPerson * discountRate), 30000);
-  const discountPct = Math.round(discountRate * 100);
-  const discountText = `${discountPct}% → ${discountAmount.toLocaleString()}원`;
-
+  const deadlineLabel = document.getElementById('cr-deadline').value;
   const timesHtml = pickupTimes.map(dt => {
     const [date, timePart] = dt.split('T');
     return `<li>${date} ${timePart.slice(0, 5)}</li>`;
   }).join('');
 
   document.getElementById('preview').innerHTML =
-    '<div class="sec-title">📋 등록 내용 확인</div>' +
+    '<div class="sec-title">📋 수정 내용 확인</div>' +
     '<table style="width:100%;font-size:14px;border-collapse:collapse">' +
-    `<tr><td style="padding:6px 0;color:#6b7280;width:40%">구매 유형</td><td style="font-weight:600">${typeLabel}</td></tr>` +
-    `<tr><td style="padding:6px 0;color:#6b7280">카테고리</td><td style="font-weight:600">${categoryLabel}</td></tr>` +
+    `<tr><td style="padding:6px 0;color:#6b7280;width:40%">카테고리</td><td style="font-weight:600">${categoryLabel}</td></tr>` +
     `<tr><td style="padding:6px 0;color:#6b7280">제목</td><td style="font-weight:600">${title}</td></tr>` +
     `<tr><td style="padding:6px 0;color:#6b7280">설명</td><td style="font-weight:600">${desc}</td></tr>` +
-    `<tr><td style="padding:6px 0;color:#6b7280">총 금액</td><td style="font-weight:600">${total.toLocaleString()} 원</td></tr>` +
-    `<tr><td style="padding:6px 0;color:#6b7280">총 수량</td><td style="font-weight:600">${qty} 개</td></tr>` +
-    `<tr><td style="padding:6px 0;color:#6b7280">최대 인원</td><td style="font-weight:600">${head} 명</td></tr>` +
     `<tr><td style="padding:6px 0;color:#6b7280">모집 마감일</td><td style="font-weight:600">${deadlineLabel}</td></tr>` +
-    `<tr><td style="padding:6px 0;color:#6b7280">인당 기준 금액</td><td style="font-weight:600;color:#84cc16">${perPerson.toLocaleString()} 원</td></tr>` +
-    `<tr><td style="padding:6px 0;color:#6b7280">호스트 예상 할인</td><td style="font-weight:600;color:#84cc16">${discountText}</td></tr>` +
-    `<tr><td style="padding:6px 0;color:#6b7280">호스트 실제 결제</td><td style="font-weight:600;color:#84cc16">${(perPerson - discountAmount).toLocaleString()} 원</td></tr>` +
-    `<tr><td style="padding:6px 0;color:#6b7280">참여자 실제 결제</td><td style="font-weight:600;color:#84cc16">${(perPerson + Math.ceil(discountAmount / (parseInt(head) - 1))).toLocaleString()} 원</td></tr>` +
     `<tr><td style="padding:6px 0;color:#6b7280">픽업 장소</td><td style="font-weight:600">${addr}</td></tr>` +
     `<tr><td style="padding:6px 0;color:#6b7280;vertical-align:top">픽업 시간</td><td><ul style="padding-left:16px">${timesHtml}</ul></td></tr>` +
     '</table>';
 }
 
-// 임시저장
-function saveDraft() {
-  const draft = {
-    type: selectedType,
-    title: document.getElementById('cr-title').value,
-    category: document.getElementById('cr-category').value,
-    desc: document.getElementById('cr-desc').value,
-    total: document.getElementById('cr-total').value,
-    qty: document.getElementById('cr-qty').value,
-    head: document.getElementById('cr-head').value,
-    addr: document.getElementById('cr-addr').value,
-    lat: selectedLat,
-    lng: selectedLng,
-    dongName: selectedDongName,
-    deadline: document.getElementById('cr-deadline').value,
-    pickupTimes: pickupTimes.slice()
-  };
-  localStorage.setItem('groupbuy_draft', JSON.stringify(draft));
-  showToast('임시저장 되었습니다.');
-}
-
 function searchAddress() {
   new daum.Postcode({
     oncomplete: (data) => {
-      // 도로명 주소 우선 사용 없으면 지번 주소 사용
+      // 도로명 주소 우선 사용, 없으면 지번 주소 사용
       const addr = data.roadAddress || data.jibunAddress;
       const addrErr = document.getElementById('cr-addr-err');
       const resultEl = document.getElementById('cr-addr-result');
@@ -463,42 +325,40 @@ function searchAddress() {
 }
 
 const logoutBtn = document.getElementById('logoutBtn');
-if (logoutBtn) {
-  logoutBtn.addEventListener('click', handleLogout);
-}
+if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
 
 function submitGroupBuy() {
   if (!localStorage.getItem('token')) {
     window.location.href = 'login.html';
     return;
   }
+
   const data = {
     title: document.getElementById('cr-title').value.trim(),
     description: document.getElementById('cr-desc').value.trim(),
-    productType: selectedType,
+    productType: originalData.productType,
     category: document.getElementById('cr-category').value,
-    totalPrice: parseInt(document.getElementById('cr-total').value),
-    totalQuantity: parseInt(document.getElementById('cr-qty').value),
-    maxParticipants: parseInt(document.getElementById('cr-head').value),
+    totalPrice: originalData.totalPrice,
+    totalQuantity: originalData.totalQuantity,
+    maxParticipants: originalData.maxParticipants,
     pickupLocation: document.getElementById('cr-addr').value.trim(),
     lat: selectedLat,
     lng: selectedLng,
     dongName: selectedDongName,
-    deadline: document.getElementById('cr-deadline').value + ':00',
+    deadline: document.getElementById('cr-deadline').value + 'T23:59:00',
     pickupTimes: pickupTimes.slice(),
-    imageUrls: []
+    imageUrls: originalData.imageUrls || []
   };
 
   const nextBtn = document.getElementById('cr-next-btn');
   nextBtn.disabled = true;
-  nextBtn.textContent = '등록 중...';
+  nextBtn.textContent = '수정 중...';
 
-  createGroupBuy(data).then(() => {
-    localStorage.removeItem('groupbuy_draft');
-    window.location.href = 'index.html';
+  updateGroupBuy(groupBuyId, data).then(() => {
+    window.location.href = 'detail.html?id=' + groupBuyId;
   }).catch((err) => {
-    showToast(err.message || '등록에 실패했습니다.');
+    showToast(err.message || '수정에 실패했습니다.');
     nextBtn.disabled = false;
-    nextBtn.textContent = '등록하기';
+    nextBtn.textContent = '수정하기';
   });
 }
