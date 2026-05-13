@@ -55,8 +55,8 @@ public class GroupBuyService {
                     double dist = dto.getDistance();
                     return switch (distanceRange) {
                         case NEAR   -> dist < 1.0;
-                        case MEDIUM -> dist >= 1.0 && dist < 3.0;
-                        case FAR    -> dist >= 3.0 && dist <= 5.0;
+                        case MEDIUM -> dist < 3.0;
+                        case FAR    -> dist <= 5.0;
                     };
                 })
                 .sorted(Comparator.comparingDouble(GroupBuyResponseDto::getDistance))
