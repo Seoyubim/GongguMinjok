@@ -23,6 +23,7 @@ public class GroupBuyResponseDto {
     private Double lat;
     private Double lng;
     private String dongName;
+    private String cityName;
     private List<PickupTimeDto> pickupTimes;
     private String category;
     private List<String> imageUrls;
@@ -62,6 +63,7 @@ public class GroupBuyResponseDto {
         this.lat = groupBuy.getLat();
         this.lng = groupBuy.getLng();
         this.dongName = groupBuy.getDongName();
+        this.cityName = groupBuy.getCityName();
         this.pickupTimes = groupBuy.getPickupTimes().stream()
                 .map(PickupTimeDto::new)
                 .collect(Collectors.toList());
