@@ -121,17 +121,8 @@
           </div>
 
           <div class="tab-panel panel3">
-            <div class="card-list">
-
-              <div class="group-card">
-                <img src="images/sample3.jpg" class="card-img">
-                <div>
-                  <h3 class="card-title">에어팟 케이스 공동구매</h3>
-                  <p class="card-info">2 / 5명 참여중</p>
-                  <p class="card-deadline">마감까지 5일</p>
-                </div>
-              </div>
-
+            <div id="created-list" class="card-list">
+              <p id="created-empty" class="empty-msg" style="display:none">생성한 공동구매가 없습니다.</p>
             </div>
           </div>
 
@@ -180,7 +171,50 @@
 
   <div id="toast" class="toast"></div>
 
+  <!-- 삭제 확인 모달 -->
+  <div id="modal-delete" class="mypage-modal" style="display:none">
+    <div class="mypage-modal-box">
+      <h3>공동구매 삭제</h3>
+      <p>정말 삭제하시겠습니까?<br>삭제 후 복구할 수 없습니다.</p>
+      <div class="mypage-modal-btns">
+        <button class="btn btn-outline" id="btn-delete-cancel">취소</button>
+        <button class="btn btn-danger" id="btn-delete-confirm">삭제</button>
+      </div>
+    </div>
+  </div>
+  <!-- 주문 완료 확인 모달 -->
+  <div id="modal-host-purchase" class="mypage-modal" style="display:none">
+    <div class="mypage-modal-box">
+      <h3>주문 완료</h3>
+      <p>공동구매 물품을 주문 완료하셨나요?<br>이 작업은 되돌릴 수 없습니다.</p>
+      <div class="mypage-modal-btns">
+        <button class="btn btn-outline" id="btn-purchase-cancel">취소</button>
+        <button class="btn btn-primary" id="btn-purchase-confirm">확인</button>
+      </div>
+    </div>
+  </div>
+  <!-- 수령 완료(호스트) 확인 모달 -->
+  <div id="modal-pickup-ready" class="mypage-modal" style="display:none">
+    <div class="mypage-modal-box">
+      <h3>수령 완료</h3>
+      <p>배송받은 물품 수령을 완료하셨나요?<br>이 작업은 되돌릴 수 없습니다.</p>
+      <div class="mypage-modal-btns">
+        <button class="btn btn-outline" id="btn-pickup-cancel">취소</button>
+        <button class="btn btn-primary" id="btn-pickup-confirm">확인</button>
+      </div>
+    </div>
+  </div>
+  <!-- 진행 현황 모달 -->
+  <div id="modal-progress" class="mypage-modal" style="display:none">
+    <div class="mypage-modal-box">
+      <h3>진행 현황</h3>
+      <div id="progress-table-wrap"></div>
+      <button class="btn btn-outline btn-full" id="btn-progress-close">닫기</button>
+    </div>
+  </div>
+
   <script src="js/mock/data.js"></script>
+  <script src="js/api/groupBuyApi.js"></script>
   <script src="js/api/userApi.js"></script>
   <script src="js/utils/storage.js"></script>
   <script src="js/utils/ui.js"></script>

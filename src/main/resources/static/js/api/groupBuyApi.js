@@ -65,3 +65,56 @@ async function createGroupBuy(data) {
 
   return result;
 }
+
+async function getGroupBuysByHost(hostId) {
+  const response = await fetch('/api/groupbuys/host/' + hostId);
+  if (!response.ok) throw new Error('생성한 공동구매 목록을 불러오는데 실패했습니다.');
+  return response.json();
+}
+
+async function deleteGroupBuy(id) {
+  const token = localStorage.getItem('token');
+  const response = await fetch('/api/groupbuys/' + id, {
+    method: 'DELETE',
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  if (!response.ok) {
+    const result = await response.json();
+    throw new Error(result.message || '삭제에 실패했습니다.');
+  }
+}
+
+async function completeHostPurchase(id) {
+  const token = localStorage.getItem('token');
+  const response = await fetch('/api/groupbuys/' + id + '/host-purchase', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  if (!response.ok) {
+    const result = await response.json();
+    throw new Error(result.message || '주문 완료 처리에 실패했습니다.');
+  }
+  return response.json();
+}
+
+async function markPickupReady(id) {
+  const token = localStorage.getItem('token');
+  const response = await fetch('/api/groupbuys/' + id + '/pickup-ready', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  if (!response.ok) {
+    const result = await response.json();
+    throw new Error(result.message || '수령 완료 처리에 실패했습니다.');
+  }
+  return response.json();
+}
+
+async function canReviewGroupBuy(id) {
+  const token = localStorage.getItem('token');
+  const response = await fetch('/api/groupbuys/' + id + '/reviews/can-review', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  if (!response.ok) return { canReview: false };
+  return response.json();
+}
