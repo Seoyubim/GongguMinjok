@@ -13,6 +13,9 @@ public class UserResponseDto {
     private String nickname;
     private String phone;
     private String location;
+    private Double lat;
+    private Double lng;
+    private String cityName;
     private String profileImage;
     private double mannerScore;
     private String mannerGrade;
@@ -26,6 +29,9 @@ public class UserResponseDto {
         this.nickname = user.getNickname();
         this.phone = user.getPhone();
         this.location = user.getLocation();
+        this.lat = user.getLat();
+        this.lng = user.getLng();
+        this.cityName = user.getCityName();
         this.profileImage = user.getProfileImage();
         this.mannerScore = user.getMannerScore();
         this.mannerGrade = user.getMannerGrade().name();
