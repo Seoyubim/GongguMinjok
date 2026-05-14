@@ -38,6 +38,15 @@ public class User {
     private String location;
 
     @Column
+    private Double lat;
+
+    @Column
+    private Double lng;
+
+    @Column(length = 50)
+    private String cityName;
+
+    @Column
     private String profileImage;
 
     // double로 저장 (0.1 단위 소수점 처리)

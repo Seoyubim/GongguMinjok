@@ -1,5 +1,6 @@
 package com.nbang.GongguMinjok.dto;
 
+import com.nbang.GongguMinjok.domain.GroupBuy;
 import com.nbang.GongguMinjok.domain.Participation;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,7 @@ public class ParticipationResponseDto {
     private Long id;
     private Long groupBuyId;
     private String groupBuyTitle;
+    private GroupBuy.Status groupBuyStatus;
     private Long participantId;
     private String participantNickname;
     private boolean paymentConfirmed;
@@ -31,6 +33,7 @@ public class ParticipationResponseDto {
         dto.id = participation.getId();
         dto.groupBuyId = participation.getGroupBuy().getId();
         dto.groupBuyTitle = participation.getGroupBuy().getTitle();
+        dto.groupBuyStatus = participation.getGroupBuy().getStatus();
         dto.participantId = participation.getParticipant().getId();
         dto.participantNickname = participation.getParticipant().getNickname();
         dto.paymentConfirmed = participation.isPaymentConfirmed();

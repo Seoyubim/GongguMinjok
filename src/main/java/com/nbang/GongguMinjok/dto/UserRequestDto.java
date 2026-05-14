@@ -15,4 +15,7 @@ public class UserRequestDto {
     private String nickname;
     private String phone;
     private String location;
+    private Double lat;
+    private Double lng;
+    private String cityName;
 }
