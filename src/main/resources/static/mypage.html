@@ -97,26 +97,8 @@
           </div>
 
           <div class="tab-panel panel2">
-            <div class="card-list">
-
-              <div class="group-card">
-                <img src="images/sample1.jpg" class="card-img">
-                <div>
-                  <h3 class="card-title">무선 키보드 공동구매</h3>
-                  <p class="card-info">3 / 5명 참여중</p>
-                  <p class="card-deadline">마감까지 2일</p>
-                </div>
-              </div>
-
-              <div class="group-card">
-                <img src="images/sample2.jpg" class="card-img">
-                <div>
-                  <h3 class="card-title">닭가슴살 공구</h3>
-                  <p class="card-info">5 / 5명 모집완료</p>
-                  <p class="card-deadline done">모집 완료</p>
-                </div>
-              </div>
-
+            <div id="joined-list" class="card-list">
+              <p id="joined-empty" class="empty-msg" style="display:none">참여한 공동구매가 없습니다.</p>
             </div>
           </div>
 
@@ -212,12 +194,49 @@
       <button class="btn btn-outline btn-full" id="btn-progress-close">닫기</button>
     </div>
   </div>
+  <!-- 수령 완료(참여자) 확인 모달 -->
+  <div id="modal-joined-pickup" class="mypage-modal" style="display:none">
+    <div class="mypage-modal-box">
+      <h3>수령 완료</h3>
+      <p>호스트에게 물품을 수령 완료하셨나요?<br>이 작업은 되돌릴 수 없습니다.</p>
+      <div class="mypage-modal-btns">
+        <button class="btn btn-outline" id="btn-joined-pickup-cancel">취소</button>
+        <button class="btn btn-primary" id="btn-joined-pickup-confirm">확인</button>
+      </div>
+    </div>
+  </div>
+  <!-- 참여자 진행 현황 모달 -->
+  <div id="modal-joined-progress" class="mypage-modal" style="display:none">
+    <div class="mypage-modal-box">
+      <h3>진행 현황</h3>
+      <div id="joined-progress-title" class="joined-progress-gb-title"></div>
+      <div id="joined-progress-pickup" class="joined-progress-pickup"></div>
+      <div id="joined-progress-payment" class="joined-progress-payment"></div>
+      <div id="joined-steps-wrap" class="joined-steps"></div>
+      <div id="joined-progress-desc" class="joined-progress-desc"></div>
+      <button class="btn btn-outline btn-full" id="btn-joined-progress-close">닫기</button>
+    </div>
+  </div>
+  <!-- 결제 확인 모달 -->
+  <div id="modal-joined-payment" class="mypage-modal" style="display:none">
+    <div class="mypage-modal-box">
+      <h3>결제하기</h3>
+      <p id="joined-payment-title" class="payment-modal-title"></p>
+      <p id="joined-payment-amount" class="payment-modal-amount"></p>
+      <div class="mypage-modal-btns">
+        <button class="btn btn-outline" id="btn-joined-payment-cancel">취소</button>
+        <button class="btn btn-primary" id="btn-joined-payment-confirm">결제하기</button>
+      </div>
+    </div>
+  </div>
 
   <script src="js/mock/data.js"></script>
   <script src="js/api/groupBuyApi.js"></script>
   <script src="js/api/userApi.js"></script>
   <script src="js/utils/storage.js"></script>
   <script src="js/utils/ui.js"></script>
+  <script src="js/utils/format.js"></script>
+  <script src="https://js.tosspayments.com/v2/standard"></script>
   <script src="js/pages/mypage.js"></script>
 </body>
 </html>
