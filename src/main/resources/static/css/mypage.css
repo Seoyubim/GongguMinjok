@@ -326,10 +326,21 @@ input[type="checkbox"] {
   padding: 1.5rem;
   border-radius: 1rem;
   width: 90%;
-  max-width: 400px;
+  max-width: 700px;
+  max-height: 80vh;
+  overflow-y: auto;
   position: relative;
   animation: fadeUp 0.2s ease;
 }
+
+.modal-content h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
+.modal-content h4 { font-size: 0.9rem; font-weight: 700; margin: 1rem 0 0.4rem; color: #374151; }
+.modal-content p { font-size: 0.875rem; color: #4b5563; margin-bottom: 0.5rem; line-height: 1.6; }
+.modal-content ul { padding-left: 1.2rem; margin-bottom: 0.75rem; }
+.modal-content li { font-size: 0.875rem; color: #4b5563; margin-bottom: 0.3rem; list-style: disc; }
+.notice-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 0.5rem 0 1rem; }
+.notice-table th { background: #f9fafb; padding: 0.5rem; text-align: center; font-weight: 600; border: 1px solid #e5e7eb; }
+.notice-table td { padding: 0.5rem; text-align: center; border: 1px solid #e5e7eb; }
 
 .modal-close {
   position: absolute;
@@ -340,7 +351,15 @@ input[type="checkbox"] {
 }
 
 #notice1:checked + .modal,
-#notice2:checked + .modal {
+#notice2:checked + .modal,
+#notice3:checked + .modal,
+#notice4:checked + .modal,
+#notice5:checked + .modal,
+#notice6:checked + .modal,
+#notice7:checked + .modal,
+#notice8:checked + .modal,
+#notice9:checked + .modal,
+#notice10:checked + .modal {
   display: flex;
 }
 
@@ -366,8 +385,10 @@ input[type="checkbox"] {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 0.7rem 0.2rem;
-  border-bottom: 1px solid #f3f4f6;
+  padding: 0.7rem 0.8rem;
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   cursor: pointer;
 }
 

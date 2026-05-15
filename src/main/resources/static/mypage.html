@@ -111,17 +111,46 @@
           <div class="tab-panel panel4">
             <div class="notice-box">
               <h3>공지사항</h3>
-
               <label for="notice1" class="notice-item">
-                <span class="notice-title">📢 공동구매 정책 변경 안내</span>
+                <span class="notice-title">📢 공동구매 작성 정책 변경 안내</span>
                 <span class="notice-date">2026.05.01</span>
               </label>
-
               <label for="notice2" class="notice-item">
-                <span class="notice-title">🚀 프리미엄 서비스 출시 안내</span>
-                <span class="notice-date">2026.04.28</span>
+                <span class="notice-title">💳 결제 정책 안내</span>
+                <span class="notice-date">2026.05.01</span>
               </label>
-
+              <label for="notice3" class="notice-item">
+                <span class="notice-title">👑 프리미엄 서비스 출시</span>
+                <span class="notice-date">2026.05.01</span>
+              </label>
+              <label for="notice4" class="notice-item">
+                <span class="notice-title">⭐ 매너점수 시스템 안내</span>
+                <span class="notice-date">2026.05.01</span>
+              </label>
+              <label for="notice5" class="notice-item">
+                <span class="notice-title">⚠️ 결제 기한 미준수 시 제재 안내</span>
+                <span class="notice-date">2026.05.01</span>
+              </label>
+              <label for="notice6" class="notice-item">
+                <span class="notice-title">📦 픽업 관련 안내</span>
+                <span class="notice-date">2026.05.01</span>
+              </label>
+              <label for="notice7" class="notice-item">
+                <span class="notice-title">⛔ 거래금지물품 안내</span>
+                <span class="notice-date">2026.05.01</span>
+              </label>
+              <label for="notice8" class="notice-item">
+                <span class="notice-title">🚫 서비스 이용 제한 기준 안내</span>
+                <span class="notice-date">2026.05.01</span>
+              </label>
+              <label for="notice9" class="notice-item">
+                <span class="notice-title">🚨 신고 기능 안내</span>
+                <span class="notice-date">2026.05.01</span>
+              </label>
+              <label for="notice10" class="notice-item">
+                <span class="notice-title">📞 문의 및 고객센터</span>
+                <span class="notice-date">2026.05.01</span>
+              </label>
             </div>
           </div>
 
@@ -129,9 +158,17 @@
           <div class="modal">
             <div class="modal-content">
               <label for="notice1" class="modal-close">✕</label>
-              <h2>📢 공동구매 정책 변경 안내</h2>
-              <p>2026년 5월부터 무료 회원은 월 3회까지만 공동구매 작성이 가능합니다.</p>
-              <p>프리미엄 회원은 제한 없이 이용 가능합니다.</p>
+              <h2>📢 공동구매 작성 정책 변경 안내</h2>
+              <p>2026년 5월 1일부터 무료 회원의 공동구매 게시글 작성 횟수가 월 3회로 제한됩니다.</p>
+              <p>무분별한 게시글 등록을 방지하고 실제 진행 의사가 있는 공동구매만 올라올 수 있도록 품질을 관리하기 위한 조치입니다.</p>
+              <h4>적용 기준</h4>
+              <ul>
+                <li>작성 횟수는 매월 1일 00:00 기준으로 초기화됩니다.</li>
+                <li>무료 회원은 한 달에 최대 3개의 공동구매 게시글을 작성할 수 있습니다.</li>
+                <li>3개를 초과하면 해당 월에는 추가 작성이 불가능합니다.</li>
+                <li>이미 작성된 게시글을 삭제해도 작성 횟수는 차감된 상태로 유지됩니다.</li>
+                <li>프리미엄 회원은 이 제한을 받지 않습니다.</li>
+              </ul>
             </div>
           </div>
 
@@ -139,9 +176,206 @@
           <div class="modal">
             <div class="modal-content">
               <label for="notice2" class="modal-close">✕</label>
-              <h2>🚀 프리미엄 서비스 출시</h2>
-              <p>프리미엄 가입 시 게시글 무제한 작성이 가능합니다.</p>
-              <p>더 빠른 모집과 특별 배지도 제공됩니다.</p>
+              <h2>💳 결제 정책 안내</h2>
+              <p>공구의 민족은 모집 완료 이후 결제가 진행되는 후불 결제 방식을 채택합니다.</p>
+              <h4>결제 진행 흐름</h4>
+              <ul>
+                <li>공동구매 모집 중 (OPEN)</li>
+                <li>모집 인원 전원 참여 완료 → 자동 CLOSED 전환</li>
+                <li>24시간 이내 결제 진행</li>
+                <li>전원 결제 완료 → PAYMENT_COMPLETED</li>
+                <li>픽업 진행 → 공동구매 완료 (COMPLETED)</li>
+              </ul>
+              <h4>결제 기한</h4>
+              <p>모집 인원이 모두 채워지면 해당 시점으로부터 24시간 이내에 결제를 완료해야 합니다. 24시간 이내 미결제 시 참여가 자동으로 취소되며 매너점수가 차감됩니다.</p>
+              <h4>결제 금액</h4>
+              <p>결제 금액은 모집 완료 시점에 확정됩니다.</p>
+              <p>결제금액 = 단가 + (호스트 할인금액 ÷ 참여자 수)</p>
+              <h4>결제 취소</h4>
+              <p>모집 중(OPEN) 상태에서는 참여 취소가 자유롭습니다. 단, CLOSED 전환 이후에는 참여 취소가 불가능합니다. 결제 완료 후 취소는 고객센터를 통해 문의해 주세요.</p>
+            </div>
+          </div>
+
+          <input type="checkbox" id="notice3">
+          <div class="modal">
+            <div class="modal-content">
+              <label for="notice3" class="modal-close">✕</label>
+              <h2>👑 프리미엄 서비스 출시</h2>
+              <p>공구의 민족 프리미엄 서비스를 월 4,900원에 이용하세요.</p>
+              <h4>프리미엄 혜택 비교</h4>
+              <table class="notice-table">
+                <tr><th>항목</th><th>무료</th><th>프리미엄</th></tr>
+                <tr><td>월 공동구매 작성</td><td>3회</td><td>무제한</td></tr>
+              </table>
+              <h4>프리미엄 요금</h4>
+              <ul>
+                <li>월 4,900원</li>
+                <li>결제 즉시 1개월 활성화</li>
+                <li>만료 전 재결제 시 잔여 기간에 1개월이 추가됩니다.</li>
+                <li>자동 갱신 없음 — 직접 재결제 필요</li>
+              </ul>
+              <h4>결제 방법</h4>
+              <p>마이페이지 → 프리미엄 가입 → 토스페이먼츠 결제창에서 결제 진행</p>
+              <h4>취소 및 환불</h4>
+              <p>결제 완료 후 7일 이내이며 서비스를 사용하지 않은 경우 고객센터를 통해 환불 요청이 가능합니다. 이미 사용한 기간에 대한 부분 환불은 지원되지 않습니다.</p>
+            </div>
+          </div>
+
+          <input type="checkbox" id="notice4">
+          <div class="modal">
+            <div class="modal-content">
+              <label for="notice4" class="modal-close">✕</label>
+              <h2>⭐ 매너점수 시스템 안내</h2>
+              <p>공구의 민족은 신뢰 기반의 거래 환경을 위해 매너점수 시스템을 운영합니다. 모든 신규 회원은 50점(GOOD 등급)으로 시작합니다.</p>
+              <h4>등급 기준</h4>
+              <table class="notice-table">
+                <tr><th>등급</th><th>점수 구간</th><th>의미</th></tr>
+                <tr><td>👑 LEGEND</td><td>90 ~ 100점</td><td>최고 신뢰 회원</td></tr>
+                <tr><td>😄 GREAT</td><td>70 ~ 89점</td><td>우수 회원</td></tr>
+                <tr><td>🙂 GOOD</td><td>50 ~ 69점</td><td>일반 회원 (기본)</td></tr>
+                <tr><td>😐 SOSO</td><td>30 ~ 49점</td><td>주의 필요</td></tr>
+                <tr><td>😢 BAD</td><td>0 ~ 29점</td><td>신뢰도 낮음</td></tr>
+                <tr><td>🚫 BLOCKED</td><td>0점 미만</td><td>모든 활동 제한</td></tr>
+              </table>
+              <h4>평가 점수 변동</h4>
+              <table class="notice-table">
+                <tr><th>평가</th><th>의미</th><th>항목당 점수</th></tr>
+                <tr><td>🌟 GREAT</td><td>최고예요</td><td>+0.2점</td></tr>
+                <tr><td>👍 GOOD</td><td>좋아요</td><td>+0.1점</td></tr>
+                <tr><td>👎 BAD</td><td>별로예요</td><td>-0.1점</td></tr>
+              </table>
+              <h4>BLOCKED 등급</h4>
+              <p>매너점수가 0점 미만이 되면 자동으로 BLOCKED 등급으로 전환되며 공동구매 작성·수정·참여가 모두 제한됩니다. 점수가 0점 이상으로 회복되면 자동 해제됩니다.</p>
+            </div>
+          </div>
+
+          <input type="checkbox" id="notice5">
+          <div class="modal">
+            <div class="modal-content">
+              <label for="notice5" class="modal-close">✕</label>
+              <h2>⚠️ 결제 기한 미준수 시 제재 안내</h2>
+              <p>공동구매 모집 완료 후 24시간 이내에 결제를 완료하지 않으면 아래 제재가 자동으로 적용됩니다.</p>
+              <ul>
+                <li>해당 공동구매 참여가 자동 취소됩니다.</li>
+                <li>매너점수가 10점 차감됩니다.</li>
+                <li>해당 공동구매가 다시 모집 중 상태로 전환되거나 만료(EXPIRED)로 처리될 수 있습니다.</li>
+              </ul>
+              <p>결제 기한은 모집 완료 시점에 정해지므로, 공동구매 참여 후 알림을 꼭 확인해 주세요.</p>
+            </div>
+          </div>
+
+          <input type="checkbox" id="notice6">
+          <div class="modal">
+            <div class="modal-content">
+              <label for="notice6" class="modal-close">✕</label>
+              <h2>📦 픽업 관련 안내</h2>
+              <p>공구의 민족의 공동구매는 호스트가 지정한 장소에서 직접 수령하는 직거래 픽업 방식으로 운영됩니다.</p>
+              <ul>
+                <li>픽업 장소는 공동구매 게시글의 지도에서 확인할 수 있습니다.</li>
+                <li>픽업 가능 시간은 호스트가 사전에 설정하며 게시글에 표시됩니다.</li>
+                <li>참여자는 물품 수령 후 마이페이지에서 수령 완료 버튼을 눌러야 합니다. 모든 참여자가 수령 완료를 처리하면 공동구매가 정산 대기 상태로 전환됩니다.</li>
+                <li>픽업 완료 이후 7일 이내에 서로 매너점수 평가를 진행해 주세요.</li>
+              </ul>
+              <p>픽업 장소에 나타나지 않거나 연락이 되지 않는 경우 매너점수 하락의 원인이 될 수 있습니다. 사정이 생겼을 경우 호스트에게 미리 연락해 주세요.</p>
+              <h4>픽업 미완료 시 처리 안내</h4>
+              <p>픽업이 완료되지 않은 경우 호스트 귀책으로 간주됩니다. 픽업 가능 시간 종료 후 24시간이 초과되면 아래 처리가 자동으로 진행됩니다.</p>
+              <ul>
+                <li>픽업이 완료되지 않은 참여자의 결제가 자동 환불됩니다.</li>
+                <li>환불 처리된 참여자는 호스트 정산 대상에서 제외됩니다.</li>
+                <li>호스트의 매너점수가 30점 차감됩니다.</li>
+              </ul>
+              <p>호스트는 참여자에게 물품을 전달한 후, 참여자가 수령 완료를 눌렀는지 꼭 확인해 주세요.</p>
+            </div>
+          </div>
+
+          <input type="checkbox" id="notice7">
+          <div class="modal">
+            <div class="modal-content">
+              <label for="notice7" class="modal-close">✕</label>
+              <h2>⛔ 거래금지물품 안내</h2>
+              <p>공구의 민족에서는 아래에 해당하는 물품의 공동구매 게시글 작성을 금지합니다. 게시글이 확인될 경우 운영팀이 삭제 처리하며, 반복 위반 시 서비스 이용이 제한될 수 있습니다.</p>
+              <h4>청소년 유해 물품</h4>
+              <ul>
+                <li>주류 (무알코올 주류 포함)</li>
+                <li>담배 및 전자담배, 전자담배 기기</li>
+              </ul>
+              <h4>의약품 및 의료기기</h4>
+              <ul>
+                <li>전문의약품, 일반의약품, 동물용 의약품, 한약</li>
+                <li>건강기능식품 (다이어트약, 수유 영양제 등)</li>
+                <li>의료기기 (유축기, 보청기 등)</li>
+              </ul>
+              <h4>식품 및 화장품</h4>
+              <ul>
+                <li>개봉된 식품, 수제 음식 등 위생 안전을 보장할 수 없는 식품</li>
+                <li>개봉된 화장품, 샘플 화장품, 직접 소분한 화장품</li>
+              </ul>
+              <h4>위험 물품</h4>
+              <ul>
+                <li>도검, 화약류, 분사기, 전자충격기, 석궁 등 위험 물품</li>
+                <li>불법 촬영 가능 기기 (몰래카메라 등)</li>
+              </ul>
+              <h4>기타 거래 금지 물품</h4>
+              <ul>
+                <li>개인정보 및 계정 (게임 계정 포함)</li>
+                <li>현행법상 개인 간 거래가 금지된 모든 물품</li>
+                <li>기타 서비스 취지에 맞지 않는 물품</li>
+              </ul>
+              <p>거래금지물품 관련 문의는 고객센터를 통해 접수해 주세요.</p>
+            </div>
+          </div>
+
+          <input type="checkbox" id="notice8">
+          <div class="modal">
+            <div class="modal-content">
+              <label for="notice8" class="modal-close">✕</label>
+              <h2>🚫 서비스 이용 제한 기준 안내</h2>
+              <p>공구의 민족은 아래 기준에 해당하는 경우 서비스 이용을 제한할 수 있습니다.</p>
+              <ul>
+                <li>매너점수가 0점 미만(BLOCKED 등급)인 경우</li>
+                <li>결제 기한을 반복적으로 미준수하는 경우</li>
+                <li>허위 공동구매 게시글을 반복 등록하는 경우</li>
+                <li>타인에게 불쾌감을 주는 행위를 반복하는 경우</li>
+              </ul>
+              <p>서비스 이용 관련 문의는 고객센터를 통해 접수해 주세요.</p>
+            </div>
+          </div>
+
+          <input type="checkbox" id="notice9">
+          <div class="modal">
+            <div class="modal-content">
+              <label for="notice9" class="modal-close">✕</label>
+              <h2>🚨 신고 기능 안내</h2>
+              <p>다른 회원의 불건전한 활동은 신고 기능을 통해 제보해 주세요.</p>
+              <h4>신고 대상</h4>
+              <ul>
+                <li>허위 공동구매 게시글 (실제 진행 의사 없음, 존재하지 않는 상품 등)</li>
+                <li>비매너 행위 (욕설, 협박, 기만적 행동 등)</li>
+                <li>결제 후 잠적 또는 연락 두절</li>
+                <li>기타 서비스 이용 정책 위반 행위</li>
+              </ul>
+              <h4>신고 방법</h4>
+              <p>공동구매 게시글 상세 화면 또는 회원 프로필에서 신고 버튼을 누른 후 신고 사유를 선택하여 제출하세요.</p>
+              <h4>신고 처리</h4>
+              <ul>
+                <li>접수된 신고는 운영팀이 검토 후 조치합니다.</li>
+                <li>신고 결과는 별도로 안내되지 않을 수 있습니다.</li>
+                <li>허위 신고가 확인될 경우 신고자에게 불이익이 있을 수 있습니다.</li>
+              </ul>
+            </div>
+          </div>
+
+          <input type="checkbox" id="notice10">
+          <div class="modal">
+            <div class="modal-content">
+              <label for="notice10" class="modal-close">✕</label>
+              <h2>📞 문의 및 고객센터</h2>
+              <p>서비스 이용 중 불편한 점이 있거나 정책에 대한 문의가 있으시면 아래로 연락해 주세요.</p>
+              <ul>
+                <li>이메일: gongguminjok@gmail.com</li>
+                <li>운영 시간: 평일 09:00 ~ 18:00 (주말 및 공휴일 제외)</li>
+              </ul>
+              <p>자주 묻는 질문(FAQ)은 앱 내 고객센터 메뉴에서 확인하실 수 있습니다.</p>
             </div>
           </div>
 
