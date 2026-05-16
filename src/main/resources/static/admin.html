@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>공구의 민족 - 관리자</title>
+
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body>
+
+<header class="header">
+  <div class="container">
+    <div class="header-content">
+
+      <a href="index.html" class="logo">
+        <img src="images/logo.jpg" alt="공구의 민족 로고" class="logo-image">
+        <h1 class="logo-text">공구의 민족</h1>
+        <span class="admin-badge">관리자</span>
+      </a>
+
+      <div class="header-right">
+        <span class="admin-email">admin@gonggu.com</span>
+        <button class="header-btn">로그아웃</button>
+      </div>
+
+    </div>
+  </div>
+</header>
+
+<div class="nav-tabs">
+  <div class="nav-tab active" onclick="showPage('dashboard')">
+    대시보드
+  </div>
+
+  <div class="nav-tab" onclick="showPage('settlements')">
+    정산 관리 <span class="nav-badge green">3</span>
+  </div>
+
+  <div class="nav-tab" onclick="showPage('users')">
+    유저 관리 <span class="nav-badge">2</span>
+  </div>
+
+  <div class="nav-tab" onclick="showPage('groupbuys')">
+    게시글 관리
+  </div>
+</div>
+
+<div class="content">
+
+  <div id="page-dashboard">
+
+    <div class="stats-grid">
+
+      <div class="stat-card">
+        <div class="stat-label">정산 대기</div>
+        <div class="stat-value">3<span>건</span></div>
+        <div class="stat-sub green">총 412,500원 대기 중</div>
+      </div>
+
+      <div class="stat-card orange">
+        <div class="stat-label">진행중 공구</div>
+        <div class="stat-value">17<span>건</span></div>
+        <div class="stat-sub">OPEN / CLOSING 포함</div>
+      </div>
+
+      <div class="stat-card red">
+        <div class="stat-label">BLOCKED 유저</div>
+        <div class="stat-value">2<span>명</span></div>
+        <div class="stat-sub red">이번 주 +1명</div>
+      </div>
+
+      <div class="stat-card blue">
+        <div class="stat-label">오늘 신규 가입</div>
+        <div class="stat-value">8<span>명</span></div>
+        <div class="stat-sub green">어제 대비 +3명</div>
+      </div>
+
+    </div>
+
+    <div class="two-col">
+
+      <div class="section">
+
+        <div class="section-header">
+          <div>
+            <div class="section-title">정산 대기 목록</div>
+            <div class="section-sub">처리가 필요한 건</div>
+          </div>
+
+          <button class="btn btn-outline" onclick="showPage('settlements')">
+            전체 보기
+          </button>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>공구명</th>
+              <th>호스트</th>
+              <th>금액</th>
+              <th>상태</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td class="td-main">쿠팡 라면 공구</td>
+              <td>김민준</td>
+              <td class="amount">137,500원</td>
+              <td>
+                <span class="chip chip-pending">PENDING</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+      <div class="section">
+
+        <div class="section-header">
+          <div>
+            <div class="section-title">BLOCKED 유저</div>
+            <div class="section-sub">차단된 사용자</div>
+          </div>
+
+          <button class="btn btn-outline" onclick="showPage('users')">
+            전체 보기
+          </button>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>닉네임</th>
+              <th>매너점수</th>
+              <th>사유</th>
+              <th></th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td class="td-main">나쁜유저1</td>
+              <td style="color:#f44336;font-weight:600">-3.2</td>
+              <td>미결제 반복</td>
+
+              <td>
+                <button class="btn-sm btn-sm-green">
+                  해제
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+    </div>
+  </div>
+
+  <div id="page-settlements" style="display:none">
+
+    <div class="section">
+
+      <div class="section-header">
+
+        <div>
+          <div class="section-title">정산 관리</div>
+          <div class="section-sub">
+            PENDING 상태 공구의 호스트 정산 처리
+          </div>
+        </div>
+
+        <input
+          type="text"
+          placeholder="공구명 / 호스트 검색"
+          class="search-input"
+        >
+
+      </div>
+
+      <div class="filter-tabs">
+        <button class="active">전체</button>
+        <button>PENDING (3)</button>
+        <button>COMPLETED</button>
+      </div>
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>공구명</th>
+            <th>호스트</th>
+            <th>참여자</th>
+            <th>정산 금액</th>
+            <th>픽업 완료</th>
+            <th>상태</th>
+            <th>처리</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          <tr>
+            <td class="td-main">쿠팡 라면 공구</td>
+            <td>김민준</td>
+            <td>5명</td>
+            <td class="amount">137,500원</td>
+            <td>5/5</td>
+
+            <td>
+              <span class="chip chip-pending">PENDING</span>
+            </td>
+
+            <td>
+
+              <button class="btn-sm btn-sm-green">
+                정산 완료
+              </button>
+
+              <button
+                class="btn-sm"
+                onclick="showSettlementDetailModal({
+                  title:'쿠팡 라면 공구',
+                  host:'김민준',
+                  date:'2025-05-15',
+                  place:'광주 북구',
+                  perPrice:'27,500원',
+                  total:'137,500원',
+                  final:'130,000원',
+                  status:'PENDING',
+                  done:null,
+                  users:[
+                    {name:'유저1',price:'27,500원',pickup:true},
+                    {name:'유저2',price:'27,500원',pickup:true},
+                    {name:'유저3',price:'27,500원',pickup:false}
+                  ]
+                })"
+              >
+                상세
+              </button>
+
+            </td>
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+  <div id="page-users" style="display:none">
+
+    <div class="section">
+
+      <div class="section-header">
+
+        <div>
+          <div class="section-title">유저 관리</div>
+          <div class="section-sub">
+            전체 사용자 조회 및 차단 처리
+          </div>
+        </div>
+
+        <input
+          type="text"
+          placeholder="닉네임 / 이메일 검색"
+          class="search-input"
+        >
+
+      </div>
+
+      <div class="filter-tabs">
+        <button class="active">전체</button>
+        <button>BLOCKED (2)</button>
+        <button>프리미엄</button>
+      </div>
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>닉네임</th>
+            <th>이메일</th>
+            <th>매너점수</th>
+            <th>등급</th>
+            <th>가입일</th>
+            <th>상태</th>
+            <th>처리</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          <tr>
+
+            <td class="td-main">test1</td>
+            <td>test1@test.com</td>
+
+            <td style="color:#4caf50;font-weight:600">
+              72.3
+            </td>
+
+            <td>
+              <span class="chip chip-green">GREAT</span>
+            </td>
+
+            <td>2025-03-01</td>
+
+            <td>
+              <span class="chip chip-blue">ACTIVE</span>
+            </td>
+
+            <td>
+
+              <button class="btn-sm btn-sm-red">
+                차단
+              </button>
+
+              <button
+                class="btn-sm"
+                onclick="showUserDetailModal({
+                  nickname:'test1',
+                  email:'test1@test.com',
+                  joinDate:'2025-03-01',
+                  score:'72.3',
+                  hostCount:'3',
+                  joinCount:'12',
+                  lastActivity:'2025-05-15',
+                  premium:true,
+                  expire:'2025-12-31',
+                  postUsage:'4/10'
+                })"
+              >
+                상세
+              </button>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+  <div id="page-groupbuys" style="display:none">
+
+    <div class="section">
+
+      <div class="section-header">
+
+        <div>
+          <div class="section-title">게시글 관리</div>
+          <div class="section-sub">
+            전체 공동구매 게시글 조회 및 강제 처리
+          </div>
+        </div>
+
+        <input
+          type="text"
+          placeholder="공구명 / 호스트 검색"
+          class="search-input"
+        >
+
+      </div>
+
+      <div class="filter-tabs">
+        <button class="active">전체</button>
+        <button>OPEN</button>
+        <button>CLOSED</button>
+        <button>EXPIRED</button>
+      </div>
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>공구명</th>
+            <th>호스트</th>
+            <th>참여</th>
+            <th>마감일</th>
+            <th>상태</th>
+            <th>처리</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          <tr>
+
+            <td class="td-main">쿠팡 라면 박스</td>
+            <td>김민준</td>
+            <td>3/5</td>
+            <td>2025-05-15</td>
+
+            <td>
+              <span class="chip chip-blue">OPEN</span>
+            </td>
+
+            <td>
+
+              <button class="btn-sm btn-sm-red">
+                삭제
+              </button>
+
+              <button
+                class="btn-sm"
+                onclick="showPostDetailModal({
+                  title:'쿠팡 라면 박스',
+                  category:'식품',
+                  host:'김민준',
+                  count:'3/5',
+                  price:'25,000원',
+                  date:'2025-05-15',
+                  desc:'쿠팡 라면 공동구매 진행합니다.',
+                  users:[
+                    {
+                      name:'유저1',
+                      joinDate:'2025-05-10',
+                      status:'참여중'
+                    },
+                    {
+                      name:'유저2',
+                      joinDate:'2025-05-11',
+                      status:'픽업완료'
+                    }
+                  ],
+                  history:[
+                    {
+                      action:'게시글 생성',
+                      date:'2025-05-09'
+                    },
+                    {
+                      action:'참여자 증가',
+                      date:'2025-05-10'
+                    }
+                  ]
+                })"
+              >
+                상세
+              </button>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="user-detail-modal">
+
+  <div class="modal">
+
+    <div class="modal-head">
+      유저 상세
+    </div>
+
+    <div class="modal-body">
+
+      <div class="modal-row">
+        <span>닉네임</span>
+        <span id="u-nickname"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>이메일</span>
+        <span id="u-email"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>가입일</span>
+        <span id="u-join"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>매너점수</span>
+        <span id="u-score"></span>
+      </div>
+
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal()">
+        닫기
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="settlement-detail-modal">
+
+  <div class="modal">
+
+    <div class="modal-head">
+      정산 상세
+    </div>
+
+    <div class="modal-body">
+
+      <div class="modal-row">
+        <span>공구명</span>
+        <span id="s-title"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>호스트</span>
+        <span id="s-host"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>마감일</span>
+        <span id="s-date"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>픽업 장소</span>
+        <span id="s-place"></span>
+      </div>
+
+      <table>
+        <tbody id="s-users"></tbody>
+      </table>
+
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal()">
+        닫기
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="post-detail-modal">
+
+  <div class="modal">
+
+    <div class="modal-head">
+      게시글 상세
+    </div>
+
+    <div class="modal-body">
+
+      <div class="modal-row">
+        <span>공구명</span>
+        <span id="p-title"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>카테고리</span>
+        <span id="p-category"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>호스트</span>
+        <span id="p-host"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>참여</span>
+        <span id="p-count"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>금액</span>
+        <span id="p-price"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>마감일</span>
+        <span id="p-date"></span>
+      </div>
+
+      <hr>
+
+      <div id="p-desc"></div>
+
+      <table>
+        <tbody id="p-users"></tbody>
+      </table>
+
+      <table>
+        <tbody id="p-history"></tbody>
+      </table>
+
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal()">
+        닫기
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="js/pages/admin.js"></script>
+
+</body>
+</html>

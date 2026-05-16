@@ -350,16 +350,7 @@ input[type="checkbox"] {
   font-size: 1.2rem;
 }
 
-#notice1:checked + .modal,
-#notice2:checked + .modal,
-#notice3:checked + .modal,
-#notice4:checked + .modal,
-#notice5:checked + .modal,
-#notice6:checked + .modal,
-#notice7:checked + .modal,
-#notice8:checked + .modal,
-#notice9:checked + .modal,
-#notice10:checked + .modal {
+input[type="checkbox"]:checked + .modal {
   display: flex;
 }
 
@@ -468,3 +459,77 @@ input[type="checkbox"] {
 .joined-progress-payment { font-size: 0.8rem; color: #6b7280; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.4rem; }
 .joined-progress-payment .card-label { font-size: 0.8rem; }
 .joined-progress-desc { font-size: 0.82rem; color: #6b7280; margin-top: 0.5rem; margin-bottom: 1.5rem; padding: 0.6rem 0.75rem; background: #f9fafb; border-radius: 0.5rem; }
+
+.profile-card-v2 {
+  position: relative;
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.profile-actions-top {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+}
+
+.profile-actions-top .btn {
+  font-size: 0.8rem;
+  padding: 0.45rem 0.8rem;
+}
+
+.profile-bottom-actions {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f3f4f6;
+
+  display: flex;
+  justify-content: flex-start;
+}
+
+.btn-withdraw {
+
+  border: none;
+
+  background: transparent;
+
+  color: #ef4444;
+
+  font-size: 0.82rem;
+
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.btn-withdraw:hover {
+  color: #dc2626;
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+
+  .profile-card-v2 {
+    padding-top: 4rem;
+  }
+
+  .profile-actions-top {
+    top: 1rem;
+    right: 1rem;
+  }
+
+  .profile-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .premium-box {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+}
