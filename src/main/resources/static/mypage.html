@@ -88,10 +88,17 @@
 
               <div class="profile-extra">
                 <p><strong>가입일</strong> : 2024.03</p>
-                <p><strong>한줄 소개</strong> : 믿고 거래하는 공구러입니다 😊</p>
               </div>
 
-              <button class="btn btn-outline btn-full">프로필 수정</button>
+              <div class="profile-actions-top">
+                <button class="btn btn-outline">프로필 수정</button>
+              </div>
+
+              <div class="profile-bottom-actions">
+                <button class="btn-withdraw">
+                  회원 탈퇴
+                </button>
+              </div>
 
             </div>
           </div>
@@ -145,10 +152,39 @@
               </label>
 
               <label for="notice2" class="notice-item">
-                <span class="notice-title">🚀 프리미엄 서비스 출시 안내</span>
-                <span class="notice-date">2026.04.28</span>
+                <span class="notice-title">💳 결제 정책 안내</span>
+                <span class="notice-date">2026.05.01</span>
               </label>
 
+              <label for="notice3" class="notice-item">
+                <span class="notice-title">👑 프리미엄 서비스 출시</span>
+                <span class="notice-date">2026.05.01</span>
+              </label>
+
+              <label for="notice4" class="notice-item">
+                <span class="notice-title">⭐ 매너점수 시스템 안내</span>
+                <span class="notice-date">2026.05.01</span>
+              </label>
+
+              <label for="notice5" class="notice-item">
+                <span class="notice-title">결제 기한 미준수 시 제재 안내</span>
+                <span class="notice-date">2026.05.01</span>
+              </label>
+
+              <label for="notice6" class="notice-item">
+                <span class="notice-title">픽업 관련 안내</span>
+                <span class="notice-date">2026.05.01</span>
+              </label>
+
+              <label for="notice7" class="notice-item">
+                <span class="notice-title">서비스 이용 제한 기준 안내</span>
+                <span class="notice-date">2026.05.01</span>
+              </label>
+
+              <label for="notice8" class="notice-item">
+                <span class="notice-title">문의 및 고객센터</span>
+                <span class="notice-date">2026.05.01</span>
+              </label>
             </div>
           </div>
 
@@ -156,9 +192,19 @@
           <div class="modal">
             <div class="modal-content">
               <label for="notice1" class="modal-close">✕</label>
-              <h2>📢 공동구매 정책 변경 안내</h2>
-              <p>2026년 5월부터 무료 회원은 월 3회까지만 공동구매 작성이 가능합니다.</p>
-              <p>프리미엄 회원은 제한 없이 이용 가능합니다.</p>
+              <h2>📢 공동구매 작성 정책 변경 안내</h2>
+
+              <p>2026년 5월 1일부터 무료 회원은 월 3회까지만 공동구매 작성이 가능합니다.</p>
+              <p>신뢰할 수 있는 공동구매 환경을 위해 게시글 품질을 관리합니다.</p>
+
+              <h4>📌 적용 기준</h4>
+              <ul>
+                <li>매월 1일 00:00 기준 초기화</li>
+                <li>무료 회원: 월 최대 3개 작성</li>
+                <li>초과 시 추가 작성 불가</li>
+                <li>삭제해도 횟수 복구 안됨</li>
+                <li>프리미엄은 제한 없음</li>
+              </ul>
             </div>
           </div>
 
@@ -166,9 +212,132 @@
           <div class="modal">
             <div class="modal-content">
               <label for="notice2" class="modal-close">✕</label>
-              <h2>🚀 프리미엄 서비스 출시</h2>
-              <p>프리미엄 가입 시 게시글 무제한 작성이 가능합니다.</p>
-              <p>더 빠른 모집과 특별 배지도 제공됩니다.</p>
+              <h2>💳 결제 정책 안내</h2>
+
+              <p>모집 완료 후 결제가 진행되는 후불 결제 방식입니다.</p>
+
+              <h4>📌 결제 흐름</h4>
+              <ul>
+                <li>모집 → 완료(CLOSED)</li>
+                <li>24시간 내 결제</li>
+                <li>결제 완료 → 픽업</li>
+              </ul>
+
+              <h4>⚠️ 결제 기한</h4>
+              <p>24시간 내 미결제 시 자동 취소 + 매너점수 차감</p>
+
+              <h4>💰 결제 금액</h4>
+              <p>단가 + (호스트 할인금액 ÷ 참여자 수)</p>
+            </div>
+          </div>
+
+          <input type="checkbox" id="notice3">
+          <div class="modal">
+            <div class="modal-content">
+              <label for="notice3" class="modal-close">✕</label>
+              <h2>👑 프리미엄 서비스 출시</h2>
+
+              <p>월 4,900원으로 무제한 공동구매 작성 가능</p>
+
+              <h4>📌 혜택</h4>
+              <ul>
+                <li>게시글 작성 무제한</li>
+                <li>프리미엄 뱃지 제공</li>
+              </ul>
+
+              <h4>💳 결제</h4>
+              <p>마이페이지 → 프리미엄 가입 → 결제</p>
+
+              <h4>⚠️ 환불</h4>
+              <p>7일 이내 미사용 시 환불 가능</p>
+            </div>
+          </div>
+
+          <input type="checkbox" id="notice4">
+          <div class="modal">
+            <div class="modal-content">
+              <label for="notice4" class="modal-close">✕</label>
+              <h2>⭐ 매너점수 시스템 안내</h2>
+
+              <p>신뢰 기반 거래를 위한 평가 시스템입니다.</p>
+
+              <h4>📊 등급</h4>
+              <ul>
+                <li>🏆 LEGEND (90~100)</li>
+                <li>😊 GREAT (70~89)</li>
+                <li>👍 GOOD (50~69)</li>
+                <li>😐 SOSO (30~49)</li>
+                <li>😟 BAD (0~29)</li>
+                <li>🚫 BLOCKED (&lt;0)</li>
+              </ul>
+
+              <h4>📌 점수 변동</h4>
+              <ul>
+                <li>GREAT +0.2</li>
+                <li>GOOD +0.1</li>
+                <li>BAD -0.1</li>
+              </ul>
+            </div>
+          </div>
+
+          <input type="checkbox" id="notice5">
+          <div class="modal">
+            <div class="modal-content">
+              <label for="notice5" class="modal-close">✕</label>
+              <h2>⚠️ 결제 미준수 제재 안내</h2>
+
+              <p>24시간 내 결제하지 않을 경우:</p>
+
+              <ul>
+                <li>자동 참여 취소</li>
+                <li>매너점수 -30</li>
+                <li>모집 상태 변경 가능</li>
+              </ul>
+            </div>
+          </div>
+
+          <input type="checkbox" id="notice6">
+          <div class="modal">
+            <div class="modal-content">
+              <label for="notice6" class="modal-close">✕</label>
+              <h2>📦 픽업 안내</h2>
+
+              <ul>
+                <li>호스트 지정 장소에서 직접 수령</li>
+                <li>시간은 게시글에 표시</li>
+                <li>호스트가 완료 처리</li>
+              </ul>
+
+              <p>미참석 시 매너점수 하락 가능</p>
+            </div>
+          </div>
+
+          <input type="checkbox" id="notice7">
+          <div class="modal">
+            <div class="modal-content">
+              <label for="notice7" class="modal-close">✕</label>
+              <h2>🚫 서비스 이용 제한 기준</h2>
+
+              <ul>
+                <li>매너점수 0점 미만</li>
+                <li>결제 반복 미준수</li>
+                <li>허위 게시글 등록</li>
+                <li>비매너 행위</li>
+              </ul>
+            </div>
+          </div>
+
+          <input type="checkbox" id="notice8">
+          <div class="modal">
+            <div class="modal-content">
+              <label for="notice8" class="modal-close">✕</label>
+              <h2>📞 고객센터 안내</h2>
+
+              <ul>
+                <li>이메일: gongguminjok@gmail.com</li>
+                <li>운영시간: 평일 09:00 ~ 18:00</li>
+                <li>FAQ: 앱 내 고객센터</li>
+              </ul>
             </div>
           </div>
 
@@ -186,4 +355,5 @@
   <script src="js/utils/ui.js"></script>
   <script src="js/pages/mypage.js"></script>
 </body>
+
 </html>
