@@ -5,11 +5,14 @@ import com.nbang.GongguMinjok.domain.MannerReview;
 import com.nbang.GongguMinjok.domain.User;
 import com.nbang.GongguMinjok.dto.MannerReviewRequestDto;
 import com.nbang.GongguMinjok.dto.MannerReviewResponseDto;
+import com.nbang.GongguMinjok.dto.ReviewAvailabilityResponseDto;
+import com.nbang.GongguMinjok.dto.ReviewAvailabilityStatus;
 import com.nbang.GongguMinjok.repository.GroupBuyRepository;
 import com.nbang.GongguMinjok.repository.MannerReviewRepository;
 import com.nbang.GongguMinjok.repository.ParticipationRepository;
 import com.nbang.GongguMinjok.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,20 +81,39 @@ public class MannerReviewService {
     }
 
     @Transactional(readOnly = true)
-    public boolean canReview(Long groupBuyId, String reviewerEmail) {
+    public ReviewAvailabilityResponseDto canReview(Long groupBuyId, String reviewerEmail) {
         User reviewer = userRepository.findByEmail(reviewerEmail)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
         GroupBuy groupBuy = groupBuyRepository.findById(groupBuyId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
 
-        if (groupBuy.getStatus() != GroupBuy.Status.COMPLETED) return false;
-        if (groupBuy.getCompletedAt() == null ||
-                groupBuy.getCompletedAt().plusDays(REVIEW_WINDOW_DAYS).isBefore(LocalDateTime.now())) return false;
-        if (mannerReviewRepository.existsByGroupBuyIdAndReviewerId(groupBuyId, reviewer.getId())) return false;
-
         boolean isHost = groupBuy.getHost().getId().equals(reviewer.getId());
-        if (isHost) return true;
-        return participationRepository.existsByGroupBuyIdAndParticipantId(groupBuyId, reviewer.getId());
+        boolean isParticipant = participationRepository.existsByGroupBuyIdAndParticipantId(
+                groupBuyId, reviewer.getId());
+
+        if (!isHost && !isParticipant) {
+            throw new AccessDeniedException("해당 공동구매의 참여자만 후기를 작성할 수 있습니다.");
+        }
+
+        if (mannerReviewRepository.existsByGroupBuyIdAndReviewerId(groupBuyId, reviewer.getId())) {
+            return ReviewAvailabilityResponseDto.unavailable(
+                    ReviewAvailabilityStatus.ALREADY_REVIEWED,
+                    "작성 완료");
+        }
+
+        if (groupBuy.getStatus() != GroupBuy.Status.COMPLETED || groupBuy.getCompletedAt() == null) {
+            return ReviewAvailabilityResponseDto.unavailable(
+                    ReviewAvailabilityStatus.NOT_COMPLETED,
+                    "공동구매 미완료");
+        }
+
+        if (groupBuy.getCompletedAt().plusDays(REVIEW_WINDOW_DAYS).isBefore(LocalDateTime.now())) {
+            return ReviewAvailabilityResponseDto.unavailable(
+                    ReviewAvailabilityStatus.EXPIRED,
+                    "기한 만료");
+        }
+
+        return ReviewAvailabilityResponseDto.available();
     }
 
     private void validateGroupBuyCompleted(GroupBuy groupBuy) {

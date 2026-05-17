@@ -17,6 +17,8 @@ public class ParticipationResponseDto {
     private Long groupBuyId;
     private String groupBuyTitle;
     private GroupBuy.Status groupBuyStatus;
+    private boolean groupBuyDeleted;
+    private LocalDateTime groupBuyDeletedAt;
     private String pickupLocation;
     private int currentParticipants;
     private int maxParticipants;
@@ -37,6 +39,8 @@ public class ParticipationResponseDto {
         dto.groupBuyId = participation.getGroupBuy().getId();
         dto.groupBuyTitle = participation.getGroupBuy().getTitle();
         dto.groupBuyStatus = participation.getGroupBuy().getStatus();
+        dto.groupBuyDeleted = participation.getGroupBuy().isDeleted();
+        dto.groupBuyDeletedAt = participation.getGroupBuy().getDeletedAt();
         dto.pickupLocation = participation.getGroupBuy().getPickupLocation();
         dto.currentParticipants = participation.getGroupBuy().getCurrentParticipants();
         dto.maxParticipants = participation.getGroupBuy().getMaxParticipants();
