@@ -5,6 +5,7 @@ import com.nbang.GongguMinjok.domain.GroupBuyPickupTime;
 import com.nbang.GongguMinjok.domain.Participation;
 import com.nbang.GongguMinjok.domain.User;
 import com.nbang.GongguMinjok.dto.ParticipationResponseDto;
+import com.nbang.GongguMinjok.dto.PickupResponseDto;
 import com.nbang.GongguMinjok.repository.GroupBuyRepository;
 import com.nbang.GongguMinjok.repository.ParticipationRepository;
 import com.nbang.GongguMinjok.repository.UserRepository;
@@ -128,6 +129,42 @@ public class ParticipationService {
         return participationRepository.findByParticipantId(participant.getId()).stream()
                 .map(ParticipationResponseDto::from)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public PickupResponseDto completePickup(Long groupBuyId, String email) {
+        Participation participation = participationRepository
+                .findByGroupBuyIdAndParticipantEmail(groupBuyId, email)
+                .orElseThrow(() -> new org.springframework.security.access.AccessDeniedException("해당 공동구매 참여자만 픽업 완료 처리할 수 있습니다."));
+
+        GroupBuy groupBuy = participation.getGroupBuy();
+        if (groupBuy.getStatus() != GroupBuy.Status.PICKUP_READY) {
+            throw new IllegalStateException("픽업 가능 상태가 아닙니다.");
+        }
+
+        if (participation.getPickupCompletedAt() != null) {
+            throw new IllegalStateException("이미 픽업 완료 처리되었습니다.");
+        }
+
+        participation.setPickupCompletedAt(LocalDateTime.now());
+        participationRepository.save(participation);
+
+        List<Participation> allParticipations = participationRepository.findByGroupBuyId(groupBuyId);
+        int expectedParticipantCount = groupBuy.getMaxParticipants() - 1;
+        boolean allCompleted = allParticipations.size() == expectedParticipantCount
+                && allParticipations.stream()
+                .allMatch(p -> p.getPickupCompletedAt() != null);
+
+        if (allCompleted) {
+            groupBuy.setStatus(GroupBuy.Status.PENDING);
+            groupBuyRepository.save(groupBuy);
+        }
+
+        return new PickupResponseDto(
+                participation.getId(),
+                participation.getPickupCompletedAt(),
+                allCompleted,
+                groupBuy.getStatus().name());
     }
 
 }

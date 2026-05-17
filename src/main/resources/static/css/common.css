@@ -175,7 +175,8 @@ body {
   gap: 0.25rem;
 }
 
-.tab-trigger {
+.tab-trigger,
+.radius-trigger {
   flex: 1;
   padding: 0.5rem 1rem;
   background: transparent;
@@ -187,7 +188,8 @@ body {
   white-space: nowrap;
 }
 
-.tab-trigger.active {
+.tab-trigger.active,
+.radius-trigger.active {
   background: white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }

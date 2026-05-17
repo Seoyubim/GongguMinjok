@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>공동구매 만들기 - 공구의 민족</title>
+  <title>공동구매 수정 - 공구의 민족</title>
   <link rel="stylesheet" href="css/common.css">
   <link rel="stylesheet" href="css/write.css">
 </head>
@@ -27,21 +27,10 @@
 <main class="main-content">
   <div class="page" id="pg-create">
 
-    <div class="draft-modal" id="cr-draft-modal">
-      <div class="draft-modal-box">
-        <div class="draft-modal-title">이전에 작성 중인 내용이 있습니다.</div>
-        <div class="draft-modal-desc">불러오시겠어요?</div>
-        <div class="draft-modal-btns">
-          <button class="btn btn-outline" onclick="dismissDraft()">아니요</button>
-          <button class="btn btn-primary" onclick="applyDraft()">예</button>
-        </div>
-      </div>
-    </div>
-
     <nav class="tnav">
       <button class="tnav-back" onclick="go('list')">←</button>
       <span class="tnav-title">공동구매 수정</span>
-      <button class="tnav-icon" onclick="saveDraft()">임시저장</button>
+      <span></span>
     </nav>
 
     <div class="step-bar">
@@ -130,7 +119,7 @@
       <div class="card">
         <div class="sec-title">⏰ 모집 마감일 <span class="req">*</span></div>
         <div class="fgroup">
-          <input class="finput" id="cr-deadline" type="datetime-local" onchange="updatePickupMin()">
+          <input class="finput" id="cr-deadline" type="date" onchange="updatePickupMin()">
           <div class="err-msg" id="cr-deadline-err">모집 마감일을 입력해 주세요.</div>
         </div>
       </div>
@@ -180,7 +169,7 @@
 <script src="js/utils/storage.js"></script>
 <script src="js/utils/ui.js"></script>
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-<script src="js/pages/write.js"></script>
+<script src="js/pages/edit.js"></script>
 
 </body>
 </html>

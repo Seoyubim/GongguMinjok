@@ -9,6 +9,7 @@ function getStatusLabel(status) {
   if (status === "PAYMENT_COMPLETED") return "결제완료";
   if (status === "HOST_PURCHASED") return "구매완료";
   if (status === "PICKUP_READY") return "픽업대기";
+  if (status === "PENDING") return "정산대기";
   if (status === "COMPLETED") return "완료";
   if (status === "EXPIRED") return "마감";
   return "";
@@ -17,7 +18,8 @@ function getStatusLabel(status) {
 function getStatusClass(status) {
   if (status === "OPEN") return "badge-recruiting";
   if (status === "CLOSING") return "badge-closing";
-  if (status === "CLOSED" || status === "PAYMENT_COMPLETED" || status === "HOST_PURCHASED" || status === "PICKUP_READY" || status === "COMPLETED") return "badge-completed";
+  if (status === "CLOSED" || status === "PAYMENT_COMPLETED" || status === "HOST_PURCHASED" || status === "PICKUP_READY" || status === "PENDING") return "badge-progress";
+  if (status === "COMPLETED") return "badge-completed";
   if (status === "EXPIRED") return "badge-expired";
   return "";
 }

@@ -89,7 +89,7 @@ public class GroupBuyScheduler {
                     expireReadyPayments(p);
 
                     User user = p.getParticipant();
-                    user.setMannerScore(user.getMannerScore() - 30);
+                    user.updateMannerScore(-30);
                     userRepository.save(user);
                     log.info("[스케줄러-B] 매너점수 차감: userId={}, 차감 후 점수={}", user.getId(), user.getMannerScore());
                 }

@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 @Service
@@ -55,8 +56,8 @@ public class GroupBuyService {
                     double dist = dto.getDistance();
                     return switch (distanceRange) {
                         case NEAR   -> dist < 1.0;
-                        case MEDIUM -> dist >= 1.0 && dist < 3.0;
-                        case FAR    -> dist >= 3.0 && dist <= 5.0;
+                        case MEDIUM -> dist < 3.0;
+                        case FAR    -> dist <= 5.0;
                     };
                 })
                 .sorted(Comparator.comparingDouble(GroupBuyResponseDto::getDistance))
@@ -154,6 +155,7 @@ public class GroupBuyService {
         if (status == GroupBuy.Status.CLOSING ||
                 status == GroupBuy.Status.CLOSED ||
                 status == GroupBuy.Status.PAYMENT_COMPLETED ||
+                status == GroupBuy.Status.PENDING ||
                 status == GroupBuy.Status.COMPLETED ||
                 status == GroupBuy.Status.EXPIRED) {
             throw new IllegalStateException("현재 상태에서는 공동구매를 수정할 수 없습니다.");
@@ -192,23 +194,31 @@ public class GroupBuyService {
             }
 
             validatePickupTimes(dto.getPickupTimes(), groupBuy.getDeadline());
-            Set<LocalDateTime> selectedByParticipants = participationRepository.findByGroupBuyId(groupBuy.getId())
+            Set<LocalDateTime> selectedByParticipants = participationRepository.findByGroupBuyIdWithPickupTime(groupBuy.getId())
                     .stream()
                     .filter(p -> p.getPickupTime() != null)
                     .map(p -> p.getPickupTime().getPickupTime())
                     .collect(Collectors.toSet());
-            Set<LocalDateTime> newPickupTimes = new HashSet<>(dto.getPickupTimes());
-            for (GroupBuyPickupTime existing : groupBuy.getPickupTimes()) {
-                if (!newPickupTimes.contains(existing.getPickupTime()) && selectedByParticipants.contains(existing.getPickupTime())) {
-                    throw new IllegalArgumentException("참여자가 선택한 픽업 시간은 삭제할 수 없습니다.");
+            // 1. DTO 시간 + 참여자 선택 시간 합치기
+            Set<LocalDateTime> mergedTimes = new TreeSet<>(dto.getPickupTimes());
+            mergedTimes.addAll(selectedByParticipants);
+
+            // 2. 참여자 미선택 시간만 제거 (clear() 사용 금지)
+            groupBuy.getPickupTimes().removeIf(
+                existing -> !mergedTimes.contains(existing.getPickupTime())
+            );
+
+            // 3. 새로 추가된 시간만 insert
+            Set<LocalDateTime> existingTimes = groupBuy.getPickupTimes().stream()
+                .map(GroupBuyPickupTime::getPickupTime)
+                .collect(Collectors.toSet());
+            for (LocalDateTime time : mergedTimes) {
+                if (!existingTimes.contains(time)) {
+                    GroupBuyPickupTime pickupTime = new GroupBuyPickupTime();
+                    pickupTime.setGroupBuy(groupBuy);
+                    pickupTime.setPickupTime(time);
+                    groupBuy.getPickupTimes().add(pickupTime);
                 }
-            }
-            groupBuy.getPickupTimes().clear();
-            for (LocalDateTime time : dto.getPickupTimes()) {
-                GroupBuyPickupTime pickupTime = new GroupBuyPickupTime();
-                pickupTime.setGroupBuy(groupBuy);
-                pickupTime.setPickupTime(time);
-                groupBuy.getPickupTimes().add(pickupTime);
             }
 
             return new GroupBuyResponseDto(groupBuyRepository.save(groupBuy));
@@ -226,23 +236,31 @@ public class GroupBuyService {
 
         // 픽업 시간 교체 (orphanRemoval = true 로 기존 것 자동 삭제)
         validatePickupTimes(dto.getPickupTimes(), groupBuy.getDeadline());
-        Set<LocalDateTime> selectedByParticipants = participationRepository.findByGroupBuyId(groupBuy.getId())
+        Set<LocalDateTime> selectedByParticipants = participationRepository.findByGroupBuyIdWithPickupTime(groupBuy.getId())
                 .stream()
                 .filter(p -> p.getPickupTime() != null)
                 .map(p -> p.getPickupTime().getPickupTime())
                 .collect(Collectors.toSet());
-        Set<LocalDateTime> newPickupTimes = new HashSet<>(dto.getPickupTimes());
-        for (GroupBuyPickupTime existing : groupBuy.getPickupTimes()) {
-            if (!newPickupTimes.contains(existing.getPickupTime()) && selectedByParticipants.contains(existing.getPickupTime())) {
-                throw new IllegalArgumentException("참여자가 선택한 픽업 시간은 삭제할 수 없습니다.");
+        // 1. DTO 시간 + 참여자 선택 시간 합치기
+        Set<LocalDateTime> mergedTimes = new TreeSet<>(dto.getPickupTimes());
+        mergedTimes.addAll(selectedByParticipants);
+
+        // 2. 참여자 미선택 시간만 제거 (clear() 사용 금지)
+        groupBuy.getPickupTimes().removeIf(
+            existing -> !mergedTimes.contains(existing.getPickupTime())
+        );
+
+        // 3. 새로 추가된 시간만 insert
+        Set<LocalDateTime> existingTimes = groupBuy.getPickupTimes().stream()
+            .map(GroupBuyPickupTime::getPickupTime)
+            .collect(Collectors.toSet());
+        for (LocalDateTime time : mergedTimes) {
+            if (!existingTimes.contains(time)) {
+                GroupBuyPickupTime pickupTime = new GroupBuyPickupTime();
+                pickupTime.setGroupBuy(groupBuy);
+                pickupTime.setPickupTime(time);
+                groupBuy.getPickupTimes().add(pickupTime);
             }
-        }
-        groupBuy.getPickupTimes().clear();
-        for (LocalDateTime time : dto.getPickupTimes()) {
-            GroupBuyPickupTime pickupTime = new GroupBuyPickupTime();
-            pickupTime.setGroupBuy(groupBuy);
-            pickupTime.setPickupTime(time);
-            groupBuy.getPickupTimes().add(pickupTime);
         }
 
         groupBuy.getImages().clear();
@@ -257,6 +275,40 @@ public class GroupBuyService {
             }
         }
 
+        return new GroupBuyResponseDto(groupBuyRepository.save(groupBuy));
+    }
+
+    @Transactional
+    public GroupBuyResponseDto completeHostPurchase(Long id, String email) {
+        GroupBuy groupBuy = groupBuyRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
+
+        if (!groupBuy.getHost().getEmail().equals(email)) {
+            throw new org.springframework.security.access.AccessDeniedException("호스트만 주문 완료 처리할 수 있습니다.");
+        }
+
+        if (groupBuy.getStatus() != GroupBuy.Status.PAYMENT_COMPLETED) {
+            throw new IllegalStateException("전원 결제 완료 상태에서만 주문 완료 처리할 수 있습니다.");
+        }
+
+        groupBuy.setStatus(GroupBuy.Status.HOST_PURCHASED);
+        return new GroupBuyResponseDto(groupBuyRepository.save(groupBuy));
+    }
+
+    @Transactional
+    public GroupBuyResponseDto markPickupReady(Long id, String email) {
+        GroupBuy groupBuy = groupBuyRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
+
+        if (!groupBuy.getHost().getEmail().equals(email)) {
+            throw new org.springframework.security.access.AccessDeniedException("호스트만 수령 완료 처리할 수 있습니다.");
+        }
+
+        if (groupBuy.getStatus() != GroupBuy.Status.HOST_PURCHASED) {
+            throw new IllegalStateException("호스트 주문 완료 상태에서만 수령 완료 처리할 수 있습니다.");
+        }
+
+        groupBuy.setStatus(GroupBuy.Status.PICKUP_READY);
         return new GroupBuyResponseDto(groupBuyRepository.save(groupBuy));
     }
 

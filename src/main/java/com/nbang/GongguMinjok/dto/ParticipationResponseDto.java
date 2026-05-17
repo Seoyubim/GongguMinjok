@@ -1,5 +1,6 @@
 package com.nbang.GongguMinjok.dto;
 
+import com.nbang.GongguMinjok.domain.GroupBuy;
 import com.nbang.GongguMinjok.domain.Participation;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,12 +16,17 @@ public class ParticipationResponseDto {
     private Long id;
     private Long groupBuyId;
     private String groupBuyTitle;
+    private GroupBuy.Status groupBuyStatus;
+    private String pickupLocation;
+    private int currentParticipants;
+    private int maxParticipants;
     private Long participantId;
     private String participantNickname;
     private boolean paymentConfirmed;
     private Integer paymentAmount;
     private LocalDateTime paymentDeadline;
     private LocalDateTime paidAt;
+    private LocalDateTime pickupCompletedAt;
     private LocalDateTime joinedAt;
     private Long pickupTimeId;
     private LocalDateTime pickupTime;
@@ -30,12 +36,17 @@ public class ParticipationResponseDto {
         dto.id = participation.getId();
         dto.groupBuyId = participation.getGroupBuy().getId();
         dto.groupBuyTitle = participation.getGroupBuy().getTitle();
+        dto.groupBuyStatus = participation.getGroupBuy().getStatus();
+        dto.pickupLocation = participation.getGroupBuy().getPickupLocation();
+        dto.currentParticipants = participation.getGroupBuy().getCurrentParticipants();
+        dto.maxParticipants = participation.getGroupBuy().getMaxParticipants();
         dto.participantId = participation.getParticipant().getId();
         dto.participantNickname = participation.getParticipant().getNickname();
         dto.paymentConfirmed = participation.isPaymentConfirmed();
         dto.paymentAmount = participation.getPaymentAmount();
         dto.paymentDeadline = participation.getPaymentDeadline();
         dto.paidAt = participation.getPaidAt();
+        dto.pickupCompletedAt = participation.getPickupCompletedAt();
         dto.joinedAt = participation.getJoinedAt();
         if (participation.getPickupTime() != null) {
             dto.pickupTimeId = participation.getPickupTime().getId();
