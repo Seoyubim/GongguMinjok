@@ -35,6 +35,7 @@ public class GroupBuyScheduler {
         processClosingGroupBuys(now);
         processExpiredGroupBuys(now);
         processUnpaidParticipants(now);
+        processIncompletePickups(now);
     }
 
     /**
@@ -89,7 +90,7 @@ public class GroupBuyScheduler {
                     expireReadyPayments(p);
 
                     User user = p.getParticipant();
-                    user.updateMannerScore(-30);
+                    user.updateMannerScore(-10);
                     userRepository.save(user);
                     log.info("[스케줄러-B] 매너점수 차감: userId={}, 차감 후 점수={}", user.getId(), user.getMannerScore());
                 }
@@ -108,6 +109,49 @@ public class GroupBuyScheduler {
                     groupBuyRepository.save(groupBuy);
                 }
             }
+        }
+    }
+
+    /**
+     * Logic D: PICKUP_READY 상태에서 픽업 시간 + 24시간 경과 후 전원 픽업 미완료 시 호스트 귀책 처리
+     */
+    private void processIncompletePickups(LocalDateTime now) {
+        List<GroupBuy> pickupReadyGroupBuys = groupBuyRepository.findByStatusAndDeletedFalse(GroupBuy.Status.PICKUP_READY);
+
+        for (GroupBuy groupBuy : pickupReadyGroupBuys) {
+            List<Participation> participations = participationRepository.findByGroupBuyIdWithPickupTime(groupBuy.getId());
+            if (participations.isEmpty()) {
+                continue;
+            }
+
+            LocalDateTime latestPickupTime = participations.stream()
+                    .filter(p -> p.getPickupTime() != null)
+                    .map(p -> p.getPickupTime().getPickupTime())
+                    .max(LocalDateTime::compareTo)
+                    .orElse(null);
+
+            if (latestPickupTime == null || now.isBefore(latestPickupTime.plusHours(24))) {
+                continue;
+            }
+
+            boolean allPickupCompleted = participations.stream()
+                    .allMatch(p -> p.getPickupCompletedAt() != null);
+            if (allPickupCompleted) {
+                groupBuy.setStatus(GroupBuy.Status.PENDING);
+                groupBuyRepository.save(groupBuy);
+                continue;
+            }
+
+            User host = groupBuy.getHost();
+            host.updateMannerScore(-30);
+            userRepository.save(host);
+
+            groupBuy.setStatus(GroupBuy.Status.EXPIRED);
+            groupBuy.setDeadlineNotified(true);
+            groupBuyRepository.save(groupBuy);
+
+            log.info("[스케줄러-D] 픽업 미완료 호스트 매너점수 차감: groupBuyId={}, hostId={}, 차감 후 점수={}",
+                    groupBuy.getId(), host.getId(), host.getMannerScore());
         }
     }
 
