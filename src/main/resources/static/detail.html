@@ -110,6 +110,18 @@
       <div class="container detail-bottom-container">
         <div class="price">1인 부담금 0원</div>
         <button id="openModal" class="btn btn-primary btn-full" type="button">참여하기</button>
+        <div id="bottomBtnGroup" class="bottom-btn-group hidden">
+          <button id="cancelBtn" class="btn btn-outline" type="button">참여 취소</button>
+          <button id="pickupTimeBtn" class="btn btn-primary" type="button">픽업 시간 변경</button>
+        </div>
+        <div id="hostBtnGroup" class="bottom-btn-group hidden">
+          <button id="hostPickupTimeBtn" class="btn btn-outline" type="button">픽업 시간 변경</button>
+          <button id="hostPickupReadyBtn" class="btn btn-primary" type="button">수령 완료</button>
+        </div>
+        <div id="participantPickupBtnGroup" class="bottom-btn-group hidden">
+          <button id="participantPickupTimeBtn" class="btn btn-outline" type="button">픽업 시간 변경</button>
+          <button id="participantPickupReadyBtn" class="btn btn-primary" type="button">수령 완료</button>
+        </div>
       </div>
     </div>
   </main>
@@ -179,6 +191,28 @@
         내 위치
       </button>
       <div id="pickupMap" class="modal-map"></div>
+    </div>
+  </div>
+
+  <div id="hostPickupModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>픽업 시간 변경</h3>
+        <button id="closeHostPickupModal" type="button">✕</button>
+      </div>
+      <p class="modal-desc">참여자가 선택한 시간은 삭제할 수 없습니다.</p>
+      <div class="modal-section">
+        <strong>⏰ 현재 픽업 시간 슬롯</strong>
+        <div id="hostPickupSlotList" class="host-pickup-slot-list"></div>
+      </div>
+      <div class="modal-section">
+        <strong>➕ 새 시간 추가</strong>
+        <div class="host-pickup-add-row">
+          <input type="datetime-local" id="hostPickupNewTime" class="host-pickup-input" />
+          <button id="hostPickupAddBtn" class="btn btn-outline btn-sm" type="button">추가</button>
+        </div>
+      </div>
+      <button id="hostPickupConfirmBtn" class="btn btn-primary btn-full" type="button">변경 완료</button>
     </div>
   </div>
 
