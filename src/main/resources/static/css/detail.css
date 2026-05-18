@@ -166,6 +166,59 @@
   flex: 0 1 calc(100% - 9rem);
 }
 
+/* 하단 두 버튼 그룹 (OPEN·CLOSING 참여자용) */
+.bottom-btn-group {
+  flex: 0 1 calc(100% - 9rem);
+  display: flex;
+  gap: 8px;
+}
+
+.bottom-btn-group .btn {
+  flex: 1;
+}
+
+/* 클릭은 가능하지만 시각적으로 비활성인 버튼 */
+.btn.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 호스트 픽업 시간 변경 모달 */
+.host-pickup-slot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.host-pickup-slot-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.slot-count {
+  font-size: 0.75rem;
+  color: #6b7280;
+  flex: 1;
+  text-align: right;
+}
+
+.host-pickup-add-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  align-items: center;
+}
+
+.host-pickup-input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
 .time-warning {
   margin-top: 10px;
   padding: 10px;
