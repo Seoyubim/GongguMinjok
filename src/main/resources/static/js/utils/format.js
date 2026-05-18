@@ -50,8 +50,9 @@ function getCategoryLabel(category) {
 }
 
 function formatPickupTime(dateTimeStr) {
-  if (!dateTimeStr) return "";
+  if (!dateTimeStr) return "-";
   const date = new Date(dateTimeStr);
+  if (isNaN(date.getTime())) return "-";
   const month = date.getMonth() + 1;
   const day = date.getDate();
   const hours = String(date.getHours()).padStart(2, "0");

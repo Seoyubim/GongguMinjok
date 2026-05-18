@@ -195,6 +195,14 @@ function addPickupTime() {
     return;
   }
 
+  const maxPickup = new Date(deadlineVal + 'T23:59');
+  maxPickup.setDate(maxPickup.getDate() + 14);
+  if (deadlineVal && new Date(val) > maxPickup) {
+    errEl.textContent = '픽업 시간은 마감일로부터 14일 이내로 설정해 주세요.';
+    errEl.style.display = 'block';
+    return;
+  }
+
   const datetime = val + ':00';
   if (pickupTimes.indexOf(datetime) !== -1) return;
 
@@ -334,6 +342,14 @@ function validateStep(step) {
       const deadlineVal = document.getElementById('cr-deadline').value;
       if (deadlineVal && pickupTimes.some(dt => new Date(dt) <= new Date(deadlineVal + 'T23:59'))) {
         pickupErr.textContent = '픽업 시간은 모집 마감일 이후로 설정해 주세요.';
+        pickupErr.style.display = 'block';
+        valid = false;
+      } else if (deadlineVal && pickupTimes.some(dt => {
+        const maxPickup = new Date(deadlineVal + 'T23:59');
+        maxPickup.setDate(maxPickup.getDate() + 14);
+        return new Date(dt) > maxPickup;
+      })) {
+        pickupErr.textContent = '픽업 시간은 마감일로부터 14일 이내로 설정해 주세요.';
         pickupErr.style.display = 'block';
         valid = false;
       } else {
