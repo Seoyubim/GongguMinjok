@@ -413,6 +413,7 @@ input[type="checkbox"]:checked + .modal {
 .badge-pickup { background: #d1fae5; color: #059669; }
 .badge-progress { background: #f3f4f6; color: #6b7280; }
 .badge-done { background: #e0f2fe; color: #0284c7; }
+.badge-pickup-done { background: #ccfbf1; color: #0f766e; }
 .badge-expired { background: #f3f4f6; color: #9ca3af; }
 .card-location { font-size: 0.78rem; color: #9ca3af; margin-top: 0.25rem; }
 .card-meta { font-size: 0.8rem; color: #6b7280; margin-top: 0.2rem; display: flex; align-items: baseline; gap: 0.35rem; }

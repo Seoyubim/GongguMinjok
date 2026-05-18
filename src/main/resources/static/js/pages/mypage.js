@@ -30,9 +30,9 @@ async function initCreatedGroupBuys() {
     const completedItems = list.filter(g => g.status === 'COMPLETED');
     if (completedItems.length) {
       const results = await Promise.all(
-        completedItems.map(g => canReviewGroupBuy(g.id).catch(() => ({ canReview: false })))
+        completedItems.map(g => canReviewGroupBuy(g.id).catch(() => ({ status: 'EXPIRED' })))
       );
-      completedItems.forEach((g, i) => { reviewMap[g.id] = results[i].canReview; });
+      completedItems.forEach((g, i) => { reviewMap[g.id] = results[i].status; });
     }
     renderCreatedCards(list, reviewMap);
     bindCreatedEvents();
@@ -86,10 +86,9 @@ function getCreatedButtons(g, canReview) {
     return `<button class="btn btn-outline btn-progress" data-id="${id}">진행 현황</button>`;
   if (s === 'PENDING')
     return `<button class="btn btn-outline btn-settlement" data-id="${id}">정산 준비 중</button>`;
-  if (s === 'COMPLETED')
-    return canReview
-      ? `<a href="review.html?id=${id}&role=host" class="btn btn-primary">후기 보내기</a>`
-      : `<button class="btn btn-outline" disabled>기한 만료</button>`;
+  if (s === 'COMPLETED') {
+    return `<button class="btn btn-primary btn-review-status" data-id="${id}" data-can-review="${canReview}">후기 현황</button>`;
+  }
   return '';
 }
 
@@ -130,6 +129,9 @@ function bindCreatedEvents() {
   });
   container.querySelectorAll('.btn-settlement').forEach(btn => {
     btn.addEventListener('click', () => showToast('정산 기능은 준비 중입니다.'));
+  });
+  container.querySelectorAll('.btn-review-status').forEach(btn => {
+    btn.addEventListener('click', () => showReviewStatusModal(btn.dataset.id, btn.dataset.canReview));
   });
 }
 
@@ -172,6 +174,39 @@ async function showProgressModal(groupBuyId) {
   }
 }
 
+async function showReviewStatusModal(groupBuyId, canReview) {
+  const wrap = document.getElementById('review-status-table-wrap');
+  wrap.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:1rem">불러오는 중...</p>';
+  showMypageModal('modal-review-status');
+  try {
+    const participants = await getParticipants(groupBuyId);
+    if (!participants.length) {
+      wrap.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:1rem">참여자가 없습니다.</p>';
+      return;
+    }
+    const isExpired = canReview === 'EXPIRED';
+    const rows = participants.map(p => {
+      const pickup = p.pickupTime
+        ? new Date(p.pickupTime).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+        : '-';
+      const reviewBtn = isExpired
+        ? `<button class="btn btn-outline btn-sm" disabled>기한 만료</button>`
+        : `<a href="review.html?id=${groupBuyId}&role=host&participantId=${p.participantId}" class="btn btn-primary btn-sm">후기 보내기</a>`;
+      return `<tr>
+        <td>${p.participantNickname}</td>
+        <td>${pickup}</td>
+        <td>${reviewBtn}</td>
+      </tr>`;
+    }).join('');
+    wrap.innerHTML = `<table class="progress-table">
+      <thead><tr><th>닉네임</th><th>픽업 일시</th><th>후기</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  } catch (e) {
+    wrap.innerHTML = '<p style="text-align:center;color:#ef4444;padding:1rem">불러오기 실패</p>';
+  }
+}
+
 // ─── 모달 유틸 ───
 
 function showMypageModal(id) { document.getElementById(id).style.display = 'flex'; }
@@ -191,6 +226,7 @@ document.getElementById('btn-purchase-confirm').addEventListener('click', () => 
 document.getElementById('btn-pickup-cancel').addEventListener('click', () => hideMypageModal('modal-pickup-ready'));
 document.getElementById('btn-pickup-confirm').addEventListener('click', () => runPendingAction('modal-pickup-ready'));
 document.getElementById('btn-progress-close').addEventListener('click', () => hideMypageModal('modal-progress'));
+document.getElementById('btn-review-status-close').addEventListener('click', () => hideMypageModal('modal-review-status'));
 
 // ─── 탭 이벤트 ───
 
@@ -198,6 +234,20 @@ document.getElementById('tab2').addEventListener('change', initJoinedGroupBuys);
 if (document.getElementById('tab2').checked) initJoinedGroupBuys();
 document.getElementById('tab3').addEventListener('change', initCreatedGroupBuys);
 if (document.getElementById('tab3').checked) initCreatedGroupBuys();
+
+const tabParam = new URLSearchParams(location.search).get('tab');
+if (tabParam === 'joined') {
+  document.getElementById('tab2').checked = true;
+  initJoinedGroupBuys();
+} else if (tabParam === 'created') {
+  document.getElementById('tab3').checked = true;
+  initCreatedGroupBuys();
+}
+
+window.addEventListener('pageshow', () => {
+  if (document.getElementById('tab3').checked) initCreatedGroupBuys();
+  else if (document.getElementById('tab2').checked) initJoinedGroupBuys();
+});
 
 // ─── 참여한 공동구매 ───
 
@@ -228,9 +278,9 @@ async function initJoinedGroupBuys() {
     const completedItems = list.filter(p => p.groupBuyStatus === 'COMPLETED');
     if (completedItems.length) {
       const results = await Promise.all(
-        completedItems.map(p => canReviewGroupBuy(p.groupBuyId).catch(() => ({ canReview: false })))
+        completedItems.map(p => canReviewGroupBuy(p.groupBuyId).catch(() => ({ status: 'EXPIRED' })))
       );
-      completedItems.forEach((p, i) => { reviewMap[p.groupBuyId] = results[i].canReview; });
+      completedItems.forEach((p, i) => { reviewMap[p.groupBuyId] = results[i].status; });
     }
     renderJoinedCards(list, reviewMap);
     bindJoinedEvents();
@@ -252,7 +302,7 @@ function renderJoinedCards(list, reviewMap) {
       <div class="card-img-placeholder"></div>
       <div class="card-body">
         <div class="card-title-row">
-          <span class="card-status ${p.pickupCompletedAt && p.groupBuyStatus === 'PICKUP_READY' ? 'badge-done' : (STATUS_CLASS[p.groupBuyStatus] || '')}">${p.pickupCompletedAt && p.groupBuyStatus === 'PICKUP_READY' ? '픽업완료' : (STATUS_LABEL[p.groupBuyStatus] || p.groupBuyStatus)}</span>
+          <span class="card-status ${p.groupBuyDeleted ? 'badge-expired' : (p.pickupCompletedAt && p.groupBuyStatus === 'PICKUP_READY' ? 'badge-pickup-done' :(STATUS_CLASS[p.groupBuyStatus] || ''))}">${p.groupBuyDeleted ? '삭제됨' : (p.pickupCompletedAt && p.groupBuyStatus === 'PICKUP_READY' ? '픽업완료' : (STATUS_LABEL[p.groupBuyStatus] || p.groupBuyStatus))}</span>
           <h3 class="card-title">${p.groupBuyTitle}</h3>
         </div>
         <p class="card-meta"><span class="card-label">인원</span>${p.currentParticipants} / ${p.maxParticipants}명</p>
@@ -262,6 +312,10 @@ function renderJoinedCards(list, reviewMap) {
     `;
     card.addEventListener('click', (e) => {
       if (!e.target.closest('.card-actions')) {
+        if (p.groupBuyDeleted) {
+          showToast('삭제된 공동구매입니다.');
+          return;
+        }
         location.href = 'detail.html?id=' + p.groupBuyId;
       }
     });
@@ -283,6 +337,7 @@ function formatJoinedPickup(p) {
 }
 
 function getJoinedButtons(p, canReview) {
+  if (p.groupBuyDeleted) return '';
   const s = p.groupBuyStatus;
   const id = p.groupBuyId;
   const safeTitle = (p.groupBuyTitle || '').replace(/"/g, '&quot;');
@@ -302,10 +357,11 @@ function getJoinedButtons(p, canReview) {
       : `<button class="btn btn-primary btn-joined-pickup" data-id="${id}">수령 완료</button>`;
     return `${progressBtn}${pickupBtn}`;
   }
-  if (s === 'COMPLETED')
-    return canReview
-      ? `<a href="review.html?id=${id}&role=participant" class="btn btn-primary">후기 보내기</a>`
-      : `<button class="btn btn-outline" disabled>기한 만료</button>`;
+  if (s === 'COMPLETED') {
+    if (canReview === 'AVAILABLE') return `<a href="review.html?id=${id}&role=participant" class="btn btn-primary">후기 보내기</a>`;
+    if (canReview === 'ALREADY_REVIEWED') return `<button class="btn btn-outline" disabled>후기 보기</button>`;
+    return `<button class="btn btn-outline" disabled>기한 만료</button>`;
+  }
   return '';
 }
 

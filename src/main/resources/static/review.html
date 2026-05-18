@@ -31,20 +31,17 @@
 
       <h1 class="review-title">거래 후기 작성</h1>
 
-      <div class="review-section">
-        <label>리뷰 유형</label>
-        <select id="reviewType" class="select-box">
-          <option value="buyer">구매자 → 판매자</option>
-          <option value="seller">판매자 → 구매자</option>
-        </select>
+      <div id="participantSection" class="review-section" style="display:none">
+        <label>후기를 작성할 참여자</label>
+        <select id="participantSelect" class="select-box"></select>
       </div>
 
       <div class="review-section">
         <label>거래 선호도</label>
         <div class="rating-group">
-          <button class="rating-btn" data-value="bad">별로예요</button>
-          <button class="rating-btn active" data-value="good">좋아요</button>
-          <button class="rating-btn" data-value="best">최고예요</button>
+          <button class="rating-btn" data-value="BAD">별로예요</button>
+          <button class="rating-btn active" data-value="GOOD">좋아요</button>
+          <button class="rating-btn" data-value="GREAT">최고예요</button>
         </div>
       </div>
 
@@ -60,83 +57,10 @@
     </div>
   </main>
 
-  <script>
-    const checklistData = {
-      buyer: {
-        bad: [
-          "응답이 느렸어요","공지나 안내가 부족했어요","픽업 시간이 지켜지지 않았어요",
-          "픽업 장소가 불명확했어요","물건 전달 과정이 불편했어요","정산/결제 안내가 혼란스러웠어요",
-          "약속 변경이 잦았어요","소통이 불친절했어요","문제 대응이 늦었어요",
-          "상품 설명과 실제가 달랐어요","다시 거래하고 싶지 않아요"
-        ],
-        good: [
-          "응답이 빨랐어요","공지와 안내가 명확했어요","픽업 시간이 잘 지켜졌어요",
-          "픽업 장소를 찾기 쉬웠어요","물건 전달이 정확했어요","정산/결제 안내가 깔끔했어요",
-          "약속 변경이 적었어요","친절하게 소통했어요","참여자를 잘 배려했어요",
-          "문제 발생 시 빠르게 대응했어요","상품 상태를 정확히 안내했어요","다시 거래하고 싶어요"
-        ],
-        best: [
-          "응답이 빨랐어요","공지와 안내가 명확했어요","픽업 시간이 잘 지켜졌어요",
-          "픽업 장소를 찾기 쉬웠어요","물건 전달이 정확했어요","정산/결제 안내가 깔끔했어요",
-          "약속 변경이 적었어요","친절하게 소통했어요","참여자를 잘 배려했어요",
-          "문제 발생 시 빠르게 대응했어요","상품 상태를 정확히 안내했어요","다시 거래하고 싶어요"
-        ]
-      },
-      seller: {
-        bad: [
-          "결제가 늦었어요","픽업 시간을 지키지 않았어요","픽업 장소를 헷갈려 했어요",
-          "연락이 잘 되지 않았어요","응답이 느렸어요","공지사항을 확인하지 않았어요",
-          "약속 변경이 잦았어요","거래 태도가 불친절했어요","수령 확인이 늦었어요",
-          "문제 발생 시 협조가 부족했어요","노쇼가 있었어요","다시 거래하고 싶지 않아요"
-        ],
-        good: [
-          "결제를 빠르게 완료했어요","픽업 시간을 잘 지켰어요","픽업 장소에 정확히 도착했어요",
-          "연락이 잘 되었어요","응답이 빨랐어요","공지사항을 잘 확인했어요",
-          "약속 변경이 적었어요","거래 태도가 친절했어요","물건 수령 확인을 빠르게 해줬어요",
-          "문제 발생 시 협조적이었어요","다시 거래하고 싶어요"
-        ],
-        best: [
-          "결제를 빠르게 완료했어요","픽업 시간을 잘 지켰어요","픽업 장소에 정확히 도착했어요",
-          "연락이 잘 되었어요","응답이 빨랐어요","공지사항을 잘 확인했어요",
-          "약속 변경이 적었어요","거래 태도가 친절했어요","물건 수령 확인을 빠르게 해줬어요",
-          "문제 발생 시 협조적이었어요","다시 거래하고 싶어요"
-        ]
-      }
-    };
-
-    let selectedRating = "good";
-
-    const buttons = document.querySelectorAll(".rating-btn");
-
-    buttons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        buttons.forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-
-        selectedRating = btn.dataset.value;
-        renderChecklist();
-      });
-    });
-
-    document.getElementById("reviewType").addEventListener("change", renderChecklist);
-
-    function renderChecklist() {
-      const type = document.getElementById("reviewType").value;
-      const list = checklistData[type][selectedRating];
-
-      const container = document.getElementById("checklist");
-      container.innerHTML = "";
-
-      list.forEach(item => {
-        const label = document.createElement("label");
-        label.className = "checkbox-item";
-        label.innerHTML = `<input type="checkbox"> ${item}`;
-        container.appendChild(label);
-      });
-    }
-
-    renderChecklist();
-  </script>
+  <div id="toast" class="toast"></div>
+  <script src="js/utils/ui.js"></script>
+  <script src="js/api/groupBuyApi.js"></script>
+  <script src="js/pages/review.js"></script>
 
 </body>
 </html>
