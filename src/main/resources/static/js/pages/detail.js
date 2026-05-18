@@ -420,16 +420,16 @@ checkTokenExpiry();
       const row = document.createElement("div");
       row.className = "inline-info-row";
 
-      const participantName = participant.nickname || participant.name || "이웃";
+      const participantName = participant.participantNickname || participant.nickname || "이웃";
       const avatarText = participant.avatarText || participantName.charAt(0);
       const participantScore = participant.mannerScore ?? null;
       const participantBadge = getBadgeEmoji(participant.mannerGrade);
 
-      const participantTime =
+      const participantTime = formatPickupTime(
         participant.selectedTime ||
         participant.pickupTime ||
-        participant.joinedAt ||
-        "시간 미정";
+        participant.joinedAt
+      ) || "시간 미정";
 
       row.innerHTML = `
         <div class="avatar-circle-md">${escapeHtml(avatarText)}</div>
@@ -819,6 +819,7 @@ checkTokenExpiry();
             state.groupBuy = updatedGroupBuy;
             state.participants = updatedParticipants;
             renderBottomBar(updatedGroupBuy);
+            renderRecruitmentStatus(updatedGroupBuy);
             renderParticipants(updatedParticipants);
           } else {
             const errorData = await response.json().catch(() => ({}));
@@ -1015,7 +1016,11 @@ checkTokenExpiry();
 
   function getPickupDateText(pickupTimes) {
     if (Array.isArray(pickupTimes) && pickupTimes.length > 0) {
-      return formatDateKorean(new Date(pickupTimes[0].pickupTime));
+      const pt = pickupTimes[0].pickupTime;
+      if (!pt) return "미정";
+      const date = new Date(pt);
+      if (isNaN(date.getTime())) return "미정";
+      return formatDateKorean(date);
     }
     return "미정";
   }
