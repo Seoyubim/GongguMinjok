@@ -15,101 +15,6 @@ const STATUS_CLASS = {
 };
 
 let pendingAction = null;
-let currentUserProfile = null;
-
-initMyProfile();
-
-async function initMyProfile() {
-  try {
-    currentUserProfile = await getMyProfile();
-    renderMyProfile(currentUserProfile);
-  } catch (e) {
-    showToast(e.message || '내 정보를 불러오지 못했습니다.');
-  }
-}
-
-function renderMyProfile(user) {
-  document.getElementById('profileNickname').textContent = user.nickname || '-';
-  document.getElementById('profileEmail').textContent = user.email || '-';
-  document.getElementById('profileLocation').textContent = user.location || '-';
-  document.getElementById('profilePhone').textContent = user.phone || '-';
-
-  const score = Number(user.mannerScore || 0);
-  document.getElementById('profileMannerScore').textContent = score.toFixed(1);
-  document.getElementById('profileMannerFill').style.width = Math.max(0, Math.min(100, score)) + '%';
-
-  const profileImage = document.getElementById('profileImage');
-  profileImage.src = user.profileImage || 'images/default-profile.png';
-  profileImage.onerror = () => { profileImage.src = 'images/default-profile.png'; };
-
-  localStorage.setItem('userId', user.id);
-  localStorage.setItem('userNickname', user.nickname || '');
-}
-
-function openProfileEditModal() {
-  if (!currentUserProfile) return;
-
-  document.getElementById('edit-nickname').value = currentUserProfile.nickname || '';
-  document.getElementById('edit-phone').value = currentUserProfile.phone || '';
-  document.getElementById('edit-location').value = currentUserProfile.location || '';
-  document.getElementById('edit-lat').value = currentUserProfile.lat ?? '';
-  document.getElementById('edit-lng').value = currentUserProfile.lng ?? '';
-  document.getElementById('edit-city').value = currentUserProfile.cityName || '';
-  document.getElementById('edit-profile-image').value = currentUserProfile.profileImage || '';
-  clearPasswordForm();
-  showMypageModal('modal-profile-edit');
-}
-
-function getNullableNumber(id) {
-  const value = document.getElementById(id).value.trim();
-  return value ? Number(value) : null;
-}
-
-function clearPasswordForm() {
-  document.getElementById('edit-current-password').value = '';
-  document.getElementById('edit-new-password').value = '';
-  document.getElementById('edit-new-password-confirm').value = '';
-}
-
-async function submitProfileEdit(event) {
-  event.preventDefault();
-
-  try {
-    const updated = await updateMyProfile({
-      nickname: document.getElementById('edit-nickname').value.trim(),
-      phone: document.getElementById('edit-phone').value.trim(),
-      location: document.getElementById('edit-location').value.trim(),
-      lat: getNullableNumber('edit-lat'),
-      lng: getNullableNumber('edit-lng'),
-      cityName: document.getElementById('edit-city').value.trim() || null,
-      profileImage: document.getElementById('edit-profile-image').value.trim() || null
-    });
-
-    currentUserProfile = updated;
-    renderMyProfile(updated);
-    hideMypageModal('modal-profile-edit');
-    showToast('내 정보가 수정되었습니다.');
-  } catch (e) {
-    showToast(e.message || '내 정보 수정에 실패했습니다.');
-  }
-}
-
-async function submitPasswordChange(event) {
-  event.preventDefault();
-
-  try {
-    await changeMyPassword({
-      currentPassword: document.getElementById('edit-current-password').value,
-      newPassword: document.getElementById('edit-new-password').value,
-      newPasswordConfirm: document.getElementById('edit-new-password-confirm').value
-    });
-
-    clearPasswordForm();
-    showToast('비밀번호가 변경되었습니다.');
-  } catch (e) {
-    showToast(e.message || '비밀번호 변경에 실패했습니다.');
-  }
-}
 
 // ─── 생성한 공동구매 ───
 
@@ -286,10 +191,6 @@ document.getElementById('btn-purchase-confirm').addEventListener('click', () => 
 document.getElementById('btn-pickup-cancel').addEventListener('click', () => hideMypageModal('modal-pickup-ready'));
 document.getElementById('btn-pickup-confirm').addEventListener('click', () => runPendingAction('modal-pickup-ready'));
 document.getElementById('btn-progress-close').addEventListener('click', () => hideMypageModal('modal-progress'));
-document.getElementById('btn-edit-profile').addEventListener('click', openProfileEditModal);
-document.getElementById('btn-profile-cancel').addEventListener('click', () => hideMypageModal('modal-profile-edit'));
-document.getElementById('profile-edit-form').addEventListener('submit', submitProfileEdit);
-document.getElementById('password-change-form').addEventListener('submit', submitPasswordChange);
 
 // ─── 탭 이벤트 ───
 
