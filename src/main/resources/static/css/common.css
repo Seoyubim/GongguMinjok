@@ -97,6 +97,11 @@ body {
   color: white;
 }
 
+.btn-sm {
+  padding: 0.25rem 0.625rem;
+  font-size: 0.8rem;
+}
+
 .btn-primary:hover {
   background: #65a30d;
 }
