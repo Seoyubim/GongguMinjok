@@ -49,10 +49,10 @@
             <div class="profile-card-v2">
 
               <div class="profile-top">
-                <img src="images/default-profile.png" class="profile-img-lg">
+                <img id="profileImage" src="images/default-profile.png" class="profile-img-lg">
                 <div>
-                  <h2 class="nickname">공구왕</h2>
-                  <p class="email">user@email.com</p>
+                  <h2 id="profileNickname" class="nickname">공구왕</h2>
+                  <p id="profileEmail" class="email">user@email.com</p>
 
                   <div class="badge-row">
                     <span class="badge-chip badge-chip-host">공구 리더</span>
@@ -64,10 +64,10 @@
               <div class="manner-section">
                 <div class="manner-header">
                   <span>매너 점수</span>
-                  <strong>4.8</strong>
+                  <strong id="profileMannerScore">4.8</strong>
                 </div>
                 <div class="progress-bar">
-                  <div class="progress-fill" style="width:96%"></div>
+                  <div id="profileMannerFill" class="progress-fill" style="width:96%"></div>
                 </div>
               </div>
 
@@ -87,11 +87,12 @@
               </div>
 
               <div class="profile-extra">
-                <p><strong>가입일</strong> : 2024.03</p>
+                <p><strong>주소</strong> : <span id="profileLocation">-</span></p>
+                <p><strong>전화번호</strong> : <span id="profilePhone">-</span></p>
               </div>
 
               <div class="profile-actions-top">
-                <button class="btn btn-outline">프로필 수정</button>
+                <button id="btn-edit-profile" class="btn btn-outline">프로필 수정</button>
               </div>
 
               <div class="profile-bottom-actions">
@@ -468,6 +469,69 @@
         <button class="btn btn-outline" id="btn-joined-payment-cancel">취소</button>
         <button class="btn btn-primary" id="btn-joined-payment-confirm">결제하기</button>
       </div>
+    </div>
+  </div>
+
+  <div id="modal-profile-edit" class="mypage-modal" style="display:none">
+    <div class="mypage-modal-box profile-edit-modal">
+      <h3>내 정보 수정</h3>
+      <form id="profile-edit-form" class="profile-edit-form">
+        <div class="profile-edit-grid">
+          <div class="form-group">
+            <label class="form-label" for="edit-nickname">닉네임</label>
+            <input id="edit-nickname" class="form-input" type="text" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-phone">전화번호</label>
+            <input id="edit-phone" class="form-input" type="tel" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="edit-location">주소</label>
+          <input id="edit-location" class="form-input" type="text" required>
+        </div>
+        <div class="profile-edit-grid">
+          <div class="form-group">
+            <label class="form-label" for="edit-lat">위도</label>
+            <input id="edit-lat" class="form-input" type="number" step="any" placeholder="선택">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-lng">경도</label>
+            <input id="edit-lng" class="form-input" type="number" step="any" placeholder="선택">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="edit-city">지역명</label>
+          <input id="edit-city" class="form-input" type="text" placeholder="선택">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="edit-profile-image">프로필 사진 URL</label>
+          <input id="edit-profile-image" class="form-input" type="url" placeholder="https://example.com/profile.jpg">
+        </div>
+        <div class="mypage-modal-btns">
+          <button class="btn btn-outline" id="btn-profile-cancel" type="button">취소</button>
+          <button class="btn btn-primary" type="submit">저장</button>
+        </div>
+      </form>
+
+      <form id="password-change-form" class="profile-edit-form password-edit-form">
+        <h4>비밀번호 변경</h4>
+        <div class="form-group">
+          <label class="form-label" for="edit-current-password">현재 비밀번호</label>
+          <input id="edit-current-password" class="form-input" type="password" autocomplete="current-password">
+        </div>
+        <div class="profile-edit-grid">
+          <div class="form-group">
+            <label class="form-label" for="edit-new-password">새 비밀번호</label>
+            <input id="edit-new-password" class="form-input" type="password" autocomplete="new-password">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-new-password-confirm">새 비밀번호 확인</label>
+            <input id="edit-new-password-confirm" class="form-input" type="password" autocomplete="new-password">
+          </div>
+        </div>
+        <button class="btn btn-outline btn-full" type="submit">비밀번호 변경</button>
+      </form>
     </div>
   </div>
 
