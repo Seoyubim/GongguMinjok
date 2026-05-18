@@ -115,6 +115,39 @@ public class ParticipationService {
         groupBuyRepository.save(groupBuy);
     }
 
+    @Transactional
+    public ParticipationResponseDto updatePickupTime(Long groupBuyId, String email, Long pickupTimeId) {
+        if (pickupTimeId == null) {
+            throw new IllegalArgumentException("픽업 시간을 선택해주세요.");
+        }
+
+        Participation participation = participationRepository
+                .findByGroupBuyIdAndParticipantEmail(groupBuyId, email)
+                .orElseThrow(() -> new org.springframework.security.access.AccessDeniedException(
+                        "해당 공동구매 참여자만 픽업 시간을 수정할 수 있습니다."));
+
+        GroupBuy groupBuy = participation.getGroupBuy();
+        if (!canParticipantChangePickupTime(groupBuy.getStatus())) {
+            throw new IllegalStateException("현재 공동구매 상태에서는 픽업 시간을 수정할 수 없습니다.");
+        }
+
+        if (participation.getPickupCompletedAt() != null) {
+            throw new IllegalStateException("이미 픽업 완료 처리되었습니다.");
+        }
+
+        GroupBuyPickupTime pickupTime = groupBuy.getPickupTimes().stream()
+                .filter(time -> time.getId().equals(pickupTimeId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("해당 공동구매의 픽업 시간이 아닙니다."));
+
+        if (pickupTime.getPickupTime().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("지난 픽업 시간으로는 변경할 수 없습니다.");
+        }
+
+        participation.setPickupTime(pickupTime);
+        return ParticipationResponseDto.from(participationRepository.save(participation));
+    }
+
     @Transactional(readOnly = true)
     public List<ParticipationResponseDto> getParticipants(Long groupBuyId) {
         return participationRepository.findByGroupBuyId(groupBuyId).stream()
@@ -165,6 +198,12 @@ public class ParticipationService {
                 participation.getPickupCompletedAt(),
                 allCompleted,
                 groupBuy.getStatus().name());
+    }
+
+    private boolean canParticipantChangePickupTime(GroupBuy.Status status) {
+        return status == GroupBuy.Status.OPEN
+                || status == GroupBuy.Status.HOST_PURCHASED
+                || status == GroupBuy.Status.PICKUP_READY;
     }
 
 }

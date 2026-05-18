@@ -38,6 +38,18 @@ public class ParticipationController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping("/groupbuys/{groupBuyId}/pickup-time")
+    public ResponseEntity<ParticipationResponseDto> updatePickupTime(
+            @PathVariable Long groupBuyId,
+            @RequestBody ParticipationRequestDto request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        String email = userDetails.getUsername();
+        return ResponseEntity.ok(participationService.updatePickupTime(
+                groupBuyId,
+                email,
+                request.getPickupTimeId()));
+    }
+
     @GetMapping("/groupbuys/{groupBuyId}/participants")
     public ResponseEntity<List<ParticipationResponseDto>> getParticipants(
             @PathVariable Long groupBuyId) {
