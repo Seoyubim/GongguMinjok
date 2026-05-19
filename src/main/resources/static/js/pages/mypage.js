@@ -179,21 +179,26 @@ async function showReviewStatusModal(groupBuyId, canReview) {
   wrap.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:1rem">불러오는 중...</p>';
   showMypageModal('modal-review-status');
   try {
-    const participants = await getParticipants(groupBuyId);
-    if (!participants.length) {
+    const statuses = await getHostReviewStatuses(groupBuyId);
+    if (!statuses.length) {
       wrap.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:1rem">참여자가 없습니다.</p>';
       return;
     }
     const isExpired = canReview === 'EXPIRED';
-    const rows = participants.map(p => {
+    const rows = statuses.map(p => {
       const pickup = p.pickupTime
         ? new Date(p.pickupTime).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
         : '-';
-      const reviewBtn = isExpired
-        ? `<button class="btn btn-outline btn-sm" disabled>기한 만료</button>`
-        : `<a href="review.html?id=${groupBuyId}&role=host&participantId=${p.participantId}" class="btn btn-primary btn-sm">후기 보내기</a>`;
+      let reviewBtn;
+      if (isExpired) {
+        reviewBtn = `<button class="btn btn-outline btn-sm" disabled>기한 만료</button>`;
+      } else if (p.reviewed) {
+        reviewBtn = `<button class="btn btn-outline btn-sm btn-view-sent-review" data-id="${groupBuyId}" data-reviewee-id="${p.participantId}">보낸 후기 보기</button>`;
+      } else {
+        reviewBtn = `<a href="review.html?id=${groupBuyId}&role=host&participantId=${p.participantId}" class="btn btn-primary btn-sm">후기 보내기</a>`;
+      }
       return `<tr>
-        <td>${p.participantNickname}</td>
+        <td>${p.nickname}</td>
         <td>${pickup}</td>
         <td>${reviewBtn}</td>
       </tr>`;
@@ -202,6 +207,9 @@ async function showReviewStatusModal(groupBuyId, canReview) {
       <thead><tr><th>닉네임</th><th>픽업 일시</th><th>후기</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
+    wrap.querySelectorAll('.btn-view-sent-review').forEach(btn => {
+      btn.addEventListener('click', () => showSentReviewModal(btn.dataset.id, btn.dataset.revieweeId));
+    });
   } catch (e) {
     wrap.innerHTML = '<p style="text-align:center;color:#ef4444;padding:1rem">불러오기 실패</p>';
   }
@@ -360,7 +368,7 @@ function getJoinedButtons(p, canReview) {
   }
   if (s === 'COMPLETED') {
     if (canReview === 'AVAILABLE') return `<a href="review.html?id=${id}&role=participant" class="btn btn-primary">후기 보내기</a>`;
-    if (canReview === 'ALREADY_REVIEWED') return `<button class="btn btn-outline" disabled>후기 보기</button>`;
+    if (canReview === 'ALREADY_REVIEWED') return `<button class="btn btn-outline btn-view-sent-review" data-id="${id}">보낸 후기 보기</button>`;
     return `<button class="btn btn-outline" disabled>기한 만료</button>`;
   }
   return '';
@@ -387,6 +395,9 @@ function bindJoinedEvents() {
     btn.addEventListener('click', () => {
       openJoinedPaymentModal(btn.dataset.id, btn.dataset.title, Number(btn.dataset.amount));
     });
+  });
+  container.querySelectorAll('.btn-view-sent-review').forEach(btn => {
+    btn.addEventListener('click', () => showSentReviewModal(btn.dataset.id));
   });
 }
 
@@ -477,6 +488,40 @@ async function requestJoinedPayment(groupBuyId) {
   });
 }
 
+async function showSentReviewModal(groupBuyId, revieweeId = null) {
+  const content = document.getElementById('sent-review-content');
+  content.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:1rem">불러오는 중...</p>';
+  showMypageModal('modal-sent-review');
+  try {
+    const reviews = await getSentReviews();
+    const review = reviews.find(r =>
+      r.groupBuyId == groupBuyId && (revieweeId === null || r.revieweeId == revieweeId)
+    );
+    if (!review) {
+      content.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:1rem">후기를 찾을 수 없습니다.</p>';
+      return;
+    }
+    const ratingLabel = { BAD: '별로예요', GOOD: '좋아요', GREAT: '최고예요' }[review.rating] || review.rating;
+    const ratingColor = { BAD: '#ef4444', GOOD: '#16a34a', GREAT: '#f59e0b' }[review.rating] || '#374151';
+    const ratingEmoji = { BAD: '👎', GOOD: '👍', GREAT: '⭐' }[review.rating] || '';
+    const itemsLabel = review.rating === 'BAD' ? '아쉬웠던 점' : '좋았던 점';
+    const date = new Date(review.createdAt).toLocaleDateString('ko-KR');
+    const items = review.checkedItems?.length
+      ? `<div style="margin:0.75rem 0;display:flex;flex-wrap:wrap;gap:0.5rem">${review.checkedItems.map(i => `<span style="background:#f3f4f6;border-radius:999px;padding:0.3rem 0.75rem;font-size:0.875rem">${i}</span>`).join('')}</div>`
+      : '<p style="color:#9ca3af;font-size:0.875rem">선택한 항목이 없습니다.</p>';
+    document.getElementById('sent-review-title').textContent = `${review.revieweeNickname}님에게 보낸 후기`;
+    content.innerHTML = `
+      <p style="font-size:1.5rem;font-weight:700;color:${ratingColor};text-align:center;margin-bottom:1.25rem">${ratingEmoji} ${ratingLabel}</p>
+      <p style="font-size:0.8rem;color:#6b7280;margin-bottom:0.4rem">${itemsLabel}</p>
+      ${items}
+      <p style="font-size:0.8rem;color:#9ca3af;margin-top:0.75rem;text-align:right">작성 날짜 : ${date}</p>
+    `;
+  } catch (e) {
+    content.innerHTML = '<p style="text-align:center;color:#ef4444;padding:1rem">불러오기 실패</p>';
+  }
+}
+
+document.getElementById('btn-sent-review-close').addEventListener('click', () => hideMypageModal('modal-sent-review'));
 document.getElementById('btn-joined-pickup-cancel').addEventListener('click', () => hideMypageModal('modal-joined-pickup'));
 document.getElementById('btn-joined-pickup-confirm').addEventListener('click', () => runPendingAction('modal-joined-pickup'));
 document.getElementById('btn-joined-progress-close').addEventListener('click', () => hideMypageModal('modal-joined-progress'));
