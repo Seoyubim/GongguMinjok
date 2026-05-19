@@ -129,7 +129,8 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
 
   const token = localStorage.getItem('token');
   try {
-    const response = await fetch(`/api/groupbuys/${groupBuyId}/reviews`, {
+    const endpoint = role === 'host' ? 'host' : 'participant';
+    const response = await fetch(`/api/groupbuys/${groupBuyId}/reviews/${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

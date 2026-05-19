@@ -141,6 +141,15 @@ async function completePickup(groupBuyId) {
   return response.json();
 }
 
+async function getHostReviewStatuses(groupBuyId) {
+  const token = localStorage.getItem('token');
+  const response = await fetch('/api/groupbuys/' + groupBuyId + '/reviews/host/status', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  if (!response.ok) throw new Error('후기 현황을 불러오는데 실패했습니다.');
+  return response.json();
+}
+
 async function readyPayment(groupBuyId) {
   const token = localStorage.getItem('token');
   const response = await fetch('/api/groupbuys/' + groupBuyId + '/payments/ready', {
