@@ -5,6 +5,7 @@ let pickupTimes = [];
 let selectedLat = null;
 let selectedLng = null;
 let selectedDongName = '';
+let selectedCityName = '';
 
 // 마감일/픽업 datetime 최솟값 설정
 (() => {
@@ -68,6 +69,7 @@ function applyDraft() {
   if (draft.lat) selectedLat = draft.lat;
   if (draft.lng) selectedLng = draft.lng;
   if (draft.dongName) selectedDongName = draft.dongName;
+  if (draft.cityName) selectedCityName = draft.cityName;
   if (draft.pickupTimes) {
     pickupTimes = draft.pickupTimes.slice();
     renderPickupChips();
@@ -458,6 +460,7 @@ function saveDraft() {
     lat: selectedLat,
     lng: selectedLng,
     dongName: selectedDongName,
+    cityName: selectedCityName,
     deadline: document.getElementById('cr-deadline').value,
     pickupTimes: pickupTimes.slice()
   };
@@ -481,6 +484,7 @@ function searchAddress() {
           selectedLat = parseFloat(json.documents[0].y);
           selectedLng = parseFloat(json.documents[0].x);
           selectedDongName = data.bname || '';
+          selectedCityName = extractCityName(data.sido || '', data.sigungu || '');
           document.getElementById('cr-addr').value = addr;
           addrErr.style.display = 'none';
           resultEl.textContent = '주소: ' + addr;
@@ -521,6 +525,7 @@ function submitGroupBuy() {
     lat: selectedLat,
     lng: selectedLng,
     dongName: selectedDongName,
+    cityName: selectedCityName,
     deadline: document.getElementById('cr-deadline').value + 'T23:59:00',
     pickupTimes: pickupTimes.slice(),
     imageUrls: []

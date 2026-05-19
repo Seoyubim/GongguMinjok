@@ -15,6 +15,7 @@ let timerInterval  = null;
 let isEmailVerified = false;
 let selectedLat = null;
 let selectedLng = null;
+let selectedCityName = null;
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -32,6 +33,7 @@ function searchAddress() {
         if (json.documents && json.documents.length > 0) {
           selectedLat = parseFloat(json.documents[0].y);
           selectedLng = parseFloat(json.documents[0].x);
+          selectedCityName = extractCityName(data.sido || '', data.sigungu || '');
           document.getElementById('location').value = addr;
           addrErr.textContent = '';
           resultEl.textContent = '주소: ' + addr;
@@ -192,7 +194,7 @@ signupForm.addEventListener('submit', async (e) => {
   submitBtn.textContent = '처리 중...';
 
   try {
-    await signupUser({ email, password, passwordConfirm, nickname, phone, location, lat: selectedLat, lng: selectedLng });
+    await signupUser({ email, password, passwordConfirm, nickname, phone, location, lat: selectedLat, lng: selectedLng, cityName: selectedCityName });
 
     signupToast.classList.add('show');
     setTimeout(() => { window.location.href = 'login.html'; }, 2000);
