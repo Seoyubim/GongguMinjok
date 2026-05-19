@@ -1,3 +1,7 @@
+function formatPickupLocation(loc) {
+  return (loc || '').replace('|', ' ');
+}
+
 function formatPrice(price) {
   return `${price.toLocaleString()}원`;
 }

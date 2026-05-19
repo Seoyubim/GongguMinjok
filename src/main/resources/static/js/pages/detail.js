@@ -120,12 +120,12 @@ checkTokenExpiry();
     state.pickupLocationMarker = new kakao.maps.Marker({
       map: state.pickupMap,
       position: centerLatLng,
-      title: pickupLocation
+      title: formatPickupLocation(pickupLocation)
     });
 
     // 인포윈도우
     const infowindow = new kakao.maps.InfoWindow({
-      content: `<div style="padding:8px 12px; font-size:13px; font-weight:600;">📍 ${pickupLocation}</div>`
+      content: `<div style="padding:8px 12px; font-size:13px; font-weight:600;">📍 ${formatPickupLocation(pickupLocation)}</div>`
     });
     infowindow.open(state.pickupMap, state.pickupLocationMarker);
 
@@ -357,7 +357,7 @@ checkTokenExpiry();
     if (rows[2]) {
       const valueSpan = rows[2].querySelectorAll("span")[1];
       if (valueSpan) {
-        valueSpan.textContent = groupBuy.pickupLocation;
+        valueSpan.textContent = formatPickupLocation(groupBuy.pickupLocation);
       }
     }
 
@@ -713,7 +713,7 @@ checkTokenExpiry();
     if (modalSections[0]) {
       const locationP = modalSections[0].querySelector("p");
       if (locationP) {
-        locationP.textContent = groupBuy.pickupLocation;
+        locationP.textContent = formatPickupLocation(groupBuy.pickupLocation);
       }
     }
 

@@ -57,7 +57,7 @@ function renderCreatedCards(list, reviewMap) {
           <h3 class="card-title">${g.title}</h3>
         </div>
         <p class="card-meta"><span class="card-label">인원</span>${g.currentParticipants} / ${g.maxParticipants}명</p>
-        <p class="card-meta"><span class="card-label">픽업</span>${g.pickupLocation || '-'}</p>
+        <p class="card-meta"><span class="card-label">픽업</span>${formatPickupLocation(g.pickupLocation) || '-'}</p>
       </div>
       ${btnsHtml ? `<div class="card-actions">${btnsHtml}</div>` : ''}
     `;
@@ -325,7 +325,8 @@ function renderJoinedCards(list, reviewMap) {
 
 function formatJoinedPickup(p) {
   if (!p.pickupLocation) return '-';
-  if (!p.pickupTime) return p.pickupLocation;
+  const loc = formatPickupLocation(p.pickupLocation);
+  if (!p.pickupTime) return loc;
   const d = new Date(p.pickupTime);
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
@@ -333,7 +334,7 @@ function formatJoinedPickup(p) {
   const minutes = String(d.getMinutes()).padStart(2, '0');
   const ampm = hours < 12 ? '오전' : '오후';
   const h = hours % 12 || 12;
-  return `${p.pickupLocation} (${month}/${day} ${ampm} ${h}:${minutes})`;
+  return `${loc} (${month}/${day} ${ampm} ${h}:${minutes})`;
 }
 
 function getJoinedButtons(p, canReview) {
@@ -341,7 +342,7 @@ function getJoinedButtons(p, canReview) {
   const s = p.groupBuyStatus;
   const id = p.groupBuyId;
   const safeTitle = (p.groupBuyTitle || '').replace(/"/g, '&quot;');
-  const safeLoc = (p.pickupLocation || '').replace(/"/g, '&quot;');
+  const safeLoc = formatPickupLocation(p.pickupLocation || '').replace(/"/g, '&quot;');
   const progressBtn = `<button class="btn btn-outline btn-joined-progress" data-status="${s}" data-title="${safeTitle}" data-location="${safeLoc}" data-time="${p.pickupTime || ''}" data-payment="${p.paymentConfirmed}" data-pickup-done="${!!p.pickupCompletedAt}">진행 현황</button>`;
   if (s === 'CLOSED') {
     const payBtn = p.paymentConfirmed

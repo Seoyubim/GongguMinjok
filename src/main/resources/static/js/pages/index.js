@@ -157,7 +157,7 @@ function createGroupBuyCard(item) {
 
           <div class="card-info">
             <div class="info-row">
-              📍 <span>${item.pickupLocation}</span>
+              📍 <span>${formatPickupLocation(item.pickupLocation)}</span>
               ${distanceText ? `<span class="text-lime info-distance">${distanceText}</span>` : ""}
             </div>
             <div class="info-row">
@@ -207,7 +207,7 @@ function createClusterCard(item) {
           </div>
         </div>
         <div class="cluster-card-info"><span class="cluster-card-label">금액</span>${formatPrice(item.participantFinalPrice)}</div>
-        <div class="cluster-card-info"><span class="cluster-card-label">장소</span>${item.pickupLocation}</div>
+        <div class="cluster-card-info"><span class="cluster-card-label">장소</span>${formatPickupLocation(item.pickupLocation)}</div>
         <div class="cluster-card-info"><span class="cluster-card-label">픽업일</span>${uniqueDates}</div>
         <div class="cluster-card-progress">
           <div class="progress-bar">
