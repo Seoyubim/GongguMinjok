@@ -23,6 +23,7 @@ public class GroupBuyRequestDto {
     private Double lat;
     private Double lng;
     private String dongName;
+    private String cityName;
     private List<LocalDateTime> pickupTimes = new ArrayList<>(); // ← 기본값 빈 리스트
     private GroupBuy.Category category;
     private List<String> imageUrls = new ArrayList<>();           // ← 얘도 같이

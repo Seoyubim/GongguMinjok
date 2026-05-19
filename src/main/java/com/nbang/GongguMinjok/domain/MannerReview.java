@@ -14,7 +14,7 @@ import java.util.List;
 @Entity
 @Table(
     name = "manner_reviews",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"group_buy_id", "reviewer_id"})
+    uniqueConstraints = @UniqueConstraint(columnNames = {"group_buy_id", "reviewer_id", "reviewee_id"})
 )
 @Getter
 @Setter
