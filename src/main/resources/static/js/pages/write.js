@@ -64,6 +64,7 @@ function applyDraft() {
     resultEl.textContent = '주소: ' + draft.addr;
     resultEl.classList.remove('hidden');
   }
+  if (draft.addrDetail) document.getElementById('cr-addr-detail').value = draft.addrDetail;
   if (draft.lat) selectedLat = draft.lat;
   if (draft.lng) selectedLng = draft.lng;
   if (draft.dongName) selectedDongName = draft.dongName;
@@ -407,7 +408,8 @@ function renderPreview() {
   const total = parseInt(document.getElementById('cr-total').value);
   const qty = document.getElementById('cr-qty').value;
   const head = document.getElementById('cr-head').value;
-  const addr = document.getElementById('cr-addr').value.trim();
+  const addrDetail = document.getElementById('cr-addr-detail').value.trim();
+  const addr = document.getElementById('cr-addr').value.trim() + (addrDetail ? ' ' + addrDetail : '');
   const deadlineRaw = document.getElementById('cr-deadline').value;
   const deadlineLabel = deadlineRaw || '';
   const perPerson = Math.ceil(total / parseInt(head));
@@ -452,6 +454,7 @@ function saveDraft() {
     qty: document.getElementById('cr-qty').value,
     head: document.getElementById('cr-head').value,
     addr: document.getElementById('cr-addr').value,
+    addrDetail: document.getElementById('cr-addr-detail').value,
     lat: selectedLat,
     lng: selectedLng,
     dongName: selectedDongName,
@@ -514,7 +517,7 @@ function submitGroupBuy() {
     totalPrice: parseInt(document.getElementById('cr-total').value),
     totalQuantity: parseInt(document.getElementById('cr-qty').value),
     maxParticipants: parseInt(document.getElementById('cr-head').value),
-    pickupLocation: document.getElementById('cr-addr').value.trim(),
+    pickupLocation: (() => { const d = document.getElementById('cr-addr-detail').value.trim(); return document.getElementById('cr-addr').value.trim() + (d ? '|' + d : ''); })(),
     lat: selectedLat,
     lng: selectedLng,
     dongName: selectedDongName,

@@ -38,9 +38,11 @@ let protectedPickupTimes = [];
   selectedLat = data.lat;
   selectedLng = data.lng;
   selectedDongName = data.dongName;
-  document.getElementById('cr-addr').value = data.pickupLocation;
+  const [baseAddr, detailAddr = ''] = data.pickupLocation.split('|');
+  document.getElementById('cr-addr').value = baseAddr;
+  document.getElementById('cr-addr-detail').value = detailAddr;
   const resultEl = document.getElementById('cr-addr-result');
-  resultEl.textContent = '주소: ' + data.pickupLocation;
+  resultEl.textContent = '주소: ' + baseAddr;
   resultEl.classList.remove('hidden');
 
   // API 응답의 픽업 시간은 {id, pickupTime} 객체 배열이라 시간 문자열만 추출
@@ -271,7 +273,8 @@ function renderPreview() {
   const categoryLabel = categoryEl.options[categoryEl.selectedIndex].text;
   const title = document.getElementById('cr-title').value.trim();
   const desc = document.getElementById('cr-desc').value.trim();
-  const addr = document.getElementById('cr-addr').value.trim();
+  const addrDetail = document.getElementById('cr-addr-detail').value.trim();
+  const addr = document.getElementById('cr-addr').value.trim() + (addrDetail ? ' ' + addrDetail : '');
   const deadlineLabel = document.getElementById('cr-deadline').value;
   const timesHtml = pickupTimes.map(dt => {
     const [date, timePart] = dt.split('T');
@@ -341,7 +344,7 @@ function submitGroupBuy() {
     totalPrice: originalData.totalPrice,
     totalQuantity: originalData.totalQuantity,
     maxParticipants: originalData.maxParticipants,
-    pickupLocation: document.getElementById('cr-addr').value.trim(),
+    pickupLocation: (() => { const d = document.getElementById('cr-addr-detail').value.trim(); return document.getElementById('cr-addr').value.trim() + (d ? '|' + d : ''); })(),
     lat: selectedLat,
     lng: selectedLng,
     dongName: selectedDongName,
