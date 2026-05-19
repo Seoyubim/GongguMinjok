@@ -5,6 +5,7 @@ import com.nbang.GongguMinjok.domain.MannerReview;
 import com.nbang.GongguMinjok.domain.User;
 import com.nbang.GongguMinjok.dto.MannerReviewRequestDto;
 import com.nbang.GongguMinjok.dto.MannerReviewResponseDto;
+import com.nbang.GongguMinjok.dto.ParticipantReviewStatusDto;
 import com.nbang.GongguMinjok.dto.ReviewAvailabilityResponseDto;
 import com.nbang.GongguMinjok.dto.ReviewAvailabilityStatus;
 import com.nbang.GongguMinjok.repository.GroupBuyRepository;
@@ -30,30 +31,127 @@ public class MannerReviewService {
     private final UserRepository userRepository;
     private final ParticipationRepository participationRepository;
 
+    // 참여자 → 호스트 후기 제출
     @Transactional
-    public MannerReviewResponseDto submitReview(Long groupBuyId, String reviewerEmail, MannerReviewRequestDto dto) {
-        User reviewer = userRepository.findByEmail(reviewerEmail)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
-
-        GroupBuy groupBuy = groupBuyRepository.findById(groupBuyId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
+    public MannerReviewResponseDto submitParticipantReview(Long groupBuyId, String reviewerEmail, MannerReviewRequestDto dto) {
+        User reviewer = findUserByEmail(reviewerEmail);
+        GroupBuy groupBuy = findGroupBuy(groupBuyId);
 
         validateGroupBuyCompleted(groupBuy);
         validateReviewWindow(groupBuy);
-        validateNoDuplicateReview(groupBuyId, reviewer.getId());
 
-        User reviewee = userRepository.findById(dto.getRevieweeId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 피평가자입니다."));
+        if (!participationRepository.existsByGroupBuyIdAndParticipantId(groupBuyId, reviewer.getId())) {
+            throw new AccessDeniedException("해당 공동구매의 참여자만 후기를 작성할 수 있습니다.");
+        }
+        if (groupBuy.getHost().getId().equals(reviewer.getId())) {
+            throw new IllegalArgumentException("호스트는 호스트용 후기 API를 사용해주세요.");
+        }
+        if (mannerReviewRepository.existsByGroupBuyIdAndReviewerId(groupBuyId, reviewer.getId())) {
+            throw new IllegalStateException("이미 평가를 제출했습니다.");
+        }
 
+        User reviewee = findUser(dto.getRevieweeId());
+        if (!groupBuy.getHost().getId().equals(reviewee.getId())) {
+            throw new IllegalArgumentException("참여자는 호스트만 평가할 수 있습니다.");
+        }
+
+        return buildAndSaveReview(groupBuy, reviewer, reviewee, MannerReview.ReviewerRole.BUYER, dto);
+    }
+
+    // 호스트 → 참여자 후기 제출 (참여자별 개별 작성)
+    @Transactional
+    public MannerReviewResponseDto submitHostReview(Long groupBuyId, String reviewerEmail, MannerReviewRequestDto dto) {
+        User reviewer = findUserByEmail(reviewerEmail);
+        GroupBuy groupBuy = findGroupBuy(groupBuyId);
+
+        validateGroupBuyCompleted(groupBuy);
+        validateReviewWindow(groupBuy);
+
+        if (!groupBuy.getHost().getId().equals(reviewer.getId())) {
+            throw new AccessDeniedException("호스트만 사용 가능한 API입니다.");
+        }
+
+        User reviewee = findUser(dto.getRevieweeId());
+        if (!participationRepository.existsByGroupBuyIdAndParticipantId(groupBuyId, reviewee.getId())) {
+            throw new IllegalArgumentException("해당 공동구매의 참여자가 아닙니다.");
+        }
+        if (mannerReviewRepository.existsByGroupBuyIdAndReviewerIdAndRevieweeId(groupBuyId, reviewer.getId(), reviewee.getId())) {
+            throw new IllegalStateException("이미 해당 참여자에 대한 평가를 제출했습니다.");
+        }
+
+        return buildAndSaveReview(groupBuy, reviewer, reviewee, MannerReview.ReviewerRole.SELLER, dto);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ParticipantReviewStatusDto> getParticipantReviewStatuses(Long groupBuyId, String reviewerEmail) {
+        User reviewer = findUserByEmail(reviewerEmail);
+        GroupBuy groupBuy = findGroupBuy(groupBuyId);
+
+        if (!groupBuy.getHost().getId().equals(reviewer.getId())) {
+            throw new AccessDeniedException("호스트만 사용 가능한 API입니다.");
+        }
+
+        return participationRepository.findByGroupBuyIdWithPickupTime(groupBuyId).stream()
+                .map(p -> {
+                    boolean reviewed = mannerReviewRepository.existsByGroupBuyIdAndReviewerIdAndRevieweeId(
+                            groupBuyId, reviewer.getId(), p.getParticipant().getId());
+                    return new ParticipantReviewStatusDto(p, reviewed);
+                })
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<MannerReviewResponseDto> getReceivedReviews(Long userId) {
+        return mannerReviewRepository.findByRevieweeId(userId).stream()
+                .map(MannerReviewResponseDto::new)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<MannerReviewResponseDto> getSentReviews(String reviewerEmail) {
+        User reviewer = findUserByEmail(reviewerEmail);
+        return mannerReviewRepository.findByReviewerId(reviewer.getId()).stream()
+                .map(MannerReviewResponseDto::new)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ReviewAvailabilityResponseDto canReview(Long groupBuyId, String reviewerEmail) {
+        User reviewer = findUserByEmail(reviewerEmail);
+        GroupBuy groupBuy = findGroupBuy(groupBuyId);
+
+        boolean isHost = groupBuy.getHost().getId().equals(reviewer.getId());
+        boolean isParticipant = participationRepository.existsByGroupBuyIdAndParticipantId(groupBuyId, reviewer.getId());
+
+        if (!isHost && !isParticipant) {
+            throw new AccessDeniedException("해당 공동구매의 참여자만 후기를 작성할 수 있습니다.");
+        }
+
+        if (groupBuy.getCompletedAt() != null &&
+                groupBuy.getCompletedAt().plusDays(REVIEW_WINDOW_DAYS).isBefore(LocalDateTime.now())) {
+            return ReviewAvailabilityResponseDto.blocked(ReviewAvailabilityStatus.EXPIRED, "기한 만료");
+        }
+
+        if (isHost) {
+            long totalParticipants = participationRepository.findByGroupBuyId(groupBuyId).size();
+            long reviewedCount = mannerReviewRepository.countByGroupBuyIdAndReviewerId(groupBuyId, reviewer.getId());
+            if (reviewedCount >= totalParticipants) {
+                return ReviewAvailabilityResponseDto.blocked(ReviewAvailabilityStatus.ALREADY_REVIEWED, "작성 완료");
+            }
+        } else {
+            if (mannerReviewRepository.existsByGroupBuyIdAndReviewerId(groupBuyId, reviewer.getId())) {
+                return ReviewAvailabilityResponseDto.blocked(ReviewAvailabilityStatus.ALREADY_REVIEWED, "작성 완료");
+            }
+        }
+
+        return ReviewAvailabilityResponseDto.canReview();
+    }
+
+    private MannerReviewResponseDto buildAndSaveReview(GroupBuy groupBuy, User reviewer, User reviewee,
+                                                        MannerReview.ReviewerRole role, MannerReviewRequestDto dto) {
         if (reviewer.getId().equals(reviewee.getId())) {
             throw new IllegalArgumentException("자신을 평가할 수 없습니다.");
         }
-
-        boolean reviewerIsHost = groupBuy.getHost().getId().equals(reviewer.getId());
-        boolean revieweeIsHost = groupBuy.getHost().getId().equals(reviewee.getId());
-
-        MannerReview.ReviewerRole role = validateParticipantsAndGetRole(
-                groupBuyId, reviewer, reviewee, reviewerIsHost, revieweeIsHost);
 
         double delta = calculateDelta(dto.getRating(), dto.getCheckedItems().size());
 
@@ -73,59 +171,6 @@ public class MannerReviewService {
         return new MannerReviewResponseDto(review);
     }
 
-    @Transactional(readOnly = true)
-    public List<MannerReviewResponseDto> getReceivedReviews(Long userId) {
-        return mannerReviewRepository.findByRevieweeId(userId).stream()
-                .map(MannerReviewResponseDto::new)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<MannerReviewResponseDto> getSentReviews(String reviewerEmail) {
-        User reviewer = userRepository.findByEmail(reviewerEmail)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
-
-        return mannerReviewRepository.findByReviewerId(reviewer.getId()).stream()
-                .map(MannerReviewResponseDto::new)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public ReviewAvailabilityResponseDto canReview(Long groupBuyId, String reviewerEmail) {
-        User reviewer = userRepository.findByEmail(reviewerEmail)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
-        GroupBuy groupBuy = groupBuyRepository.findById(groupBuyId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
-
-        boolean isHost = groupBuy.getHost().getId().equals(reviewer.getId());
-        boolean isParticipant = participationRepository.existsByGroupBuyIdAndParticipantId(
-                groupBuyId, reviewer.getId());
-
-        if (!isHost && !isParticipant) {
-            throw new AccessDeniedException("해당 공동구매의 참여자만 후기를 작성할 수 있습니다.");
-        }
-
-        if (mannerReviewRepository.existsByGroupBuyIdAndReviewerId(groupBuyId, reviewer.getId())) {
-            return ReviewAvailabilityResponseDto.unavailable(
-                    ReviewAvailabilityStatus.ALREADY_REVIEWED,
-                    "작성 완료");
-        }
-
-        if (groupBuy.getStatus() != GroupBuy.Status.COMPLETED || groupBuy.getCompletedAt() == null) {
-            return ReviewAvailabilityResponseDto.unavailable(
-                    ReviewAvailabilityStatus.NOT_COMPLETED,
-                    "공동구매 미완료");
-        }
-
-        if (groupBuy.getCompletedAt().plusDays(REVIEW_WINDOW_DAYS).isBefore(LocalDateTime.now())) {
-            return ReviewAvailabilityResponseDto.unavailable(
-                    ReviewAvailabilityStatus.EXPIRED,
-                    "기한 만료");
-        }
-
-        return ReviewAvailabilityResponseDto.available();
-    }
-
     private void validateGroupBuyCompleted(GroupBuy groupBuy) {
         if (groupBuy.getStatus() != GroupBuy.Status.COMPLETED) {
             throw new IllegalStateException("완료된 공동구매만 평가할 수 있습니다.");
@@ -139,42 +184,26 @@ public class MannerReviewService {
         }
     }
 
-    private void validateNoDuplicateReview(Long groupBuyId, Long reviewerId) {
-        if (mannerReviewRepository.existsByGroupBuyIdAndReviewerId(groupBuyId, reviewerId)) {
-            throw new IllegalStateException("이미 평가를 제출했습니다.");
-        }
-    }
-
-    private MannerReview.ReviewerRole validateParticipantsAndGetRole(
-            Long groupBuyId, User reviewer, User reviewee,
-            boolean reviewerIsHost, boolean revieweeIsHost) {
-
-        if (reviewerIsHost) {
-            // 호스트(판매자) → 구매자 평가
-            if (revieweeIsHost) {
-                throw new IllegalArgumentException("호스트는 다른 참여자를 평가해야 합니다.");
-            }
-            if (!participationRepository.existsByGroupBuyIdAndParticipantId(groupBuyId, reviewee.getId())) {
-                throw new IllegalArgumentException("해당 공동구매의 참여자가 아닙니다.");
-            }
-            return MannerReview.ReviewerRole.SELLER;
-        } else {
-            // 구매자 → 호스트(판매자) 평가
-            if (!participationRepository.existsByGroupBuyIdAndParticipantId(groupBuyId, reviewer.getId())) {
-                throw new IllegalArgumentException("해당 공동구매에 참여하지 않았습니다.");
-            }
-            if (!revieweeIsHost) {
-                throw new IllegalArgumentException("구매자는 호스트만 평가할 수 있습니다.");
-            }
-            return MannerReview.ReviewerRole.BUYER;
-        }
-    }
-
     private double calculateDelta(MannerReview.Rating rating, int itemCount) {
         return switch (rating) {
             case BAD   -> itemCount * (-0.1);
             case GOOD  -> itemCount * 0.1;
             case GREAT -> itemCount * 0.2;
         };
+    }
+
+    private User findUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+    }
+
+    private User findUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+    }
+
+    private GroupBuy findGroupBuy(Long groupBuyId) {
+        return groupBuyRepository.findById(groupBuyId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
     }
 }

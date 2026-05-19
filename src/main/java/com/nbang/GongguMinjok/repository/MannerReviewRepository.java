@@ -9,6 +9,10 @@ public interface MannerReviewRepository extends JpaRepository<MannerReview, Long
 
     boolean existsByGroupBuyIdAndReviewerId(Long groupBuyId, Long reviewerId);
 
+    boolean existsByGroupBuyIdAndReviewerIdAndRevieweeId(Long groupBuyId, Long reviewerId, Long revieweeId);
+
+    long countByGroupBuyIdAndReviewerId(Long groupBuyId, Long reviewerId);
+
     List<MannerReview> findByReviewerId(Long reviewerId);
 
     List<MannerReview> findByRevieweeId(Long revieweeId);

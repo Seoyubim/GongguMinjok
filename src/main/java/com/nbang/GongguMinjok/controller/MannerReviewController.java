@@ -2,6 +2,7 @@ package com.nbang.GongguMinjok.controller;
 
 import com.nbang.GongguMinjok.dto.MannerReviewRequestDto;
 import com.nbang.GongguMinjok.dto.MannerReviewResponseDto;
+import com.nbang.GongguMinjok.dto.ParticipantReviewStatusDto;
 import com.nbang.GongguMinjok.dto.ReviewAvailabilityResponseDto;
 import com.nbang.GongguMinjok.service.MannerReviewService;
 import lombok.RequiredArgsConstructor;
@@ -19,14 +20,33 @@ public class MannerReviewController {
 
     private final MannerReviewService mannerReviewService;
 
-    // POST /api/groupbuys/{groupBuyId}/reviews
-    @PostMapping("/groupbuys/{groupBuyId}/reviews")
-    public ResponseEntity<MannerReviewResponseDto> submitReview(
+    // POST /api/groupbuys/{groupBuyId}/reviews/participant  (참여자 → 호스트)
+    @PostMapping("/groupbuys/{groupBuyId}/reviews/participant")
+    public ResponseEntity<MannerReviewResponseDto> submitParticipantReview(
             @PathVariable Long groupBuyId,
             @RequestBody MannerReviewRequestDto dto,
             @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(
-                mannerReviewService.submitReview(groupBuyId, userDetails.getUsername(), dto));
+                mannerReviewService.submitParticipantReview(groupBuyId, userDetails.getUsername(), dto));
+    }
+
+    // POST /api/groupbuys/{groupBuyId}/reviews/host  (호스트 → 참여자, 참여자별 개별 작성)
+    @PostMapping("/groupbuys/{groupBuyId}/reviews/host")
+    public ResponseEntity<MannerReviewResponseDto> submitHostReview(
+            @PathVariable Long groupBuyId,
+            @RequestBody MannerReviewRequestDto dto,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(
+                mannerReviewService.submitHostReview(groupBuyId, userDetails.getUsername(), dto));
+    }
+
+    // GET /api/groupbuys/{groupBuyId}/reviews/host/status  (호스트 전용: 참여자별 후기 작성 상태)
+    @GetMapping("/groupbuys/{groupBuyId}/reviews/host/status")
+    public ResponseEntity<List<ParticipantReviewStatusDto>> getParticipantReviewStatuses(
+            @PathVariable Long groupBuyId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(
+                mannerReviewService.getParticipantReviewStatuses(groupBuyId, userDetails.getUsername()));
     }
 
     // GET /api/groupbuys/{groupBuyId}/reviews/can-review

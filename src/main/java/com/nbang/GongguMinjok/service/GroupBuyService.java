@@ -107,6 +107,7 @@ public class GroupBuyService {
         groupBuy.setLat(dto.getLat());
         groupBuy.setLng(dto.getLng());
         groupBuy.setDongName(dto.getDongName());
+        groupBuy.setCityName(dto.getCityName());
         groupBuy.setCategory(dto.getCategory());
         groupBuy.setDeadline(dto.getDeadline());
         groupBuy.setOriginalDeadline(dto.getDeadline());
@@ -166,7 +167,7 @@ public class GroupBuyService {
         if (deadlineChanged) {
             validateDeadlineOnUpdate(groupBuy, requestedDeadline, hasParticipants);
         }
-        if (status == GroupBuy.Status.PICKUP_READY) {
+        if (status == GroupBuy.Status.HOST_PURCHASED || status == GroupBuy.Status.PICKUP_READY) {
             List<String> currentUrls = groupBuy.getImages().stream()
                     .sorted(Comparator.comparingInt(GroupBuyImage::getOrderIndex))
                     .map(GroupBuyImage::getImageUrl)
@@ -185,7 +186,7 @@ public class GroupBuyService {
                     !currentUrls.equals(dtoUrls);
 
             if (otherFieldChanged) {
-                throw new IllegalStateException("픽업 대기 상태에서는 픽업 시간만 수정할 수 있습니다.");
+                throw new IllegalStateException("현재 상태에서는 픽업 시간만 수정할 수 있습니다.");
             }
 
             List<LocalDateTime> requestedPickupTimes = prepareRequestedPickupTimes(
@@ -222,13 +223,14 @@ public class GroupBuyService {
             return new GroupBuyResponseDto(groupBuyRepository.save(groupBuy));
         }
 
-        // OPEN, HOST_PURCHASED
+        // OPEN
         groupBuy.setTitle(dto.getTitle());
         groupBuy.setDescription(dto.getDescription());
         groupBuy.setPickupLocation(dto.getPickupLocation());
         groupBuy.setLat(dto.getLat());
         groupBuy.setLng(dto.getLng());
         groupBuy.setDongName(dto.getDongName());
+        groupBuy.setCityName(dto.getCityName());
         groupBuy.setDeadline(requestedDeadline);
         groupBuy.setCategory(dto.getCategory());
 
