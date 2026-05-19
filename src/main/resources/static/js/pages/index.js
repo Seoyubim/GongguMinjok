@@ -25,6 +25,7 @@ let selectedRadius = "neighborhood";
 
 let userLat = null;
 let userLng = null;
+let userCityName = null;
 let allGroupBuys = [];
 
 const ITEMS_PER_PAGE = 20;
@@ -86,7 +87,7 @@ function getFilteredGroupBuys() {
       (selectedStatus === "closing" && item.status === "CLOSING");
 
     const matchRadius = selectedRadius === "neighborhood"
-      ? true
+      ? (!userCityName || item.cityName === userCityName)
       : (item.distance != null && item.distance <= Number(selectedRadius));
 
     return item.status !== "EXPIRED" && matchCategory && matchStatus && matchRadius;
@@ -302,9 +303,20 @@ async function initPage() {
   renderAuthButtons();
   bindCategoryCheckboxes();
   bindClusterModalEvents();
-  await initUserLocation();
+  if (getLoginState()) {
+    try {
+      const me = await getMyProfile();
+      userLat = me.lat;
+      userLng = me.lng;
+      userCityName = me.cityName || null;
+    } catch {}
+  }
+  // 로그인이지만 저장 좌표 없거나 비로그인이면 브라우저 현재 위치
+  if (userLat == null || userLng == null) {
+    await initUserLocation();
+  }
   allGroupBuys = await getGroupBuys(userLat, userLng);
-  await initMap((items, areaName) => openClusterModal(items, areaName));
+  await initMap((items, areaName) => openClusterModal(items, areaName), userLat, userLng);
   renderGroupBuys();
 }
 

@@ -241,7 +241,7 @@ function bindMapEvents() {
   });
 }
 
-async function setupMap(onClickFn = null) {
+async function setupMap(onClickFn = null, lat = null, lng = null) {
   clusterClickFn = onClickFn;
   const mapContainer = document.getElementById("map");
   const mapTitle = document.getElementById("mapTitle");
@@ -278,7 +278,17 @@ async function setupMap(onClickFn = null) {
 
   setTimeout(() => {
     map.relayout();
-    setMapToCurrentLocation(map, "main");
+    if (lat != null && lng != null) {
+      // 로그인 + 저장 좌표: 저장된 위치로 이동
+      const savedLatLng = new kakao.maps.LatLng(lat, lng);
+      map.setCenter(savedLatLng);
+      map.setLevel(3);
+      currentLocationMarker = new kakao.maps.Marker({ map, position: savedLatLng, title: "내 위치" });
+      updateMapTitleByCenter(map);
+    } else {
+      // 비로그인 또는 저장 좌표 없음: 브라우저 현재 위치
+      setMapToCurrentLocation(map, "main");
+    }
   }, 300);
 
   setTimeout(() => {
@@ -329,7 +339,7 @@ function waitForKakao(timeout = 10000) {
   });
 }
 
-export async function initMap(onClickFn = null) {
+export async function initMap(onClickFn = null, lat = null, lng = null) {
   const mapContainer = document.getElementById("map");
   if (!mapContainer) return;
 
@@ -342,7 +352,7 @@ export async function initMap(onClickFn = null) {
 
   kakao.maps.load(async function () {
     try {
-      await setupMap(onClickFn);
+      await setupMap(onClickFn, lat, lng);
     } catch (error) {
       console.error("지도 초기화 실패:", error);
     }

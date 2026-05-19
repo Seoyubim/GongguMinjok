@@ -7,6 +7,7 @@ let pickupTimes = [];
 let selectedLat = null;
 let selectedLng = null;
 let selectedDongName = '';
+let selectedCityName = '';
 let originalDeadline = null;
 let originalData = null;
 let protectedPickupTimes = [];
@@ -38,6 +39,7 @@ let protectedPickupTimes = [];
   selectedLat = data.lat;
   selectedLng = data.lng;
   selectedDongName = data.dongName;
+  selectedCityName = data.cityName || '';
   const [baseAddr, detailAddr = ''] = data.pickupLocation.split('|');
   document.getElementById('cr-addr').value = baseAddr;
   document.getElementById('cr-addr-detail').value = detailAddr;
@@ -309,6 +311,7 @@ function searchAddress() {
           selectedLat = parseFloat(json.documents[0].y);
           selectedLng = parseFloat(json.documents[0].x);
           selectedDongName = data.bname || '';
+          selectedCityName = extractCityName(data.sido || '', data.sigungu || '');
           document.getElementById('cr-addr').value = addr;
           addrErr.style.display = 'none';
           resultEl.textContent = '주소: ' + addr;
@@ -348,6 +351,7 @@ function submitGroupBuy() {
     lat: selectedLat,
     lng: selectedLng,
     dongName: selectedDongName,
+    cityName: selectedCityName,
     deadline: document.getElementById('cr-deadline').value + 'T23:59:00',
     pickupTimes: pickupTimes.slice(),
     imageUrls: originalData.imageUrls || []

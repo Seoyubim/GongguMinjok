@@ -64,6 +64,18 @@ function formatPickupTime(dateTimeStr) {
   return `${month}/${day} ${hours}:${minutes}`;
 }
 
+function extractCityName(sido, sigungu) {
+  if (!sigungu || sigungu.endsWith('구')) {
+    const metroMap = {
+      '서울': '서울특별시', '부산': '부산광역시', '대구': '대구광역시',
+      '인천': '인천광역시', '광주': '광주광역시', '대전': '대전광역시',
+      '울산': '울산광역시', '세종': '세종특별자치시'
+    };
+    return metroMap[sido] || sido;
+  }
+  return sigungu;
+}
+
 function getBadgeEmoji(grade) {
   const emojis = {
     LEGEND:  "👑",
