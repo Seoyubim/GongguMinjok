@@ -43,4 +43,11 @@ public class MannerReviewController {
             @PathVariable Long userId) {
         return ResponseEntity.ok(mannerReviewService.getReceivedReviews(userId));
     }
+
+    // GET /api/users/me/reviews/sent
+    @GetMapping("/users/me/reviews/sent")
+    public ResponseEntity<List<MannerReviewResponseDto>> getMySentReviews(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(mannerReviewService.getSentReviews(userDetails.getUsername()));
+    }
 }

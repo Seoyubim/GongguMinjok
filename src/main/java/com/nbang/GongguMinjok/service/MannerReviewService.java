@@ -81,6 +81,16 @@ public class MannerReviewService {
     }
 
     @Transactional(readOnly = true)
+    public List<MannerReviewResponseDto> getSentReviews(String reviewerEmail) {
+        User reviewer = userRepository.findByEmail(reviewerEmail)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        return mannerReviewRepository.findByReviewerId(reviewer.getId()).stream()
+                .map(MannerReviewResponseDto::new)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public ReviewAvailabilityResponseDto canReview(Long groupBuyId, String reviewerEmail) {
         User reviewer = userRepository.findByEmail(reviewerEmail)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
