@@ -120,6 +120,9 @@ public class UserService {
         user.setNickname(dto.getNickname());
         user.setPhone(dto.getPhone());
         user.setLocation(dto.getLocation());
+        user.setLat(dto.getLat());
+        user.setLng(dto.getLng());
+        user.setCityName(dto.getCityName());
         user.setEmailVerified(true);
 
         User savedUser = userRepository.save(user);
