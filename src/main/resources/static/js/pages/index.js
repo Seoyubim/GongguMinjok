@@ -18,6 +18,7 @@ const toast = document.getElementById("toast");
 
 const loadMoreBtn = document.getElementById("loadMoreBtn");
 const loadMoreWrap = document.getElementById("loadMoreWrap");
+const sectionTitle = document.getElementById("sectionTitle");
 
 let selectedCategories = [];
 let selectedStatus = "all";
@@ -30,6 +31,11 @@ let allGroupBuys = [];
 
 const ITEMS_PER_PAGE = 20;
 let visibleCount = ITEMS_PER_PAGE;
+
+function updateSectionTitle() {
+  if (!sectionTitle) return;
+  sectionTitle.textContent = userCityName ? `${userCityName} 공동구매` : "내 주변 공동구매";
+}
 
 function renderAuthButtons() {
   const loggedIn = getLoginState();
@@ -309,6 +315,7 @@ async function initPage() {
       userLat = me.lat;
       userLng = me.lng;
       userCityName = me.cityName || null;
+      updateSectionTitle();
     } catch {}
   }
   // 로그인이지만 저장 좌표 없거나 비로그인이면 브라우저 현재 위치
@@ -316,7 +323,18 @@ async function initPage() {
     await initUserLocation();
   }
   allGroupBuys = await getGroupBuys(userLat, userLng);
-  await initMap((items, areaName) => openClusterModal(items, areaName), userLat, userLng);
+  await initMap(
+    (items, areaName) => openClusterModal(items, areaName),
+    userLat,
+    userLng,
+    (cityName) => {
+      if (!userCityName) {
+        userCityName = cityName;
+        renderGroupBuys();
+        updateSectionTitle();
+      }
+    }
+  );
   renderGroupBuys();
 }
 
