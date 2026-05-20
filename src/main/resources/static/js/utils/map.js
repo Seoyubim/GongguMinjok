@@ -8,6 +8,7 @@ let mapGeocoder = null;
 let lastTitleCenterKey = "";
 let clusterClickFn = null;
 let modalClusterInitialized = false;
+let cityNameCallback = null;
 
 
 async function getSafeGroupBuys() {
@@ -75,6 +76,12 @@ function updateMapTitleByCenter(targetMap) {
     if (!region) return;
 
     mapTitle.textContent = `${region.address_name} 기준 주변 공동구매`;
+
+    if (cityNameCallback) {
+      const sido = region.region_1depth_name || '';
+      const sigungu = region.region_2depth_name || '';
+      cityNameCallback(extractCityName(sido, sigungu));
+    }
   });
 }
 
@@ -122,13 +129,22 @@ async function setMapToCurrentLocation(targetMap, markerType = "main") {
   }
 }
 
-function bindLocationEvents() {
+function bindLocationEvents(lat, lng) {
   const mainLocationBtn = document.getElementById("mainLocationBtn");
   const modalLocationBtn = document.getElementById("modalLocationBtn");
 
   if (mainLocationBtn) {
     mainLocationBtn.addEventListener("click", async () => {
-      await setMapToCurrentLocation(map, "main");
+      if (lat != null && lng != null) {
+        const savedLatLng = new kakao.maps.LatLng(lat, lng);
+        map.setCenter(savedLatLng);
+        map.setLevel(3);
+        if (currentLocationMarker) currentLocationMarker.setMap(null);
+        currentLocationMarker = new kakao.maps.Marker({ map, position: savedLatLng, title: "내 위치" });
+        updateMapTitleByCenter(map);
+      } else {
+        await setMapToCurrentLocation(map, "main");
+      }
     });
   }
 
@@ -241,8 +257,9 @@ function bindMapEvents() {
   });
 }
 
-async function setupMap(onClickFn = null, lat = null, lng = null) {
+async function setupMap(onClickFn = null, lat = null, lng = null, onCityNameResolved = null) {
   clusterClickFn = onClickFn;
+  cityNameCallback = onCityNameResolved;
   const mapContainer = document.getElementById("map");
   const mapTitle = document.getElementById("mapTitle");
   const mapSubTitle = document.getElementById("mapSubTitle");
@@ -273,7 +290,7 @@ async function setupMap(onClickFn = null, lat = null, lng = null) {
   initCluster(map, groupBuys, onClickFn);
 
   bindModalEvents();
-  bindLocationEvents();
+  bindLocationEvents(lat, lng);
   bindResizeEvents();
 
   setTimeout(() => {
@@ -339,7 +356,7 @@ function waitForKakao(timeout = 10000) {
   });
 }
 
-export async function initMap(onClickFn = null, lat = null, lng = null) {
+export async function initMap(onClickFn = null, lat = null, lng = null, onCityNameResolved = null) {
   const mapContainer = document.getElementById("map");
   if (!mapContainer) return;
 
@@ -352,7 +369,7 @@ export async function initMap(onClickFn = null, lat = null, lng = null) {
 
   kakao.maps.load(async function () {
     try {
-      await setupMap(onClickFn, lat, lng);
+      await setupMap(onClickFn, lat, lng, onCityNameResolved);
     } catch (error) {
       console.error("지도 초기화 실패:", error);
     }
