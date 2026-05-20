@@ -65,7 +65,8 @@ function formatPickupTime(dateTimeStr) {
 }
 
 function extractCityName(sido, sigungu) {
-  if (!sigungu || sigungu.endsWith('구')) {
+  const firstPart = sigungu ? sigungu.split(' ')[0] : '';
+  if (!firstPart || firstPart.endsWith('구')) {
     const metroMap = {
       '서울': '서울특별시', '부산': '부산광역시', '대구': '대구광역시',
       '인천': '인천광역시', '광주': '광주광역시', '대전': '대전광역시',
@@ -73,7 +74,7 @@ function extractCityName(sido, sigungu) {
     };
     return metroMap[sido] || sido;
   }
-  return sigungu;
+  return firstPart;
 }
 
 function getBadgeEmoji(grade) {
