@@ -293,20 +293,24 @@ async function setupMap(onClickFn = null, lat = null, lng = null, onCityNameReso
   bindLocationEvents(lat, lng);
   bindResizeEvents();
 
-  setTimeout(() => {
-    map.relayout();
-    if (lat != null && lng != null) {
-      // 로그인 + 저장 좌표: 저장된 위치로 이동
-      const savedLatLng = new kakao.maps.LatLng(lat, lng);
-      map.setCenter(savedLatLng);
-      map.setLevel(3);
-      currentLocationMarker = new kakao.maps.Marker({ map, position: savedLatLng, title: "내 위치" });
-      updateMapTitleByCenter(map);
-    } else {
-      // 비로그인 또는 저장 좌표 없음: 브라우저 현재 위치
-      setMapToCurrentLocation(map, "main");
+  const resizeObserver = new ResizeObserver((entries) => {
+    if (entries[0].contentRect.width > 0) {
+      resizeObserver.disconnect();
+      map.relayout();
+      if (lat != null && lng != null) {
+        // 로그인 + 저장 좌표: 저장된 위치로 이동
+        const savedLatLng = new kakao.maps.LatLng(lat, lng);
+        map.setCenter(savedLatLng);
+        map.setLevel(3);
+        currentLocationMarker = new kakao.maps.Marker({ map, position: savedLatLng, title: "내 위치" });
+        updateMapTitleByCenter(map);
+      } else {
+        // 비로그인 또는 저장 좌표 없음: 브라우저 현재 위치
+        setMapToCurrentLocation(map, "main");
+      }
     }
-  }, 300);
+  });
+  resizeObserver.observe(mapContainer);
 
   setTimeout(() => {
     bindMapEvents();
