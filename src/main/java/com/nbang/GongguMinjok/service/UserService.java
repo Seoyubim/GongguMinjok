@@ -7,6 +7,7 @@ import com.nbang.GongguMinjok.dto.UserProfileUpdateRequestDto;
 import com.nbang.GongguMinjok.dto.UserRequestDto;
 import com.nbang.GongguMinjok.dto.UserResponseDto;
 import com.nbang.GongguMinjok.repository.EmailVerificationRepository;
+import com.nbang.GongguMinjok.repository.GroupBuyRepository;
 import com.nbang.GongguMinjok.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,18 +16,24 @@ import com.nbang.GongguMinjok.config.JwtTokenProvider;
 import com.nbang.GongguMinjok.dto.LoginRequestDto;
 import com.nbang.GongguMinjok.dto.LoginResponseDto;
 
+import java.time.LocalDateTime;
+import java.time.YearMonth;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
+    private static final int MONTHLY_GROUP_BUY_LIMIT = 3;
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationRepository emailVerificationRepository;
+    private final GroupBuyRepository groupBuyRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
     public UserResponseDto getMyProfile(String email) {
         User user = findActiveUserByEmail(email);
-        return new UserResponseDto(user);
+        return toUserResponseDto(user);
     }
 
     public UserResponseDto updateMyProfile(String email, UserProfileUpdateRequestDto dto) {
@@ -63,7 +70,7 @@ public class UserService {
         user.setCityName(cityName);
         user.setProfileImage(profileImage);
 
-        return new UserResponseDto(userRepository.save(user));
+        return toUserResponseDto(userRepository.save(user));
     }
 
     public void changeMyPassword(String email, PasswordChangeRequestDto dto) {
@@ -173,6 +180,19 @@ public class UserService {
         }
 
         return user;
+    }
+
+    private UserResponseDto toUserResponseDto(User user) {
+        YearMonth currentMonth = YearMonth.now();
+        LocalDateTime startOfMonth = currentMonth.atDay(1).atStartOfDay();
+        LocalDateTime startOfNextMonth = currentMonth.plusMonths(1).atDay(1).atStartOfDay();
+
+        long monthlyCount = groupBuyRepository
+                .countByHostIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(
+                        user.getId(), startOfMonth, startOfNextMonth);
+        Integer monthlyLimit = user.isPremiumActive() ? null : MONTHLY_GROUP_BUY_LIMIT;
+
+        return new UserResponseDto(user, monthlyCount, monthlyLimit);
     }
 
     private static String normalize(String value) {
