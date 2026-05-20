@@ -21,6 +21,8 @@ public class UserResponseDto {
     private String mannerGrade;
     private boolean premiumActive;
     private LocalDateTime premiumUntil;
+    private long monthlyGroupBuyCreateCount;
+    private Integer monthlyGroupBuyCreateLimit;
 
     // User 엔티티를 받아서 DTO로 변환
     public UserResponseDto(User user) {
@@ -37,5 +39,13 @@ public class UserResponseDto {
         this.mannerGrade = user.getMannerGrade().name();
         this.premiumActive = user.isPremiumActive();
         this.premiumUntil = user.getPremiumUntil();
+        this.monthlyGroupBuyCreateCount = 0;
+        this.monthlyGroupBuyCreateLimit = user.isPremiumActive() ? null : 3;
+    }
+
+    public UserResponseDto(User user, long monthlyGroupBuyCreateCount, Integer monthlyGroupBuyCreateLimit) {
+        this(user);
+        this.monthlyGroupBuyCreateCount = monthlyGroupBuyCreateCount;
+        this.monthlyGroupBuyCreateLimit = monthlyGroupBuyCreateLimit;
     }
 }
