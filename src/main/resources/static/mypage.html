@@ -53,10 +53,8 @@
                 <div>
                   <h2 class="nickname">공구왕</h2>
                   <p class="email">user@email.com</p>
-
-                  <div class="badge-row">
-                    <span class="badge-chip badge-chip-host">공구 리더</span>
-                    <span class="badge-chip badge-chip-member">활발한 참여자</span>
+                  <div class="manner-grade legend">
+                    👑 LEGEND
                   </div>
                 </div>
               </div>
@@ -84,6 +82,7 @@
                 <div><span>참여</span><strong>5</strong></div>
                 <div><span>생성</span><strong>2</strong></div>
                 <div><span>완료</span><strong>3</strong></div>
+                <div><span>월 생성횟수</span><strong>1/3</strong></div>
               </div>
 
               <div class="profile-extra">
@@ -101,6 +100,23 @@
               </div>
 
             </div>
+
+            <div class="review-card">
+
+              <div class="review-card-header">
+                <h3>받은 후기</h3>
+
+                <button class="review-more-btn">
+                  >
+                </button>
+              </div>
+
+              <div class="review-preview">
+                <p>😄 "시간 약속 잘 지켜주셨어요!"</p>
+              </div>
+
+            </div>
+
           </div>
 
           <div class="tab-panel panel2">
@@ -211,8 +227,16 @@
               <p>공구의 민족 프리미엄 서비스를 월 4,900원에 이용하세요.</p>
               <h4>프리미엄 혜택 비교</h4>
               <table class="notice-table">
-                <tr><th>항목</th><th>무료</th><th>프리미엄</th></tr>
-                <tr><td>월 공동구매 작성</td><td>3회</td><td>무제한</td></tr>
+                <tr>
+                  <th>항목</th>
+                  <th>무료</th>
+                  <th>프리미엄</th>
+                </tr>
+                <tr>
+                  <td>월 공동구매 작성</td>
+                  <td>3회</td>
+                  <td>무제한</td>
+                </tr>
               </table>
               <h4>프리미엄 요금</h4>
               <ul>
@@ -236,20 +260,64 @@
               <p>공구의 민족은 신뢰 기반의 거래 환경을 위해 매너점수 시스템을 운영합니다. 모든 신규 회원은 50점(GOOD 등급)으로 시작합니다.</p>
               <h4>등급 기준</h4>
               <table class="notice-table">
-                <tr><th>등급</th><th>점수 구간</th><th>의미</th></tr>
-                <tr><td>👑 LEGEND</td><td>90 ~ 100점</td><td>최고 신뢰 회원</td></tr>
-                <tr><td>😄 GREAT</td><td>70 ~ 89점</td><td>우수 회원</td></tr>
-                <tr><td>🙂 GOOD</td><td>50 ~ 69점</td><td>일반 회원 (기본)</td></tr>
-                <tr><td>😐 SOSO</td><td>30 ~ 49점</td><td>주의 필요</td></tr>
-                <tr><td>😢 BAD</td><td>0 ~ 29점</td><td>신뢰도 낮음</td></tr>
-                <tr><td>🚫 BLOCKED</td><td>0점 미만</td><td>모든 활동 제한</td></tr>
+                <tr>
+                  <th>등급</th>
+                  <th>점수 구간</th>
+                  <th>의미</th>
+                </tr>
+                <tr>
+                  <td>👑 LEGEND</td>
+                  <td>90 ~ 100점</td>
+                  <td>최고 신뢰 회원</td>
+                </tr>
+                <tr>
+                  <td>😄 GREAT</td>
+                  <td>70 ~ 89점</td>
+                  <td>우수 회원</td>
+                </tr>
+                <tr>
+                  <td>🙂 GOOD</td>
+                  <td>50 ~ 69점</td>
+                  <td>일반 회원 (기본)</td>
+                </tr>
+                <tr>
+                  <td>😐 SOSO</td>
+                  <td>30 ~ 49점</td>
+                  <td>주의 필요</td>
+                </tr>
+                <tr>
+                  <td>😢 BAD</td>
+                  <td>0 ~ 29점</td>
+                  <td>신뢰도 낮음</td>
+                </tr>
+                <tr>
+                  <td>🚫 BLOCKED</td>
+                  <td>0점 미만</td>
+                  <td>모든 활동 제한</td>
+                </tr>
               </table>
               <h4>평가 점수 변동</h4>
               <table class="notice-table">
-                <tr><th>평가</th><th>의미</th><th>항목당 점수</th></tr>
-                <tr><td>🌟 GREAT</td><td>최고예요</td><td>+0.2점</td></tr>
-                <tr><td>👍 GOOD</td><td>좋아요</td><td>+0.1점</td></tr>
-                <tr><td>👎 BAD</td><td>별로예요</td><td>-0.1점</td></tr>
+                <tr>
+                  <th>평가</th>
+                  <th>의미</th>
+                  <th>항목당 점수</th>
+                </tr>
+                <tr>
+                  <td>🌟 GREAT</td>
+                  <td>최고예요</td>
+                  <td>+0.2점</td>
+                </tr>
+                <tr>
+                  <td>👍 GOOD</td>
+                  <td>좋아요</td>
+                  <td>+0.1점</td>
+                </tr>
+                <tr>
+                  <td>👎 BAD</td>
+                  <td>별로예요</td>
+                  <td>-0.1점</td>
+                </tr>
               </table>
               <h4>BLOCKED 등급</h4>
               <p>매너점수가 0점 미만이 되면 자동으로 BLOCKED 등급으로 전환되며 공동구매 작성·수정·참여가 모두 제한됩니다. 점수가 0점 이상으로 회복되면 자동 해제됩니다.</p>
