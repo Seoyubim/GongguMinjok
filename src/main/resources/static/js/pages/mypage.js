@@ -44,7 +44,7 @@ async function initMyProfile() {
     const grade = MANNER_GRADE_MAP[profile.mannerGrade] || { emoji: '', cls: '' };
     const gradeEl = document.getElementById('profile-manner-grade');
     gradeEl.className = 'manner-grade ' + grade.cls;
-    gradeEl.textContent = grade.emoji + ' ' + profile.mannerGrade;
+    gradeEl.textContent = grade.emoji + profile.mannerGrade;
 
     document.getElementById('profile-manner-score').textContent = profile.mannerScore.toFixed(1);
     document.getElementById('profile-manner-bar').style.width = profile.mannerScore + '%';
@@ -53,11 +53,12 @@ async function initMyProfile() {
 
     const doneCount = createdList.filter(g => g.status === 'COMPLETED').length
                     + participations.filter(p => p.groupBuyStatus === 'COMPLETED').length;
-    const monthlyLimit = profile.monthlyGroupBuyCreateLimit ?? '무제한';
     document.getElementById('profile-join-count').textContent = participations.length;
     document.getElementById('profile-create-count').textContent = createdList.length;
     document.getElementById('profile-done-count').textContent = doneCount;
-    document.getElementById('profile-monthly-count').textContent = profile.monthlyGroupBuyCreateCount + '/' + monthlyLimit;
+    document.getElementById('profile-monthly-count').textContent = profile.monthlyGroupBuyCreateLimit === null
+      ? profile.monthlyGroupBuyCreateCount
+      : profile.monthlyGroupBuyCreateCount + '/' + profile.monthlyGroupBuyCreateLimit;
 
     const previewEl = document.getElementById('review-preview-text');
     if (reviews.length) {
@@ -361,6 +362,35 @@ document.getElementById('btn-review-more').addEventListener('click', showReceive
 document.getElementById('btn-received-reviews-close').addEventListener('click', () => hideMypageModal('modal-received-reviews'));
 document.getElementById('btn-profile-edit').addEventListener('click', () => showToast('프로필 수정 페이지는 준비 중입니다.'));
 document.getElementById('btn-withdraw').addEventListener('click', () => showToast('회원 탈퇴 기능은 준비 중입니다.'));
+document.getElementById('btn-subscribe').addEventListener('click', () => showMypageModal('modal-premium'));
+document.getElementById('btn-premium-cancel').addEventListener('click', () => hideMypageModal('modal-premium'));
+document.getElementById('btn-premium-confirm').addEventListener('click', requestPremiumPayment);
+
+async function requestPremiumPayment() {
+  const userId = localStorage.getItem('userId');
+  if (!userId) { showToast('로그인이 필요합니다.'); return; }
+  let readyData;
+  try {
+    readyData = await readyPremiumPayment();
+  } catch (e) {
+    showToast(e.message || '결제 준비에 실패했습니다.');
+    return;
+  }
+  const tossPayments = TossPayments(TOSS_CLIENT_KEY);
+  const payment = tossPayments.payment({ customerKey: 'U-' + userId });
+  payment.requestPayment({
+    method: 'CARD',
+    amount: { currency: 'KRW', value: readyData.amount },
+    orderId: readyData.orderId,
+    orderName: readyData.orderName,
+    successUrl: window.location.origin + '/success.html?role=premium',
+    failUrl: window.location.origin + '/fail.html',
+    customerEmail: readyData.customerEmail,
+    customerName: readyData.customerName,
+  }).catch(e => {
+    if (e.code !== 'USER_CANCEL') showToast(e.message || '결제 중 오류가 발생했습니다.');
+  });
+}
 
 // ─── 참여한 공동구매 ───
 

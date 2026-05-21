@@ -187,6 +187,22 @@ input[type="radio"] {
   gap: 0.4rem;
 }
 
+.manner-grade {
+  display: inline-block;
+  padding: 0.2rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1.5px solid;
+  margin-top: 0.25rem;
+}
+.manner-grade.legend  { background: #16a34a; color: #ffffff; border-color: #16a34a; }
+.manner-grade.great   { background: #8b5cf6; color: #ffffff; border-color: #8b5cf6; }
+.manner-grade.good    { background: #3b82f6; color: #ffffff; border-color: #3b82f6; }
+.manner-grade.soso    { background: #14b8a6; color: #ffffff; border-color: #14b8a6; }
+.manner-grade.bad     { background: #F08080; color: #ffffff; border-color: #F08080; }
+.manner-grade.blocked { background: #6b7280; color: #ffffff; border-color: #6b7280; }
+
 .manner-section {
   margin: 1rem 0;
 }
