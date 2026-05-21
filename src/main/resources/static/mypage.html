@@ -50,27 +50,25 @@
             <div class="profile-card-v2">
 
               <div class="profile-top">
-                <img src="images/default-profile.png" class="profile-img-lg">
+                <img src="images/default-profile.png" class="profile-img-lg" id="profile-img">
                 <div>
-                  <h2 class="nickname">공구왕</h2>
-                  <p class="email">user@email.com</p>
-                  <div class="manner-grade legend">
-                    👑 LEGEND
-                  </div>
+                  <h2 class="nickname" id="profile-nickname"></h2>
+                  <p class="email" id="profile-email"></p>
+                  <div class="manner-grade" id="profile-manner-grade"></div>
                 </div>
               </div>
 
               <div class="manner-section">
                 <div class="manner-header">
                   <span>매너 점수</span>
-                  <strong>4.8</strong>
+                  <strong id="profile-manner-score"></strong>
                 </div>
                 <div class="progress-bar">
-                  <div class="progress-fill" style="width:96%"></div>
+                  <div class="progress-fill" id="profile-manner-bar" style="width:0%"></div>
                 </div>
               </div>
 
-              <div class="premium-box">
+              <div class="premium-box" id="premium-box" style="display:none">
                 <div class="premium-text">
                   <h3>프리미엄 이용하기 🚀</h3>
                   <p>무료 회원은 월 3회까지만 공동구매 작성이 가능합니다.</p>
@@ -80,22 +78,22 @@
               </div>
 
               <div class="summary-box">
-                <div><span>참여</span><strong>5</strong></div>
-                <div><span>생성</span><strong>2</strong></div>
-                <div><span>완료</span><strong>3</strong></div>
-                <div><span>월 생성횟수</span><strong>1/3</strong></div>
+                <div><span>참여</span><strong id="profile-join-count">-</strong></div>
+                <div><span>생성</span><strong id="profile-create-count">-</strong></div>
+                <div><span>완료</span><strong id="profile-done-count">-</strong></div>
+                <div><span>월 생성횟수</span><strong id="profile-monthly-count">-</strong></div>
               </div>
 
-              <div class="profile-extra">
+              <div class="profile-extra" style="display:none">
                 <p><strong>가입일</strong> : 2024.03</p>
               </div>
 
               <div class="profile-actions-top">
-                <button class="btn btn-outline">프로필 수정</button>
+                <button class="btn btn-outline" id="btn-profile-edit">프로필 수정</button>
               </div>
 
               <div class="profile-bottom-actions">
-                <button class="btn-withdraw">
+                <button class="btn-withdraw" id="btn-withdraw">
                   회원 탈퇴
                 </button>
               </div>
@@ -107,13 +105,13 @@
               <div class="review-card-header">
                 <h3>받은 후기</h3>
 
-                <button class="review-more-btn">
+                <button class="review-more-btn" id="btn-review-more">
                   >
                 </button>
               </div>
 
               <div class="review-preview">
-                <p>😄 "시간 약속 잘 지켜주셨어요!"</p>
+                <p id="review-preview-text"></p>
               </div>
 
             </div>
@@ -545,6 +543,15 @@
         <button class="btn btn-outline" id="btn-joined-payment-cancel">취소</button>
         <button class="btn btn-primary" id="btn-joined-payment-confirm">결제하기</button>
       </div>
+    </div>
+  </div>
+
+  <!-- 받은 후기 목록 모달 -->
+  <div id="modal-received-reviews" class="mypage-modal" style="display:none">
+    <div class="mypage-modal-box">
+      <h3>받은 후기</h3>
+      <div id="received-reviews-wrap"></div>
+      <button class="btn btn-outline btn-full" id="btn-received-reviews-close">닫기</button>
     </div>
   </div>
 

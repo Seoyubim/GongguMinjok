@@ -15,3 +15,9 @@ async function getMyProfile() {
   if (!response.ok) throw new Error('프로필 조회 실패');
   return response.json();
 }
+
+async function getReceivedReviews(userId) {
+  const response = await fetch('/api/users/' + userId + '/reviews');
+  if (!response.ok) throw new Error('받은 후기 목록을 불러오는데 실패했습니다.');
+  return response.json();
+}
