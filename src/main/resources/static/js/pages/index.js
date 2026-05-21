@@ -77,7 +77,8 @@ async function initUserLocation() {
         userLng = pos.coords.longitude;
         resolve();
       },
-      () => resolve()
+      () => resolve(),
+      { maximumAge: 300000 }
     );
   });
 }
