@@ -80,7 +80,7 @@ function renderReceivedReviews(reviews) {
   // 전체 리뷰에서 checkedItems 집계
   const RATING_LABEL = { BAD: '별로예요', GOOD: '좋아요', GREAT: '최고예요' };
   const countMap = {};
-  reviews.forEach(r => {
+  reviews.filter(r => r.rating !== 'BAD').forEach(r => {
     const items = r.checkedItems?.length
       ? r.checkedItems
       : [RATING_LABEL[r.rating] || r.rating];
@@ -89,14 +89,19 @@ function renderReceivedReviews(reviews) {
 
   // 많은 순 정렬
   const sorted = Object.entries(countMap).sort((a, b) => b[1] - a[1]);
+  const max = sorted[0][1];
 
   function makeItems(entries) {
-    return entries.map(([text, count]) =>
-      `<div class="review-item" style="display:flex;justify-content:space-between;align-items:center">
+    return entries.map(([text, count]) => {
+      const pct = (count / max * 100).toFixed(1);
+      // 비율에 따라 연두색 투명도 조절 (낮을수록 흰색에 가까워짐)
+      const opacity = (0.12 + 0.88 * count / max).toFixed(2);
+      const fillColor = `rgba(163,230,53,${opacity})`;
+      return `<div class="review-item" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to right,${fillColor} ${pct}%,#f9fafb 0%)">
         <span>"${text}"</span>
         <span style="font-weight:600;color:#6b7280;flex-shrink:0;margin-left:0.75rem">${count}</span>
-      </div>`
-    ).join('');
+      </div>`;
+    }).join('');
   }
 
   listEl.innerHTML = makeItems(sorted.slice(0, REVIEW_INITIAL_COUNT));
