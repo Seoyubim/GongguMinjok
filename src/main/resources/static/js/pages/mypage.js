@@ -23,8 +23,13 @@ async function initCreatedGroupBuys() {
   if (!userId) return;
   try {
     const list = (await getGroupBuysByHost(userId)).sort((a, b) => b.id - a.id);
+    const container = document.getElementById('created-list');
     const emptyEl = document.getElementById('created-empty');
-    if (!list.length) { emptyEl.style.display = 'block'; return; }
+    if (!list.length) {
+      container.querySelectorAll('.group-card').forEach(el => el.remove());
+      emptyEl.style.display = 'block';
+      return;
+    }
     emptyEl.style.display = 'none';
     const reviewMap = {};
     const completedItems = list.filter(g => g.status === 'COMPLETED');
