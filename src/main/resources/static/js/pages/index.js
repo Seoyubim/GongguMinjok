@@ -319,10 +319,6 @@ async function initPage() {
       updateSectionTitle();
     } catch {}
   }
-  // 로그인이지만 저장 좌표 없거나 비로그인이면 브라우저 현재 위치
-  if (userLat == null || userLng == null) {
-    await initUserLocation();
-  }
   allGroupBuys = await getGroupBuys(userLat, userLng);
   await initMap(
     (items, areaName) => openClusterModal(items, areaName),
@@ -334,6 +330,12 @@ async function initPage() {
         renderGroupBuys();
         updateSectionTitle();
       }
+    },
+    async (lat, lng) => {
+      userLat = lat;
+      userLng = lng;
+      allGroupBuys = await getGroupBuys(userLat, userLng);
+      renderGroupBuys();
     }
   );
   renderGroupBuys();

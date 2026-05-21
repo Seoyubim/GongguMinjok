@@ -39,7 +39,7 @@ function getCurrentPosition() {
       {
         enableHighAccuracy: false,
         timeout: 5000,
-        maximumAge: 60000
+        maximumAge: 300000
       }
     );
   });
@@ -124,6 +124,8 @@ async function setMapToCurrentLocation(targetMap, markerType = "main") {
     if (targetMap === map) {
       updateMapTitleByCenter(map);
     }
+
+    return { lat, lng };
   } catch (error) {
     console.error("현재 위치를 가져오지 못했습니다.", error);
   }
@@ -257,9 +259,15 @@ function bindMapEvents() {
   });
 }
 
-async function setupMap(onClickFn = null, lat = null, lng = null, onCityNameResolved = null) {
+async function setupMap(onClickFn = null, lat = null, lng = null, onCityNameResolved = null, onLocationResolved = null) {
   clusterClickFn = onClickFn;
   cityNameCallback = onCityNameResolved;
+
+  if (lat == null || lng == null) {
+    const overlay = document.getElementById('mapLoadingOverlay');
+    if (overlay) overlay.classList.remove('hidden');
+  }
+
   const mapContainer = document.getElementById("map");
   const mapTitle = document.getElementById("mapTitle");
   const mapSubTitle = document.getElementById("mapSubTitle");
@@ -306,7 +314,11 @@ async function setupMap(onClickFn = null, lat = null, lng = null, onCityNameReso
         updateMapTitleByCenter(map);
       } else {
         // 비로그인 또는 저장 좌표 없음: 브라우저 현재 위치
-        setMapToCurrentLocation(map, "main");
+        setMapToCurrentLocation(map, "main").then(coords => {
+          const overlay = document.getElementById('mapLoadingOverlay');
+          if (overlay) overlay.classList.add('hidden');
+          if (coords && onLocationResolved) onLocationResolved(coords.lat, coords.lng);
+        });
       }
     }
   });
@@ -360,7 +372,7 @@ function waitForKakao(timeout = 10000) {
   });
 }
 
-export async function initMap(onClickFn = null, lat = null, lng = null, onCityNameResolved = null) {
+export async function initMap(onClickFn = null, lat = null, lng = null, onCityNameResolved = null, onLocationResolved = null) {
   const mapContainer = document.getElementById("map");
   if (!mapContainer) return;
 
@@ -373,7 +385,7 @@ export async function initMap(onClickFn = null, lat = null, lng = null, onCityNa
 
   kakao.maps.load(async function () {
     try {
-      await setupMap(onClickFn, lat, lng, onCityNameResolved);
+      await setupMap(onClickFn, lat, lng, onCityNameResolved, onLocationResolved);
     } catch (error) {
       console.error("지도 초기화 실패:", error);
     }
