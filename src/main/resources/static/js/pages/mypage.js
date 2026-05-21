@@ -60,52 +60,53 @@ async function initMyProfile() {
       ? profile.monthlyGroupBuyCreateCount
       : profile.monthlyGroupBuyCreateCount + '/' + profile.monthlyGroupBuyCreateLimit;
 
-    const previewEl = document.getElementById('review-preview-text');
-    if (reviews.length) {
-      const latest = reviews[0];
-      const emoji = { BAD: '👎', GOOD: '👍', GREAT: '⭐' }[latest.rating] || '';
-      const text = latest.checkedItems?.[0] || { BAD: '별로예요', GOOD: '좋아요', GREAT: '최고예요' }[latest.rating] || '';
-      previewEl.textContent = emoji + ' "' + text + '"';
-    } else {
-      previewEl.textContent = '아직 받은 후기가 없습니다.';
-    }
+    renderReceivedReviews(reviews);
   } catch (e) {
     showToast(e.message || '프로필을 불러오는데 실패했습니다.');
   }
 }
 
-async function showReceivedReviewsModal() {
-  const userId = localStorage.getItem('userId');
-  const wrap = document.getElementById('received-reviews-wrap');
-  wrap.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:1rem">불러오는 중...</p>';
-  showMypageModal('modal-received-reviews');
-  try {
-    const reviews = await getReceivedReviews(userId);
-    if (!reviews.length) {
-      wrap.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:1rem">아직 받은 후기가 없습니다.</p>';
-      return;
-    }
-    const RATING_COLOR = { BAD: '#ef4444', GOOD: '#16a34a', GREAT: '#f59e0b' };
-    const RATING_EMOJI = { BAD: '👎', GOOD: '👍', GREAT: '⭐' };
-    const RATING_LABEL = { BAD: '별로예요', GOOD: '좋아요', GREAT: '최고예요' };
-    wrap.innerHTML = reviews.map(r => {
-      const color = RATING_COLOR[r.rating] || '#374151';
-      const emoji = RATING_EMOJI[r.rating] || '';
-      const label = RATING_LABEL[r.rating] || r.rating;
-      const date = new Date(r.createdAt).toLocaleDateString('ko-KR');
-      const items = r.checkedItems?.length
-        ? `<div style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.4rem">${r.checkedItems.map(i => `<span style="background:#f3f4f6;border-radius:999px;padding:0.25rem 0.6rem;font-size:0.8rem">${i}</span>`).join('')}</div>`
-        : '';
-      return `<div style="border-bottom:1px solid #f3f4f6;padding:0.75rem 0">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-weight:600;color:${color}">${emoji} ${label}</span>
-          <span style="font-size:0.75rem;color:#9ca3af">${r.reviewerNickname} · ${date}</span>
-        </div>
-        ${items}
-      </div>`;
-    }).join('');
-  } catch (e) {
-    wrap.innerHTML = '<p style="text-align:center;color:#ef4444;padding:1rem">불러오기 실패</p>';
+const REVIEW_INITIAL_COUNT = 5;
+
+function renderReceivedReviews(reviews) {
+  const listEl = document.getElementById('review-list');
+  const moreWrap = document.getElementById('review-more-wrap');
+
+  if (!reviews.length) {
+    listEl.innerHTML = '<p style="color:#9ca3af;padding:0.5rem 0">아직 받은 후기가 없습니다.</p>';
+    return;
+  }
+
+  // 전체 리뷰에서 checkedItems 집계
+  const RATING_LABEL = { BAD: '별로예요', GOOD: '좋아요', GREAT: '최고예요' };
+  const countMap = {};
+  reviews.forEach(r => {
+    const items = r.checkedItems?.length
+      ? r.checkedItems
+      : [RATING_LABEL[r.rating] || r.rating];
+    items.forEach(item => { countMap[item] = (countMap[item] || 0) + 1; });
+  });
+
+  // 많은 순 정렬
+  const sorted = Object.entries(countMap).sort((a, b) => b[1] - a[1]);
+
+  function makeItems(entries) {
+    return entries.map(([text, count]) =>
+      `<div class="review-item" style="display:flex;justify-content:space-between;align-items:center">
+        <span>"${text}"</span>
+        <span style="font-weight:600;color:#6b7280;flex-shrink:0;margin-left:0.75rem">${count}</span>
+      </div>`
+    ).join('');
+  }
+
+  listEl.innerHTML = makeItems(sorted.slice(0, REVIEW_INITIAL_COUNT));
+
+  if (sorted.length > REVIEW_INITIAL_COUNT) {
+    moreWrap.style.display = '';
+    document.getElementById('btn-review-more').onclick = () => {
+      listEl.innerHTML = makeItems(sorted);
+      moreWrap.style.display = 'none';
+    };
   }
 }
 
@@ -358,8 +359,6 @@ window.addEventListener('pageshow', () => {
   else initMyProfile();
 });
 
-document.getElementById('btn-review-more').addEventListener('click', showReceivedReviewsModal);
-document.getElementById('btn-received-reviews-close').addEventListener('click', () => hideMypageModal('modal-received-reviews'));
 document.getElementById('btn-profile-edit').addEventListener('click', () => showToast('프로필 수정 페이지는 준비 중입니다.'));
 document.getElementById('btn-withdraw').addEventListener('click', () => showToast('회원 탈퇴 기능은 준비 중입니다.'));
 document.getElementById('btn-subscribe').addEventListener('click', () => showMypageModal('modal-premium'));
