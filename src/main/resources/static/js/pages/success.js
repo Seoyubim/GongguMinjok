@@ -10,7 +10,10 @@ checkTokenExpiry();
 
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch('/api/payments/toss/confirm', {
+    const url = role === 'premium'
+      ? '/api/premium/payments/toss/confirm'
+      : '/api/payments/toss/confirm';
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

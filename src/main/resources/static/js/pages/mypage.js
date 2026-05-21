@@ -13,8 +13,107 @@ const STATUS_CLASS = {
   PICKUP_READY: 'badge-pickup', PENDING: 'badge-progress',
   COMPLETED: 'badge-done', EXPIRED: 'badge-expired'
 };
+const MANNER_GRADE_MAP = {
+  LEGEND: { emoji: '👑', cls: 'legend' },
+  GREAT:  { emoji: '😄', cls: 'great'  },
+  GOOD:   { emoji: '🙂', cls: 'good'   },
+  SOSO:   { emoji: '😐', cls: 'soso'   },
+  BAD:    { emoji: '😢', cls: 'bad'    },
+  BLOCKED:{ emoji: '🚫', cls: 'blocked' },
+};
 
 let pendingAction = null;
+
+// ─── 내 정보 ───
+
+async function initMyProfile() {
+  const userId = localStorage.getItem('userId');
+  if (!userId) return;
+  try {
+    const [profile, createdList, participations, reviews] = await Promise.all([
+      getMyProfile(),
+      getGroupBuysByHost(userId),
+      getMyParticipations(),
+      getReceivedReviews(userId),
+    ]);
+
+    document.getElementById('profile-img').src = profile.profileImage || 'images/default-profile.png';
+    document.getElementById('profile-nickname').textContent = profile.nickname;
+    document.getElementById('profile-email').textContent = profile.email;
+
+    const grade = MANNER_GRADE_MAP[profile.mannerGrade] || { emoji: '', cls: '' };
+    const gradeEl = document.getElementById('profile-manner-grade');
+    gradeEl.className = 'manner-grade ' + grade.cls;
+    gradeEl.textContent = grade.emoji + profile.mannerGrade;
+
+    document.getElementById('profile-manner-score').textContent = profile.mannerScore.toFixed(1);
+    document.getElementById('profile-manner-bar').style.width = profile.mannerScore + '%';
+
+    document.getElementById('premium-box').style.display = profile.premiumActive ? 'none' : '';
+
+    const doneCount = createdList.filter(g => g.status === 'COMPLETED').length
+                    + participations.filter(p => p.groupBuyStatus === 'COMPLETED').length;
+    document.getElementById('profile-join-count').textContent = participations.length;
+    document.getElementById('profile-create-count').textContent = createdList.length;
+    document.getElementById('profile-done-count').textContent = doneCount;
+    document.getElementById('profile-monthly-count').textContent = profile.monthlyGroupBuyCreateLimit === null
+      ? profile.monthlyGroupBuyCreateCount
+      : profile.monthlyGroupBuyCreateCount + '/' + profile.monthlyGroupBuyCreateLimit;
+
+    renderReceivedReviews(reviews);
+  } catch (e) {
+    showToast(e.message || '프로필을 불러오는데 실패했습니다.');
+  }
+}
+
+const REVIEW_INITIAL_COUNT = 5;
+
+function renderReceivedReviews(reviews) {
+  const listEl = document.getElementById('review-list');
+  const moreWrap = document.getElementById('review-more-wrap');
+
+  if (!reviews.length) {
+    listEl.innerHTML = '<p style="color:#9ca3af;padding:0.5rem 0">아직 받은 후기가 없습니다.</p>';
+    return;
+  }
+
+  // 전체 리뷰에서 checkedItems 집계
+  const RATING_LABEL = { BAD: '별로예요', GOOD: '좋아요', GREAT: '최고예요' };
+  const countMap = {};
+  reviews.filter(r => r.rating !== 'BAD').forEach(r => {
+    const items = r.checkedItems?.length
+      ? r.checkedItems
+      : [RATING_LABEL[r.rating] || r.rating];
+    items.forEach(item => { countMap[item] = (countMap[item] || 0) + 1; });
+  });
+
+  // 많은 순 정렬
+  const sorted = Object.entries(countMap).sort((a, b) => b[1] - a[1]);
+  const max = sorted[0][1];
+
+  function makeItems(entries) {
+    return entries.map(([text, count]) => {
+      const pct = (count / max * 100).toFixed(1);
+      // 비율에 따라 연두색 투명도 조절 (낮을수록 흰색에 가까워짐)
+      const opacity = (0.12 + 0.88 * count / max).toFixed(2);
+      const fillColor = `rgba(163,230,53,${opacity})`;
+      return `<div class="review-item" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to right,${fillColor} ${pct}%,#f9fafb 0%)">
+        <span>"${text}"</span>
+        <span style="font-weight:600;color:#6b7280;flex-shrink:0;margin-left:0.75rem">${count}</span>
+      </div>`;
+    }).join('');
+  }
+
+  listEl.innerHTML = makeItems(sorted.slice(0, REVIEW_INITIAL_COUNT));
+
+  if (sorted.length > REVIEW_INITIAL_COUNT) {
+    moreWrap.style.display = '';
+    document.getElementById('btn-review-more').onclick = () => {
+      listEl.innerHTML = makeItems(sorted);
+      moreWrap.style.display = 'none';
+    };
+  }
+}
 
 // ─── 생성한 공동구매 ───
 
@@ -23,8 +122,13 @@ async function initCreatedGroupBuys() {
   if (!userId) return;
   try {
     const list = (await getGroupBuysByHost(userId)).sort((a, b) => b.id - a.id);
+    const container = document.getElementById('created-list');
     const emptyEl = document.getElementById('created-empty');
-    if (!list.length) { emptyEl.style.display = 'block'; return; }
+    if (!list.length) {
+      container.querySelectorAll('.group-card').forEach(el => el.remove());
+      emptyEl.style.display = 'block';
+      return;
+    }
     emptyEl.style.display = 'none';
     const reviewMap = {};
     const completedItems = list.filter(g => g.status === 'COMPLETED');
@@ -238,6 +342,8 @@ document.getElementById('btn-review-status-close').addEventListener('click', () 
 
 // ─── 탭 이벤트 ───
 
+document.getElementById('tab1').addEventListener('change', initMyProfile);
+if (document.getElementById('tab1').checked) initMyProfile();
 document.getElementById('tab2').addEventListener('change', initJoinedGroupBuys);
 if (document.getElementById('tab2').checked) initJoinedGroupBuys();
 document.getElementById('tab3').addEventListener('change', initCreatedGroupBuys);
@@ -255,7 +361,40 @@ if (tabParam === 'joined') {
 window.addEventListener('pageshow', () => {
   if (document.getElementById('tab3').checked) initCreatedGroupBuys();
   else if (document.getElementById('tab2').checked) initJoinedGroupBuys();
+  else initMyProfile();
 });
+
+document.getElementById('btn-profile-edit').addEventListener('click', () => showToast('프로필 수정 페이지는 준비 중입니다.'));
+document.getElementById('btn-withdraw').addEventListener('click', () => showToast('회원 탈퇴 기능은 준비 중입니다.'));
+document.getElementById('btn-subscribe').addEventListener('click', () => showMypageModal('modal-premium'));
+document.getElementById('btn-premium-cancel').addEventListener('click', () => hideMypageModal('modal-premium'));
+document.getElementById('btn-premium-confirm').addEventListener('click', requestPremiumPayment);
+
+async function requestPremiumPayment() {
+  const userId = localStorage.getItem('userId');
+  if (!userId) { showToast('로그인이 필요합니다.'); return; }
+  let readyData;
+  try {
+    readyData = await readyPremiumPayment();
+  } catch (e) {
+    showToast(e.message || '결제 준비에 실패했습니다.');
+    return;
+  }
+  const tossPayments = TossPayments(TOSS_CLIENT_KEY);
+  const payment = tossPayments.payment({ customerKey: 'U-' + userId });
+  payment.requestPayment({
+    method: 'CARD',
+    amount: { currency: 'KRW', value: readyData.amount },
+    orderId: readyData.orderId,
+    orderName: readyData.orderName,
+    successUrl: window.location.origin + '/success.html?role=premium',
+    failUrl: window.location.origin + '/fail.html',
+    customerEmail: readyData.customerEmail,
+    customerName: readyData.customerName,
+  }).catch(e => {
+    if (e.code !== 'USER_CANCEL') showToast(e.message || '결제 중 오류가 발생했습니다.');
+  });
+}
 
 // ─── 참여한 공동구매 ───
 
