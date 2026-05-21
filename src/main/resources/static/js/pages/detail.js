@@ -130,10 +130,14 @@ checkTokenExpiry();
     infowindow.open(state.pickupMap, state.pickupLocationMarker);
 
     // modal이 display:flex 된 직후라 크기 재계산 필요
-    setTimeout(() => {
-      state.pickupMap.relayout();
-      state.pickupMap.setCenter(centerLatLng);
-    }, 50);
+    const pickupMapObserver = new ResizeObserver((entries) => {
+      if (entries[0].contentRect.width > 0) {
+        pickupMapObserver.disconnect();
+        state.pickupMap.relayout();
+        state.pickupMap.setCenter(centerLatLng);
+      }
+    });
+    pickupMapObserver.observe(document.getElementById("pickupMap"));
   }
 
   /**

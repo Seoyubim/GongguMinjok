@@ -34,6 +34,22 @@
   pointer-events: none;
 }
 
+.map-loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: linear-gradient(135deg, rgba(132, 204, 22, 0.08), rgba(59, 130, 246, 0.08)), #eef2f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.map-loading-overlay.hidden {
+  display: none;
+}
+
 .map-overlay {
   position: absolute;
   top: 1rem;

@@ -161,12 +161,12 @@
         <div class="sec-title">💰 금액 설정</div>
         <div class="fgroup">
           <label class="flabel">총 금액 (원) <span class="req">*</span></label>
-          <input class="finput" id="cr-total" type="number" min="1" placeholder="예) 100000" oninput="if(parseInt(this.value)<0)this.value=''; calcPrice()">
+          <input class="finput" id="cr-total" type="number" min="1" max="100000000" placeholder="예) 100000" oninput="if(parseInt(this.value)<0)this.value=''; calcPrice()">
           <div class="err-msg" id="cr-total-err">총 금액을 입력해 주세요.</div>
         </div>
         <div class="fgroup">
           <label class="flabel">총 수량 <span class="req">*</span></label>
-          <input class="finput" id="cr-qty" type="number" min="1" placeholder="예) 10" oninput="if(parseInt(this.value)<0)this.value=''">
+          <input class="finput" id="cr-qty" type="number" min="1" max="99999" placeholder="예) 10" oninput="if(parseInt(this.value)<0)this.value=''">
           <div class="err-msg" id="cr-qty-err">총 수량을 입력해 주세요.</div>
         </div>
         <div class="info-box">
