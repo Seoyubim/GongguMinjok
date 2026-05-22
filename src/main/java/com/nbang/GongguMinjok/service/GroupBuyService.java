@@ -38,14 +38,10 @@ public class GroupBuyService {
     // 전체 목록 조회 (위치 필터/정렬 선택적 적용)
     @Transactional(readOnly = true)
     public List<GroupBuyResponseDto> getGroupBuys(Double userLat, Double userLng, DistanceRange distanceRange, String keyword) {
-        List<GroupBuy> all = groupBuyRepository.findAllByDeletedFalseOrderByCreatedAtDesc();
         String normalizedKeyword = normalizeKeyword(keyword);
-
-        if (normalizedKeyword != null) {
-            all = all.stream()
-                    .filter(groupBuy -> matchesKeyword(groupBuy, normalizedKeyword))
-                    .collect(Collectors.toList());
-        }
+        List<GroupBuy> all = normalizedKeyword == null
+                ? groupBuyRepository.findAllByDeletedFalseOrderByCreatedAtDesc()
+                : groupBuyRepository.searchByKeyword(normalizedKeyword);
 
         if (userLat == null || userLng == null) {
             return all.stream().map(GroupBuyResponseDto::new).collect(Collectors.toList());
@@ -77,15 +73,6 @@ public class GroupBuyService {
             return null;
         }
         return keyword.trim().toLowerCase();
-    }
-
-    private boolean matchesKeyword(GroupBuy groupBuy, String keyword) {
-        return containsKeyword(groupBuy.getTitle(), keyword)
-                || containsKeyword(groupBuy.getDescription(), keyword);
-    }
-
-    private boolean containsKeyword(String value, String keyword) {
-        return value != null && value.toLowerCase().contains(keyword);
     }
 
     private double calculateDistance(double lat1, double lng1, double lat2, double lng2) {

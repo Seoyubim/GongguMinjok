@@ -103,6 +103,8 @@ async function initUserLocation() {
 }
 
 function getFilteredGroupBuys() {
+  const keyword = selectedKeyword.trim().toLowerCase();
+
   let filtered = allGroupBuys.filter((item) => {
     const matchCategory =
       selectedCategories.length === 0 || selectedCategories.includes(item.category);
@@ -116,7 +118,12 @@ function getFilteredGroupBuys() {
       ? (!userCityName || item.cityName === userCityName)
       : (item.distance != null && item.distance <= Number(selectedRadius));
 
-    return item.status !== "EXPIRED" && matchCategory && matchStatus && matchRadius;
+    const matchKeyword =
+      !keyword ||
+      (item.title || "").toLowerCase().includes(keyword) ||
+      (item.description || "").toLowerCase().includes(keyword);
+
+    return item.status !== "EXPIRED" && matchKeyword && matchCategory && matchStatus && matchRadius;
   });
 
   if (selectedRadius === "neighborhood") {
