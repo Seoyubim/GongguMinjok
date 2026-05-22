@@ -1,139 +1,186 @@
 .user-profile-page {
-  max-width: 1000px;
-  margin: 40px auto;
-  padding: 0 20px;
+  max-width: 896px;
+  margin: 0 auto;
+  padding: 1rem;
+  padding-bottom: 6rem;
 }
 
 .profile-card-v2,
 .review-card {
   background: white;
-  border: 1px solid #e5e7eb;
   border-radius: 1rem;
-  padding: 2rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   margin-bottom: 1.5rem;
 }
 
 .profile-top {
   display: flex;
-  gap: 1.5rem;
   align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
 }
 
 .profile-img-lg {
-  width: 120px;
-  height: 120px;
-  border-radius: 999px;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
   object-fit: cover;
-  border: 4px solid #ecfccb;
+  background: #e5e7eb;
+  flex-shrink: 0;
 }
 
 .profile-info {
   flex: 1;
+  min-width: 0;
 }
 
 .profile-name-wrap {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
 }
 
 .nickname {
-  font-size: 1.75rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #111827;
 }
 
-.premium-badge {
-  background: linear-gradient(135deg, #bef264, #84cc16);
-  color: white;
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 700;
+.user-location {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 0.4rem;
 }
 
-.user-location {
-  color: #6b7280;
-  margin-bottom: 0.5rem;
+.premium-badge {
+  background: linear-gradient(135deg, #84cc16, #65a30d);
+  color: white;
+  padding: 0.2rem 0.7rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
 }
 
 .manner-grade {
-  display: inline-flex;
-  align-items: center;
-  background: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
-  padding: 0.4rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 700;
+  display: inline-block;
+  padding: 0.2rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1.5px solid;
+  margin-top: 0.25rem;
+}
+
+.manner-grade.legend  {
+  background: #16a34a;
+  color: #fff;
+  border-color: #16a34a;
+}
+
+.manner-grade.great   {
+  background: #8b5cf6;
+  color: #fff;
+  border-color: #8b5cf6;
+}
+
+.manner-grade.good    {
+  background: #3b82f6;
+  color: #fff;
+  border-color: #3b82f6;
+}
+
+.manner-grade.soso    {
+  background: #14b8a6;
+  color: #fff;
+  border-color: #14b8a6;
+}
+
+.manner-grade.bad     {
+  background: #F08080;
+  color: #fff;
+  border-color: #F08080;
+}
+
+.manner-grade.blocked {
+  background: #6b7280;
+  color: #fff;
+  border-color: #6b7280;
 }
 
 .manner-section {
-  margin-top: 2rem;
+  margin: 1rem 0;
 }
 
 .manner-header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
 }
 
 .progress-bar {
   width: 100%;
-  height: 12px;
+  height: 10px;
   background: #e5e7eb;
-  border-radius: 999px;
+  border-radius: 9999px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #bef264, #84cc16);
+  background: linear-gradient(90deg, #84cc16, #65a30d);
+  border-radius: inherit;
 }
 
 .summary-box {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-top: 2rem;
-  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
   background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 1rem;
+  padding: 0.8rem;
+  border-radius: 0.75rem;
+  margin: 1rem 0;
+  text-align: center;
 }
 
 .summary-box div {
-  text-align: center;
+  flex: 1;
 }
 
 .summary-box span {
   display: block;
+  font-size: 0.75rem;
   color: #6b7280;
-  font-size: 0.85rem;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.2rem;
 }
 
 .summary-box strong {
-  font-size: 1.4rem;
+  font-size: 1rem;
   color: #111827;
 }
 
 .profile-extra {
-  margin-top: 1.5rem;
-  color: #374151;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
+  margin-top: 1rem;
+  color: #4b5563;
+}
+
+.profile-extra p {
+  margin-bottom: 0.3rem;
 }
 
 .review-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 1rem;
 }
 
 .review-card-header h3 {
   font-size: 1.1rem;
   font-weight: 700;
+  color: #111827;
 }
 
 .review-list {
@@ -148,21 +195,28 @@
   border-radius: 0.75rem;
   padding: 1rem;
   color: #374151;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 @media (max-width: 768px) {
 
+  .profile-card-v2,
+  .review-card {
+    padding: 1.25rem;
+  }
+
   .profile-top {
     flex-direction: column;
-    text-align: center;
+    align-items: flex-start;
   }
 
   .profile-name-wrap {
-    justify-content: center;
+    flex-wrap: wrap;
   }
 
   .summary-box {
-    grid-template-columns: 1fr;
-    text-align: center;
+    gap: 0.5rem;
   }
+
 }
