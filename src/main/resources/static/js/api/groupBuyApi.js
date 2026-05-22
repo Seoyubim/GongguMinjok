@@ -1,8 +1,17 @@
-async function getGroupBuys(userLat, userLng) {
+async function getGroupBuys(userLat, userLng, keyword) {
   let url = '/api/groupbuys';
+  const params = new URLSearchParams();
+
   if (userLat != null && userLng != null) {
-    url += `?userLat=${userLat}&userLng=${userLng}`;
+    params.set('userLat', userLat);
+    params.set('userLng', userLng);
   }
+  if (keyword && keyword.trim()) {
+    params.set('keyword', keyword.trim());
+  }
+  const queryString = params.toString();
+  if (queryString) url += `?${queryString}`;
+
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error('공동구매 목록을 불러오는데 실패했습니다.');

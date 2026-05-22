@@ -24,8 +24,9 @@ public class GroupBuyController {
     public ResponseEntity<List<GroupBuyResponseDto>> getGroupBuys(
             @RequestParam(required = false) Double userLat,
             @RequestParam(required = false) Double userLng,
-            @RequestParam(required = false) DistanceRange distanceRange) {
-        return ResponseEntity.ok(groupBuyService.getGroupBuys(userLat, userLng, distanceRange));
+            @RequestParam(required = false) DistanceRange distanceRange,
+            @RequestParam(required = false) String keyword) {
+        return ResponseEntity.ok(groupBuyService.getGroupBuys(userLat, userLng, distanceRange, keyword));
     }
 
     // GET /api/groupbuys/{id}

@@ -19,10 +19,13 @@ const toast = document.getElementById("toast");
 const loadMoreBtn = document.getElementById("loadMoreBtn");
 const loadMoreWrap = document.getElementById("loadMoreWrap");
 const sectionTitle = document.getElementById("sectionTitle");
+const searchInput = document.getElementById("searchInput");
+const searchButton = document.getElementById("searchButton");
 
 let selectedCategories = [];
 let selectedStatus = "all";
 let selectedRadius = "neighborhood";
+let selectedKeyword = "";
 
 let userLat = null;
 let userLng = null;
@@ -65,6 +68,22 @@ function bindCategoryCheckboxes() {
       visibleCount = ITEMS_PER_PAGE;
       renderGroupBuys();
     });
+  });
+}
+
+function bindSearchEvents() {
+  const search = async () => {
+    selectedKeyword = searchInput?.value.trim() || "";
+    visibleCount = ITEMS_PER_PAGE;
+    allGroupBuys = await getGroupBuys(userLat, userLng, selectedKeyword);
+    renderGroupBuys();
+  };
+
+  searchButton?.addEventListener("click", search);
+  searchInput?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      search();
+    }
   });
 }
 
@@ -309,6 +328,7 @@ logoutBtn.addEventListener("click", handleLogout);
 async function initPage() {
   renderAuthButtons();
   bindCategoryCheckboxes();
+  bindSearchEvents();
   bindClusterModalEvents();
   if (getLoginState()) {
     try {
@@ -319,7 +339,7 @@ async function initPage() {
       updateSectionTitle();
     } catch {}
   }
-  allGroupBuys = await getGroupBuys(userLat, userLng);
+  allGroupBuys = await getGroupBuys(userLat, userLng, selectedKeyword);
   await initMap(
     (items, areaName) => openClusterModal(items, areaName),
     userLat,
@@ -334,7 +354,7 @@ async function initPage() {
     async (lat, lng) => {
       userLat = lat;
       userLng = lng;
-      allGroupBuys = await getGroupBuys(userLat, userLng);
+      allGroupBuys = await getGroupBuys(userLat, userLng, selectedKeyword);
       renderGroupBuys();
     }
   );

@@ -118,6 +118,7 @@ public class UserService {
         if (isBlank(dto.getNewPassword())) {
             throw new IllegalArgumentException("새 비밀번호를 입력해 주세요.");
         }
+
         if (!dto.getNewPassword().equals(dto.getNewPasswordConfirm())) {
             throw new IllegalArgumentException("새 비밀번호가 일치하지 않습니다.");
         }
