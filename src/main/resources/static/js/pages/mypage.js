@@ -71,16 +71,19 @@ const REVIEW_INITIAL_COUNT = 5;
 function renderReceivedReviews(reviews) {
   const listEl = document.getElementById('review-list');
   const moreWrap = document.getElementById('review-more-wrap');
+  const countEl = document.getElementById('review-count');
+  const positiveCount = reviews.filter(r => r.rating === 'GOOD' || r.rating === 'GREAT').length;
+  if (countEl) countEl.textContent = positiveCount || '';
 
   if (!reviews.length) {
     listEl.innerHTML = '<p style="color:#9ca3af;padding:0.5rem 0">아직 받은 후기가 없습니다.</p>';
     return;
   }
 
-  // 전체 리뷰에서 checkedItems 집계
-  const RATING_LABEL = { BAD: '별로예요', GOOD: '좋아요', GREAT: '최고예요' };
+  // GOOD/GREAT 후기에서만 checkedItems 집계
+  const RATING_LABEL = { GOOD: '좋아요', GREAT: '최고예요' };
   const countMap = {};
-  reviews.filter(r => r.rating !== 'BAD').forEach(r => {
+  reviews.filter(r => r.rating === 'GOOD' || r.rating === 'GREAT').forEach(r => {
     const items = r.checkedItems?.length
       ? r.checkedItems
       : [RATING_LABEL[r.rating] || r.rating];
@@ -89,6 +92,10 @@ function renderReceivedReviews(reviews) {
 
   // 많은 순 정렬
   const sorted = Object.entries(countMap).sort((a, b) => b[1] - a[1]);
+  if (!sorted.length) {
+    listEl.innerHTML = '<p style="color:#9ca3af;padding:0.5rem 0">아직 받은 후기가 없습니다.</p>';
+    return;
+  }
   const max = sorted[0][1];
 
   function makeItems(entries) {
