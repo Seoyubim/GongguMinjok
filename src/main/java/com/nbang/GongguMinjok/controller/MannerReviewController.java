@@ -4,6 +4,7 @@ import com.nbang.GongguMinjok.dto.MannerReviewRequestDto;
 import com.nbang.GongguMinjok.dto.MannerReviewResponseDto;
 import com.nbang.GongguMinjok.dto.ParticipantReviewStatusDto;
 import com.nbang.GongguMinjok.dto.ReviewAvailabilityResponseDto;
+import com.nbang.GongguMinjok.dto.ReviewSummaryResponseDto;
 import com.nbang.GongguMinjok.service.MannerReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -62,6 +63,13 @@ public class MannerReviewController {
     public ResponseEntity<List<MannerReviewResponseDto>> getReceivedReviews(
             @PathVariable Long userId) {
         return ResponseEntity.ok(mannerReviewService.getReceivedReviews(userId));
+    }
+
+    // GET /api/users/{userId}/reviews/summary
+    @GetMapping("/users/{userId}/reviews/summary")
+    public ResponseEntity<ReviewSummaryResponseDto> getReceivedReviewSummary(
+            @PathVariable Long userId) {
+        return ResponseEntity.ok(mannerReviewService.getReceivedReviewSummary(userId));
     }
 
     // GET /api/users/me/reviews/sent

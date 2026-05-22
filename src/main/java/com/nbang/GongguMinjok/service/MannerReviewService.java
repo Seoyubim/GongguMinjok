@@ -8,6 +8,7 @@ import com.nbang.GongguMinjok.dto.MannerReviewResponseDto;
 import com.nbang.GongguMinjok.dto.ParticipantReviewStatusDto;
 import com.nbang.GongguMinjok.dto.ReviewAvailabilityResponseDto;
 import com.nbang.GongguMinjok.dto.ReviewAvailabilityStatus;
+import com.nbang.GongguMinjok.dto.ReviewSummaryResponseDto;
 import com.nbang.GongguMinjok.repository.GroupBuyRepository;
 import com.nbang.GongguMinjok.repository.MannerReviewRepository;
 import com.nbang.GongguMinjok.repository.ParticipationRepository;
@@ -18,7 +19,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -105,6 +109,26 @@ public class MannerReviewService {
         return mannerReviewRepository.findByRevieweeId(userId).stream()
                 .map(MannerReviewResponseDto::new)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ReviewSummaryResponseDto getReceivedReviewSummary(Long userId) {
+        List<MannerReview> reviews = mannerReviewRepository.findByRevieweeId(userId);
+        long reviewerCount = mannerReviewRepository.countDistinctReviewersByRevieweeId(userId);
+
+        Map<String, Long> itemCountMap = reviews.stream()
+                .flatMap(review -> review.getCheckedItems().stream())
+                .collect(Collectors.groupingBy(item -> item, Collectors.counting()));
+
+        List<ReviewSummaryResponseDto.ItemCountDto> itemCounts = itemCountMap.entrySet().stream()
+                .map(entry -> new ReviewSummaryResponseDto.ItemCountDto(entry.getKey(), entry.getValue()))
+                .sorted(Comparator
+                        .comparingLong(ReviewSummaryResponseDto.ItemCountDto::getCount)
+                        .reversed()
+                        .thenComparing(ReviewSummaryResponseDto.ItemCountDto::getItem))
+                .toList();
+
+        return new ReviewSummaryResponseDto(reviewerCount, reviews.size(), itemCounts);
     }
 
     @Transactional(readOnly = true)

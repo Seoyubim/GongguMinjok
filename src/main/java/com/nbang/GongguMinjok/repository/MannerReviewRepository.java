@@ -2,6 +2,8 @@ package com.nbang.GongguMinjok.repository;
 
 import com.nbang.GongguMinjok.domain.MannerReview;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -16,6 +18,13 @@ public interface MannerReviewRepository extends JpaRepository<MannerReview, Long
     List<MannerReview> findByReviewerId(Long reviewerId);
 
     List<MannerReview> findByRevieweeId(Long revieweeId);
+
+    @Query("""
+        SELECT COUNT(DISTINCT r.reviewer.id)
+        FROM MannerReview r
+        WHERE r.reviewee.id = :revieweeId
+    """)
+    long countDistinctReviewersByRevieweeId(@Param("revieweeId") Long revieweeId);
 
     List<MannerReview> findByGroupBuyId(Long groupBuyId);
 }
