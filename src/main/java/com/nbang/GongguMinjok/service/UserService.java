@@ -1,23 +1,33 @@
 package com.nbang.GongguMinjok.service;
 
 import com.nbang.GongguMinjok.domain.EmailVerification;
+import com.nbang.GongguMinjok.domain.MannerReview;
 import com.nbang.GongguMinjok.domain.User;
+import com.nbang.GongguMinjok.dto.MannerReviewResponseDto;
 import com.nbang.GongguMinjok.dto.PasswordChangeRequestDto;
+import com.nbang.GongguMinjok.dto.ReviewSummaryResponseDto;
+import com.nbang.GongguMinjok.dto.UserPublicProfileResponseDto;
 import com.nbang.GongguMinjok.dto.UserProfileUpdateRequestDto;
 import com.nbang.GongguMinjok.dto.UserRequestDto;
 import com.nbang.GongguMinjok.dto.UserResponseDto;
 import com.nbang.GongguMinjok.repository.EmailVerificationRepository;
 import com.nbang.GongguMinjok.repository.GroupBuyRepository;
+import com.nbang.GongguMinjok.repository.MannerReviewRepository;
 import com.nbang.GongguMinjok.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.nbang.GongguMinjok.config.JwtTokenProvider;
 import com.nbang.GongguMinjok.dto.LoginRequestDto;
 import com.nbang.GongguMinjok.dto.LoginResponseDto;
 
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,11 +39,37 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationRepository emailVerificationRepository;
     private final GroupBuyRepository groupBuyRepository;
+    private final MannerReviewRepository mannerReviewRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
     public UserResponseDto getMyProfile(String email) {
         User user = findActiveUserByEmail(email);
         return toUserResponseDto(user);
+    }
+
+    @Transactional(readOnly = true)
+    public UserPublicProfileResponseDto getPublicProfile(Long userId) {
+        User user = findActiveUser(userId);
+        MonthlyGroupBuyCount monthlyCount = getMonthlyGroupBuyCount(user);
+        List<MannerReview> receivedReviews = mannerReviewRepository.findByRevieweeId(user.getId());
+        long reviewWriterCount = mannerReviewRepository.countDistinctReviewersByRevieweeId(user.getId());
+        List<ReviewSummaryResponseDto.ItemCountDto> itemCounts = summarizeReviewItems(receivedReviews);
+        List<MannerReviewResponseDto> recentReviews = receivedReviews.stream()
+                .sorted(Comparator
+                        .comparing(MannerReview::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+                        .reversed())
+                .limit(5)
+                .map(MannerReviewResponseDto::new)
+                .toList();
+
+        return new UserPublicProfileResponseDto(
+                user,
+                monthlyCount.count(),
+                monthlyCount.limit(),
+                receivedReviews.size(),
+                reviewWriterCount,
+                itemCounts,
+                recentReviews);
     }
 
     public UserResponseDto updateMyProfile(String email, UserProfileUpdateRequestDto dto) {
@@ -183,6 +219,11 @@ public class UserService {
     }
 
     private UserResponseDto toUserResponseDto(User user) {
+        MonthlyGroupBuyCount monthlyCount = getMonthlyGroupBuyCount(user);
+        return new UserResponseDto(user, monthlyCount.count(), monthlyCount.limit());
+    }
+
+    private MonthlyGroupBuyCount getMonthlyGroupBuyCount(User user) {
         YearMonth currentMonth = YearMonth.now();
         LocalDateTime startOfMonth = currentMonth.atDay(1).atStartOfDay();
         LocalDateTime startOfNextMonth = currentMonth.plusMonths(1).atDay(1).atStartOfDay();
@@ -192,7 +233,35 @@ public class UserService {
                         user.getId(), startOfMonth, startOfNextMonth);
         Integer monthlyLimit = user.isPremiumActive() ? null : MONTHLY_GROUP_BUY_LIMIT;
 
-        return new UserResponseDto(user, monthlyCount, monthlyLimit);
+        return new MonthlyGroupBuyCount(monthlyCount, monthlyLimit);
+    }
+
+    private User findActiveUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        if (!user.isActive()) {
+            throw new IllegalArgumentException("비활성화된 계정입니다.");
+        }
+
+        return user;
+    }
+
+    private List<ReviewSummaryResponseDto.ItemCountDto> summarizeReviewItems(List<MannerReview> reviews) {
+        Map<String, Long> itemCountMap = reviews.stream()
+                .flatMap(review -> review.getCheckedItems().stream())
+                .collect(Collectors.groupingBy(item -> item, Collectors.counting()));
+
+        return itemCountMap.entrySet().stream()
+                .map(entry -> new ReviewSummaryResponseDto.ItemCountDto(entry.getKey(), entry.getValue()))
+                .sorted(Comparator
+                        .comparingLong(ReviewSummaryResponseDto.ItemCountDto::getCount)
+                        .reversed()
+                        .thenComparing(ReviewSummaryResponseDto.ItemCountDto::getItem))
+                .toList();
+    }
+
+    private record MonthlyGroupBuyCount(long count, Integer limit) {
     }
 
     private static String normalize(String value) {
