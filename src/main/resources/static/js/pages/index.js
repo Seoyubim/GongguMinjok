@@ -19,10 +19,13 @@ const toast = document.getElementById("toast");
 const loadMoreBtn = document.getElementById("loadMoreBtn");
 const loadMoreWrap = document.getElementById("loadMoreWrap");
 const sectionTitle = document.getElementById("sectionTitle");
+const searchInput = document.getElementById("searchInput");
+const searchBtn = document.getElementById("searchBtn");
 
 let selectedCategories = [];
 let selectedStatus = "all";
 let selectedRadius = "neighborhood";
+let isSearchMode = false;
 
 let userLat = null;
 let userLng = null;
@@ -93,9 +96,11 @@ function getFilteredGroupBuys() {
       (selectedStatus === "recruiting" && item.status === "OPEN") ||
       (selectedStatus === "closing" && item.status === "CLOSING");
 
-    const matchRadius = selectedRadius === "neighborhood"
-      ? (!userCityName || item.cityName === userCityName)
-      : (item.distance != null && item.distance <= Number(selectedRadius));
+    const matchRadius = isSearchMode
+      ? true
+      : selectedRadius === "neighborhood"
+        ? (!userCityName || item.cityName === userCityName)
+        : (item.distance != null && item.distance <= Number(selectedRadius));
 
     return item.status !== "EXPIRED" && matchCategory && matchStatus && matchRadius;
   });
@@ -305,6 +310,57 @@ loadMoreBtn.addEventListener("click", () => {
 });
 
 logoutBtn.addEventListener("click", handleLogout);
+
+function setSearchMode(active) {
+  isSearchMode = active;
+  const radiusTabList = document.querySelector('.tabs2 .tabs-list');
+  if (active) {
+    radiusTabList.classList.add('hidden');
+  } else {
+    radiusTabList.classList.remove('hidden');
+  }
+}
+
+async function executeSearch() {
+  const keyword = searchInput.value.trim();
+  if (!keyword) {
+    showToast('검색어를 입력해주세요.');
+    return;
+  }
+  setSearchMode(true);
+  sectionTitle.textContent = `'${keyword}' 검색 결과`;
+  allGroupBuys = await searchGroupBuys(keyword);
+  visibleCount = ITEMS_PER_PAGE;
+  renderGroupBuys();
+}
+
+async function clearSearch() {
+  setSearchMode(false);
+  updateSectionTitle();
+  allGroupBuys = await getGroupBuys(userLat, userLng);
+  visibleCount = ITEMS_PER_PAGE;
+  renderGroupBuys();
+}
+
+searchBtn.addEventListener('click', () => {
+  if (!searchInput.value.trim()) {
+    if (isSearchMode) clearSearch();
+    else showToast('검색어를 입력해주세요.');
+  } else {
+    executeSearch();
+  }
+});
+
+searchInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    if (!searchInput.value.trim()) {
+      if (isSearchMode) clearSearch();
+      else showToast('검색어를 입력해주세요.');
+    } else {
+      executeSearch();
+    }
+  }
+});
 
 async function initPage() {
   renderAuthButtons();
