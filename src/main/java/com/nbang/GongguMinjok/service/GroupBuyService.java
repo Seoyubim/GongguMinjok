@@ -460,6 +460,18 @@ public class GroupBuyService {
                 .collect(Collectors.toList());
     }
 
+    // 키워드 검색
+    @Transactional(readOnly = true)
+    public List<GroupBuyResponseDto> searchGroupBuys(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return List.of();
+        }
+        return groupBuyRepository.searchByKeyword(keyword.trim())
+                .stream()
+                .map(GroupBuyResponseDto::new)
+                .collect(Collectors.toList());
+    }
+
     // 내가 올린 공동구매 목록
     @Transactional(readOnly = true)
     public List<GroupBuyResponseDto> getMyGroupBuys(String email) {
