@@ -28,6 +28,13 @@ public class GroupBuyController {
         return ResponseEntity.ok(groupBuyService.getGroupBuys(userLat, userLng, distanceRange));
     }
 
+    // GET /api/groupbuys/search?keyword=검색어
+    @GetMapping("/search")
+    public ResponseEntity<List<GroupBuyResponseDto>> searchGroupBuys(
+            @RequestParam String keyword) {
+        return ResponseEntity.ok(groupBuyService.searchGroupBuys(keyword));
+    }
+
     // GET /api/groupbuys/{id}
     @GetMapping("/{id}")
     public ResponseEntity<GroupBuyResponseDto> getGroupBuy(@PathVariable Long id) {
