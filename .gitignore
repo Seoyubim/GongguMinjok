@@ -39,6 +39,7 @@ out/
 ### Secrets ###
 application.yml
 application.properties
+src/main/resources/firebase-service-account.json
 
 ### Claude Code ###
 .claude/settings.local.json

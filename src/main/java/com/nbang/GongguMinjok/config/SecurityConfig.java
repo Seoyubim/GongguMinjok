@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/groupbuys/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/groupbuys/host/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/groupbuys/*/participants").permitAll()
+                        .requestMatchers("/api/test/fcm").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/group-buys/*/comments").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/users/*/profile").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/users/*/reviews").permitAll()

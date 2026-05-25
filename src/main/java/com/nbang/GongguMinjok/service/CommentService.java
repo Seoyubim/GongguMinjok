@@ -2,6 +2,7 @@ package com.nbang.GongguMinjok.service;
 
 import com.nbang.GongguMinjok.domain.Comment;
 import com.nbang.GongguMinjok.domain.GroupBuy;
+import com.nbang.GongguMinjok.domain.Notification;
 import com.nbang.GongguMinjok.domain.User;
 import com.nbang.GongguMinjok.dto.CommentResponseDto;
 import com.nbang.GongguMinjok.repository.CommentRepository;
@@ -23,6 +24,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final GroupBuyRepository groupBuyRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public List<CommentResponseDto> getComments(Long groupBuyId) {
@@ -49,6 +51,17 @@ public class CommentService {
         comment.setGroupBuy(groupBuy);
         comment.setWriter(writer);
         comment.setContent(content.trim());
+
+        // 댓글 알림 — 호스트에게 (작성자 본인이 호스트인 경우 제외)
+        if (!groupBuy.getHost().getId().equals(writer.getId())) {
+            notificationService.sendNotification(
+                    groupBuy.getHost().getId(),
+                    Notification.NotificationType.COMMENT_ON_MY_POST,
+                    "새 댓글이 달렸어요",
+                    writer.getNickname() + "님이 댓글을 남겼습니다: " + content.trim(),
+                    groupBuy.getId()
+            );
+        }
 
         return new CommentResponseDto(commentRepository.save(comment));
     }

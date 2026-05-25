@@ -2,6 +2,7 @@ package com.nbang.GongguMinjok.service;
 
 import com.nbang.GongguMinjok.domain.GroupBuy;
 import com.nbang.GongguMinjok.domain.GroupBuyPickupTime;
+import com.nbang.GongguMinjok.domain.Notification;
 import com.nbang.GongguMinjok.domain.Participation;
 import com.nbang.GongguMinjok.domain.User;
 import com.nbang.GongguMinjok.dto.ParticipationResponseDto;
@@ -24,6 +25,7 @@ public class ParticipationService {
     private final ParticipationRepository participationRepository;
     private final GroupBuyRepository groupBuyRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public ParticipationResponseDto join(Long groupBuyId, String email) {
@@ -83,6 +85,24 @@ public class ParticipationService {
                 p.setPaymentAmount(participantAmount);
             });
             participationRepository.saveAll(participations);
+
+            // 정원 마감 알림 (RECRUITMENT_CLOSED) — 호스트에게
+            notificationService.sendNotification(
+                    groupBuy.getHost().getId(),
+                    Notification.NotificationType.RECRUITMENT_CLOSED,
+                    "공동구매 정원이 모두 찼어요",
+                    groupBuy.getTitle() + " 정원이 모두 찼습니다. 공동구매가 진행됩니다.",
+                    groupBuy.getId()
+            );
+
+            // 결제 요청 알림 (PAYMENT_REQUESTED)
+            participations.forEach(p -> notificationService.sendNotification(
+                    p.getParticipant().getId(),
+                    Notification.NotificationType.PAYMENT_REQUESTED,
+                    "결제 요청이 도착했어요",
+                    groupBuy.getTitle() + " 공동구매 결제를 완료해주세요.",
+                    groupBuy.getId()
+            ));
         }
 
         groupBuyRepository.save(groupBuy);
@@ -191,6 +211,33 @@ public class ParticipationService {
         if (allCompleted) {
             groupBuy.setStatus(GroupBuy.Status.PENDING);
             groupBuyRepository.save(groupBuy);
+
+            // 정산 완료 알림 — 호스트에게
+            notificationService.sendNotification(
+                    groupBuy.getHost().getId(),
+                    Notification.NotificationType.SETTLEMENT_COMPLETED,
+                    "정산이 완료됐어요",
+                    groupBuy.getTitle() + " 공동구매 정산이 완료되었습니다.",
+                    groupBuy.getId()
+            );
+
+            // 후기 작성 가능 알림 — 참여자 전원에게
+            allParticipations.forEach(p -> notificationService.sendNotification(
+                    p.getParticipant().getId(),
+                    Notification.NotificationType.REVIEW_AVAILABLE,
+                    "후기를 작성해주세요",
+                    groupBuy.getTitle() + " 공동구매가 완료되었습니다. 후기를 남겨보세요!",
+                    groupBuy.getId()
+            ));
+
+            // 후기 작성 가능 알림 — 호스트에게
+            notificationService.sendNotification(
+                    groupBuy.getHost().getId(),
+                    Notification.NotificationType.REVIEW_AVAILABLE,
+                    "후기를 작성해주세요",
+                    groupBuy.getTitle() + " 공동구매가 완료되었습니다. 참여자에게 후기를 남겨보세요!",
+                    groupBuy.getId()
+            );
         }
 
         return new PickupResponseDto(
