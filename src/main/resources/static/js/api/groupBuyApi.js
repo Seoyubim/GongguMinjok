@@ -10,6 +10,12 @@ async function getGroupBuys(userLat, userLng) {
   return response.json();
 }
 
+async function searchGroupBuys(keyword) {
+  const response = await fetch('/api/groupbuys/search?keyword=' + encodeURIComponent(keyword));
+  if (!response.ok) throw new Error('검색에 실패했습니다.');
+  return response.json();
+}
+
 async function getGroupBuyById(id) {
   const response = await fetch('/api/groupbuys/' + id);
   if (!response.ok) {
