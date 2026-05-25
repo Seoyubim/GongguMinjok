@@ -3,6 +3,7 @@ package com.nbang.GongguMinjok.service;
 import com.nbang.GongguMinjok.domain.GroupBuy;
 import com.nbang.GongguMinjok.domain.GroupBuyImage;
 import com.nbang.GongguMinjok.domain.GroupBuyPickupTime;
+import com.nbang.GongguMinjok.domain.Notification;
 import com.nbang.GongguMinjok.domain.Participation;
 import com.nbang.GongguMinjok.domain.User;
 import com.nbang.GongguMinjok.dto.DistanceRange;
@@ -34,6 +35,7 @@ public class GroupBuyService {
     private final GroupBuyRepository groupBuyRepository;
     private final UserRepository userRepository;
     private final ParticipationRepository participationRepository;
+    private final NotificationService notificationService;
 
     // 전체 목록 조회 (위치 필터/정렬 선택적 적용)
     @Transactional(readOnly = true)
@@ -295,7 +297,17 @@ public class GroupBuyService {
         }
 
         groupBuy.setStatus(GroupBuy.Status.HOST_PURCHASED);
-        return new GroupBuyResponseDto(groupBuyRepository.save(groupBuy));
+        groupBuyRepository.save(groupBuy);
+
+        List<Participation> participations = participationRepository.findByGroupBuyId(groupBuy.getId());
+        participations.forEach(p -> notificationService.sendNotification(
+                p.getParticipant().getId(),
+                Notification.NotificationType.HOST_PURCHASED,
+                "호스트가 상품을 구매했어요",
+                groupBuy.getTitle() + " 상품을 구매했습니다. 곧 픽업 준비가 완료됩니다.",
+                groupBuy.getId()
+        ));
+        return new GroupBuyResponseDto(groupBuy);
     }
 
     @Transactional
@@ -312,7 +324,17 @@ public class GroupBuyService {
         }
 
         groupBuy.setStatus(GroupBuy.Status.PICKUP_READY);
-        return new GroupBuyResponseDto(groupBuyRepository.save(groupBuy));
+        groupBuyRepository.save(groupBuy);
+
+        List<Participation> participations = participationRepository.findByGroupBuyId(groupBuy.getId());
+        participations.forEach(p -> notificationService.sendNotification(
+                p.getParticipant().getId(),
+                Notification.NotificationType.PICKUP_READY,
+                "픽업 준비가 완료됐어요",
+                groupBuy.getTitle() + " 상품을 픽업해주세요.",
+                groupBuy.getId()
+        ));
+        return new GroupBuyResponseDto(groupBuy);
     }
 
     private void validatePaymentAmountChange(GroupBuy groupBuy, GroupBuyRequestDto dto) {
