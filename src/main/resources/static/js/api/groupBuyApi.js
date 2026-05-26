@@ -168,3 +168,33 @@ async function readyPayment(groupBuyId) {
   }
   return response.json();
 }
+
+async function getComments(groupBuyId) {
+  const response = await fetch(`/api/group-buys/${groupBuyId}/comments`);
+  if (!response.ok) throw new Error('댓글을 불러오는데 실패했습니다.');
+  return response.json();
+}
+
+async function postComment(groupBuyId, content) {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`/api/group-buys/${groupBuyId}/comments`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({ content }),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(result.message || '댓글 등록에 실패했습니다.');
+  return result;
+}
+
+async function deleteComment(commentId) {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`/api/comments/${commentId}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': 'Bearer ' + token },
+  });
+  if (!response.ok) {
+    const result = await response.json().catch(() => ({}));
+    throw new Error(result.message || '댓글 삭제에 실패했습니다.');
+  }
+}

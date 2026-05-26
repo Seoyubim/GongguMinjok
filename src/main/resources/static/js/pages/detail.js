@@ -5,6 +5,7 @@ checkTokenExpiry();
     selectedTime: null,
     selectedTimeId: null,
     participants: [],
+    comments: [],
     pickupMap: null,
     pickupLocationMarker: null,
     pickupCurrentLocationMarker: null,
@@ -240,14 +241,7 @@ checkTokenExpiry();
     const groupBuyId = getGroupBuyIdFromUrl();
 
     try {
-      // DB 연동 시 getGroupBuyById 내부만 fetch로 교체하면 이 코드는 그대로 유지
-      let groupBuy = await getGroupBuyById(groupBuyId);
-
-      // id로 못 찾으면 첫 번째 항목으로 폴백 (개발 환경용)
-      if (!groupBuy) {
-        const allGroupBuys = await getGroupBuys();
-        groupBuy = allGroupBuys[0];
-      }
+      const groupBuy = await getGroupBuyById(groupBuyId);
 
       if (!groupBuy) {
         console.error("상세 데이터를 찾을 수 없습니다.");
@@ -260,12 +254,12 @@ checkTokenExpiry();
       state.selectedTime = firstTime?.pickupTime ?? null;
       state.selectedTimeId = firstTime?.id ?? null;
 
-      try {
-        const participants = await fetch(`/api/groupbuys/${groupBuy.id}/participants`);
-        state.participants = participants.ok ? await participants.json() : [];
-      } catch {
-        state.participants = [];
-      }
+      const [participants, comments] = await Promise.all([
+        fetch(`/api/groupbuys/${groupBuy.id}/participants`).then(r => r.ok ? r.json() : []).catch(() => []),
+        getComments(groupBuy.id).catch(() => []),
+      ]);
+      state.participants = participants;
+      state.comments = comments;
 
       renderDetail(groupBuy);
       bindEvents();
@@ -294,7 +288,7 @@ checkTokenExpiry();
     renderGroupBuyInfo(groupBuy);
     renderRecruitmentStatus(groupBuy);
     renderParticipants(state.participants);
-    renderComments(groupBuy.comments || []);
+    renderComments(state.comments);
     renderBottomBar(groupBuy);
     renderModal(groupBuy);
   }
@@ -468,88 +462,53 @@ checkTokenExpiry();
     const commentItem = document.createElement("div");
     commentItem.className = "comment-item";
 
-    const repliesHtml = Array.isArray(comment.replies)
-      ? comment.replies
-          .map(
-            (reply) => `
-              <div class="comment-item reply">
-                <div class="avatar-circle-md">${escapeHtml(reply.avatarText || reply.author.charAt(0))}</div>
-                <div class="comment-content">
-                  <div class="comment-meta">
-                    <strong>${escapeHtml(reply.author)}</strong>
-                    <span class="small-note">${escapeHtml(reply.createdAt || "방금 전")}</span>
-                  </div>
-                  <p class="comment-text">${escapeHtml(reply.content)}</p>
-                </div>
-              </div>
-            `
-          )
-          .join("")
-      : "";
+    const userId = localStorage.getItem("userId");
+    const canDelete = userId && String(comment.writerId) === String(userId);
 
     commentItem.innerHTML = `
-      <div class="avatar-circle-md">${escapeHtml(comment.avatarText || comment.author.charAt(0))}</div>
+      <div class="avatar-circle-md">${escapeHtml((comment.writerNickname || '').charAt(0) || '?')}</div>
       <div class="comment-content">
         <div class="comment-meta">
-          <strong>${escapeHtml(comment.author)}</strong>
-          <span class="small-note">${escapeHtml(comment.createdAt || "방금 전")}</span>
+          <strong>${escapeHtml(comment.writerNickname || '')}</strong>
+          ${comment.host ? ' <span class="host-badge">호스트</span>' : ''}
         </div>
-        <p class="comment-text">${escapeHtml(comment.content)}</p>
-        <button class="reply-btn" type="button">답글</button>
-        <div class="reply-list">
-          ${repliesHtml}
-        </div>
-        <div class="reply-input-box hidden">
-          <input type="text" placeholder="답글을 입력하세요..." />
-          <button class="btn btn-primary" type="button">등록</button>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <p class="comment-text">${escapeHtml(comment.content)}</p>
+          <span style="display:flex; gap:8px; align-items:center; flex-shrink:0; margin-left:8px;">
+            <span class="small-note">${comment.createdAt ? escapeHtml(formatPickupTime(comment.createdAt)) : "방금 전"}</span>
+            ${canDelete ? '<button class="comment-delete-btn" type="button">삭제</button>' : ''}
+          </span>
         </div>
       </div>
     `;
 
-    const replyBtn = commentItem.querySelector(".reply-btn");
-    const replyInputBox = commentItem.querySelector(".reply-input-box");
-    const replyInput = replyInputBox.querySelector("input");
-    const replySubmitBtn = replyInputBox.querySelector("button");
-    const replyList = commentItem.querySelector(".reply-list");
-
-    replyBtn.addEventListener("click", () => {
-      replyInputBox.classList.toggle("hidden");
-      if (!replyInputBox.classList.contains("hidden")) {
-        replyInput.focus();
+    if (canDelete) {
+      const deleteBtn = commentItem.querySelector(".comment-delete-btn");
+      if (deleteBtn) {
+        deleteBtn.addEventListener("click", () => {
+          const confirmModal = document.getElementById("confirmModal");
+          const headerEl = confirmModal?.querySelector(".modal-header h3");
+          const descEl = confirmModal?.querySelector(".modal-desc");
+          const okBtn = document.getElementById("confirmModalOk");
+          const cancelBtnConfirm = document.getElementById("confirmModalCancel");
+          if (headerEl) headerEl.textContent = "댓글 삭제";
+          if (descEl) descEl.textContent = "댓글을 삭제하시겠습니까?";
+          confirmModal.classList.remove("hidden");
+          okBtn.onclick = async () => {
+            confirmModal.classList.add("hidden");
+            try {
+              await deleteComment(comment.commentId);
+              state.comments = await getComments(state.groupBuy.id);
+              renderComments(state.comments);
+              showToast("댓글이 삭제되었습니다.");
+            } catch (e) {
+              showToast(e.message || "댓글 삭제에 실패했습니다.");
+            }
+          };
+          cancelBtnConfirm.onclick = () => confirmModal.classList.add("hidden");
+        });
       }
-    });
-
-    replySubmitBtn.addEventListener("click", () => {
-      const value = replyInput.value.trim();
-
-      if (!value) {
-        showToast("답글 내용을 입력해 주세요.");
-        return;
-      }
-
-      const currentUser = window.APP_DATA.currentUser || {
-        name: "나",
-        avatarText: "나"
-      };
-
-      const replyItem = document.createElement("div");
-      replyItem.className = "comment-item reply";
-      replyItem.innerHTML = `
-        <div class="avatar-circle-md">${escapeHtml(currentUser.avatarText || currentUser.name.charAt(0))}</div>
-        <div class="comment-content">
-          <div class="comment-meta">
-            <strong>${escapeHtml(currentUser.name)}</strong>
-            <span class="small-note">방금 전</span>
-          </div>
-          <p class="comment-text">${escapeHtml(value)}</p>
-        </div>
-      `;
-
-      replyList.appendChild(replyItem);
-      replyInput.value = "";
-      replyInputBox.classList.add("hidden");
-      showToast("답글이 등록되었습니다.");
-    });
+    }
 
     return commentItem;
   }
@@ -767,7 +726,6 @@ checkTokenExpiry();
     bindModalEvents();
     bindPaymentModalEvents();
     bindCommentSubmit();
-    bindPrivateCheck();
     bindHostPickupModalEvents();
   }
 
@@ -1261,7 +1219,7 @@ checkTokenExpiry();
 
     if (!input || !submitBtn) return;
 
-    submitBtn.addEventListener("click", () => {
+    submitBtn.addEventListener("click", async () => {
       const value = input.value.trim();
 
       if (!value) {
@@ -1269,29 +1227,21 @@ checkTokenExpiry();
         return;
       }
 
-      const currentUser = window.APP_DATA.currentUser || {
-        name: "나",
-        avatarText: "나"
-      };
-
-      const newComment = {
-        id: Date.now(),
-        author: currentUser.name,
-        avatarText: currentUser.avatarText || currentUser.name.charAt(0),
-        content: value,
-        createdAt: "방금 전",
-        replies: []
-      };
-
-      if (!Array.isArray(state.groupBuy.comments)) {
-        state.groupBuy.comments = [];
+      const token = localStorage.getItem("token");
+      if (!token) {
+        showToast("댓글 등록은 로그인 후 이용 가능합니다.");
+        return;
       }
 
-      state.groupBuy.comments.unshift(newComment);
-      renderComments(state.groupBuy.comments);
-
-      input.value = "";
-      showToast("댓글이 등록되었습니다.");
+      try {
+        await postComment(state.groupBuy.id, value);
+        state.comments = await getComments(state.groupBuy.id);
+        renderComments(state.comments);
+        input.value = "";
+        showToast("댓글이 등록되었습니다.");
+      } catch (e) {
+        showToast(e.message || "댓글 등록에 실패했습니다.");
+      }
     });
   }
 
@@ -1393,16 +1343,6 @@ checkTokenExpiry();
       if (e.code !== "USER_CANCEL") {
         showToast(e.message || "결제 중 오류가 발생했습니다.");
       }
-    });
-  }
-
-  function bindPrivateCheck() {
-    const privateCheck = document.getElementById("privateCheck");
-    if (!privateCheck) return;
-
-    privateCheck.addEventListener("change", () => {
-      privateCheck.checked = false;
-      showToast("비공개 댓글 기능은 나중에 추가 예정입니다");
     });
   }
 
