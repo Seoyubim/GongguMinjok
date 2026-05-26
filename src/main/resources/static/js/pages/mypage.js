@@ -51,11 +51,8 @@ async function initMyProfile() {
 
     document.getElementById('premium-box').style.display = profile.premiumActive ? 'none' : '';
 
-    const doneCount = createdList.filter(g => g.status === 'COMPLETED').length
-                    + participations.filter(p => p.groupBuyStatus === 'COMPLETED').length;
     document.getElementById('profile-join-count').textContent = participations.length;
     document.getElementById('profile-create-count').textContent = createdList.length;
-    document.getElementById('profile-done-count').textContent = doneCount;
     document.getElementById('profile-monthly-count').textContent = profile.monthlyGroupBuyCreateLimit === null
       ? profile.monthlyGroupBuyCreateCount
       : profile.monthlyGroupBuyCreateCount + '/' + profile.monthlyGroupBuyCreateLimit;
@@ -371,7 +368,7 @@ window.addEventListener('pageshow', () => {
   else initMyProfile();
 });
 
-document.getElementById('btn-profile-edit').addEventListener('click', () => showToast('프로필 수정 페이지는 준비 중입니다.'));
+document.getElementById('btn-profile-edit').addEventListener('click', () => location.href = 'profile-edit.html');
 document.getElementById('btn-withdraw').addEventListener('click', () => showToast('회원 탈퇴 기능은 준비 중입니다.'));
 document.getElementById('btn-subscribe').addEventListener('click', () => showMypageModal('modal-premium'));
 document.getElementById('btn-premium-cancel').addEventListener('click', () => hideMypageModal('modal-premium'));

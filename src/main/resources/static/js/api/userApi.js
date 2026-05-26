@@ -22,6 +22,33 @@ async function getReceivedReviews(userId) {
   return response.json();
 }
 
+async function updateMyProfile(data) {
+  const token = localStorage.getItem('token');
+  const response = await fetch('/api/users/me', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify(data)
+  });
+  if (!response.ok) {
+    const result = await response.json();
+    throw new Error(result.message || '프로필 수정에 실패했습니다.');
+  }
+  return response.json();
+}
+
+async function updateMyPassword(data) {
+  const token = localStorage.getItem('token');
+  const response = await fetch('/api/users/me/password', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify(data)
+  });
+  if (!response.ok) {
+    const result = await response.json().catch(() => ({}));
+    throw new Error(result.message || '비밀번호 변경에 실패했습니다.');
+  }
+}
+
 async function readyPremiumPayment() {
   const token = localStorage.getItem('token');
   const response = await fetch('/api/premium/payments/ready', {

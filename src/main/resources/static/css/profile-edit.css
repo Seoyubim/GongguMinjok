@@ -64,8 +64,8 @@
 
 .form-group input:focus,
 .form-group select:focus {
-  border-color: #ff6b35;
-  box-shadow: 0 0 0 3px rgba(255,107,53,0.15);
+  border-color: #84cc16;
+  box-shadow: 0 0 0 3px rgba(132,204,22,0.15);
 }
 
 .edit-actions {
@@ -78,6 +78,71 @@
   flex: 1;
   height: 52px;
   font-size: 16px;
+}
+
+.btn-password-toggle {
+  width: 100%;
+  height: 48px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  margin-bottom: 24px;
+  transition: background-color 0.2s;
+}
+
+.btn-password-toggle:hover {
+  background: #f3f4f6;
+}
+
+.addr-search-btn {
+  width: 100%;
+  height: 48px;
+  background: #dcfce7;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #166534;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.addr-search-btn:hover {
+  background: #bbf7d0;
+}
+
+.addr-result {
+  margin-top: 6px;
+  padding: 10px 12px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #374151;
+}
+
+.addr-result.hidden {
+  display: none;
+}
+
+.err-msg {
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.finput {
+  width: 100%;
+  height: 48px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 0 16px;
+  font-size: 15px;
+  outline: none;
+  box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
