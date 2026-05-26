@@ -51,11 +51,8 @@ async function initMyProfile() {
 
     document.getElementById('premium-box').style.display = profile.premiumActive ? 'none' : '';
 
-    const doneCount = createdList.filter(g => g.status === 'COMPLETED').length
-                    + participations.filter(p => p.groupBuyStatus === 'COMPLETED').length;
     document.getElementById('profile-join-count').textContent = participations.length;
     document.getElementById('profile-create-count').textContent = createdList.length;
-    document.getElementById('profile-done-count').textContent = doneCount;
     document.getElementById('profile-monthly-count').textContent = profile.monthlyGroupBuyCreateLimit === null
       ? profile.monthlyGroupBuyCreateCount
       : profile.monthlyGroupBuyCreateCount + '/' + profile.monthlyGroupBuyCreateLimit;
