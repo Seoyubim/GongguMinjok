@@ -7,15 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class UserProfileUpdateRequestDto {
+public class BankAccountRequestDto {
 
-    private String nickname;
-    private String phone;
-    private String location;
-    private Double lat;
-    private Double lng;
-    private String cityName;
-    private String profileImage;
     private String bankName;
     private String accountNumber;
     private String accountHolder;

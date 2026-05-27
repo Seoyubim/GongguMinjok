@@ -73,6 +73,21 @@ public class User {
     private LocalDateTime withdrawnAt;
 
     @Column
+    private String bankName;
+
+    @Column
+    private String accountNumber;
+
+    @Column
+    private String accountHolder;
+
+    public boolean hasBankAccount() {
+        return bankName != null && !bankName.isBlank()
+                && accountNumber != null && !accountNumber.isBlank()
+                && accountHolder != null && !accountHolder.isBlank();
+    }
+
+    @Column
     private LocalDateTime premiumUntil;
 
     public enum UserStatus {

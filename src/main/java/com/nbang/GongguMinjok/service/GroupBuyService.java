@@ -91,6 +91,10 @@ public class GroupBuyService {
         User host = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
+        if (!host.hasBankAccount()) {
+            throw new IllegalStateException("공동구매 게시글 작성 전 계좌 정보를 먼저 등록해 주세요.");
+        }
+
         validateMonthlyGroupBuyLimit(host);
         validateGroupBuyQuantityPolicy(dto);
 

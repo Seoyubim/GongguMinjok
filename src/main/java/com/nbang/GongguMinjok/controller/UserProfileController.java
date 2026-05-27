@@ -1,5 +1,6 @@
 package com.nbang.GongguMinjok.controller;
 
+import com.nbang.GongguMinjok.dto.BankAccountRequestDto;
 import com.nbang.GongguMinjok.dto.PasswordChangeRequestDto;
 import com.nbang.GongguMinjok.dto.UserPublicProfileResponseDto;
 import com.nbang.GongguMinjok.dto.UserProfileUpdateRequestDto;
@@ -49,6 +50,13 @@ public class UserProfileController {
             @RequestBody PasswordChangeRequestDto dto) {
         userService.changeMyPassword(userDetails.getUsername(), dto);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/me/account")
+    public ResponseEntity<UserResponseDto> updateBankAccount(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody BankAccountRequestDto dto) {
+        return ResponseEntity.ok(userService.updateBankAccount(userDetails.getUsername(), dto));
     }
 
     @DeleteMapping("/me/withdraw")

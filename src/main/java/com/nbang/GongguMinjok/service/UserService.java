@@ -4,6 +4,7 @@ import com.nbang.GongguMinjok.domain.EmailVerification;
 import com.nbang.GongguMinjok.domain.MannerReview;
 import com.nbang.GongguMinjok.domain.User;
 import com.nbang.GongguMinjok.dto.MannerReviewResponseDto;
+import com.nbang.GongguMinjok.dto.BankAccountRequestDto;
 import com.nbang.GongguMinjok.dto.PasswordChangeRequestDto;
 import com.nbang.GongguMinjok.dto.ReviewSummaryResponseDto;
 import com.nbang.GongguMinjok.dto.UserPublicProfileResponseDto;
@@ -105,6 +106,14 @@ public class UserService {
         user.setLng(dto.getLng());
         user.setCityName(cityName);
         user.setProfileImage(profileImage);
+
+        String bankName = normalize(dto.getBankName());
+        String accountNumber = normalize(dto.getAccountNumber());
+        String accountHolder = normalize(dto.getAccountHolder());
+
+        if (bankName != null) user.setBankName(bankName);
+        if (accountNumber != null) user.setAccountNumber(accountNumber);
+        if (accountHolder != null) user.setAccountHolder(accountHolder);
 
         return toUserResponseDto(userRepository.save(user));
     }
@@ -254,6 +263,27 @@ public class UserService {
         }
 
         return user;
+    }
+
+    @Transactional
+    public UserResponseDto updateBankAccount(String email, BankAccountRequestDto dto) {
+        User user = findActiveUserByEmail(email);
+
+        if (isBlank(dto.getBankName())) {
+            throw new IllegalArgumentException("은행명을 입력해 주세요.");
+        }
+        if (isBlank(dto.getAccountNumber())) {
+            throw new IllegalArgumentException("계좌번호를 입력해 주세요.");
+        }
+        if (isBlank(dto.getAccountHolder())) {
+            throw new IllegalArgumentException("예금주를 입력해 주세요.");
+        }
+
+        user.setBankName(dto.getBankName().trim());
+        user.setAccountNumber(dto.getAccountNumber().trim());
+        user.setAccountHolder(dto.getAccountHolder().trim());
+
+        return toUserResponseDto(userRepository.save(user));
     }
 
     @Transactional
