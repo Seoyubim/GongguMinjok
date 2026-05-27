@@ -8,6 +8,7 @@ import com.nbang.GongguMinjok.repository.GroupBuyRepository;
 import com.nbang.GongguMinjok.repository.ParticipationRepository;
 import com.nbang.GongguMinjok.repository.PaymentRepository;
 import com.nbang.GongguMinjok.repository.UserRepository;
+import com.nbang.GongguMinjok.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,6 +27,7 @@ public class GroupBuyScheduler {
     private final ParticipationRepository participationRepository;
     private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
+    private final PaymentService paymentService;
 
     @Scheduled(fixedRate = 3600000) // 매 1시간마다 실행
     @Transactional
@@ -95,7 +97,8 @@ public class GroupBuyScheduler {
                     log.info("[스케줄러-B] 매너점수 차감: userId={}, 차감 후 점수={}", user.getId(), user.getMannerScore());
                 }
 
-                // 결제 완료자도 환불 필요 → 환불 API 미연동이므로 EXPIRED 처리
+                // 결제 완료자 환불
+                paymentService.refundApprovedPayments(groupBuy.getId(), "미결제 참여자 발생으로 인한 공동구매 취소");
                 groupBuy.setStatus(GroupBuy.Status.EXPIRED);
                 groupBuy.setDeadlineNotified(true);
                 groupBuyRepository.save(groupBuy);
@@ -146,6 +149,8 @@ public class GroupBuyScheduler {
             host.updateMannerScore(-30);
             userRepository.save(host);
 
+            // 결제 완료 참여자 전원 환불
+            paymentService.refundApprovedPayments(groupBuy.getId(), "픽업 미완료로 인한 공동구매 취소");
             groupBuy.setStatus(GroupBuy.Status.EXPIRED);
             groupBuy.setDeadlineNotified(true);
             groupBuyRepository.save(groupBuy);

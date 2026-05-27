@@ -14,4 +14,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             Long participationId, Payment.Status status);
 
     List<Payment> findByParticipationIdAndStatus(Long participationId, Payment.Status status);
+
+    List<Payment> findByGroupBuyIdAndStatus(Long groupBuyId, Payment.Status status);
 }

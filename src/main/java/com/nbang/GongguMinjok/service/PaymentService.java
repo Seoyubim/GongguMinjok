@@ -8,10 +8,12 @@ import com.nbang.GongguMinjok.dto.PaymentConfirmResponseDto;
 import com.nbang.GongguMinjok.dto.PaymentFailRequestDto;
 import com.nbang.GongguMinjok.dto.PaymentReadyResponseDto;
 import com.nbang.GongguMinjok.dto.PaymentResponseDto;
+import com.nbang.GongguMinjok.dto.TossWebhookRequestDto;
 import com.nbang.GongguMinjok.repository.GroupBuyRepository;
 import com.nbang.GongguMinjok.repository.ParticipationRepository;
 import com.nbang.GongguMinjok.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -23,9 +25,11 @@ import org.springframework.web.client.RestClientResponseException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
@@ -233,6 +237,70 @@ public class PaymentService {
         return participationRepository.findByGroupBuyId(groupBuyId)
                 .stream()
                 .allMatch(Participation::isPaymentConfirmed);
+    }
+
+    @Transactional
+    public void handleTossWebhook(String authorizationHeader, TossWebhookRequestDto dto) {
+        verifyTossWebhook(authorizationHeader);
+
+        if (dto.getData() == null || dto.getData().getOrderId() == null) {
+            log.warn("[웹훅] 데이터 누락: eventType={}", dto.getEventType());
+            return;
+        }
+
+        String orderId = dto.getData().getOrderId();
+        String status = dto.getData().getStatus();
+
+        Payment payment = paymentRepository.findByOrderId(orderId).orElse(null);
+        if (payment == null) {
+            log.warn("[웹훅] 결제 정보 없음: orderId={}", orderId);
+            return;
+        }
+
+        if ("CANCELED".equals(status) || "PARTIAL_CANCELED".equals(status)) {
+            if (payment.getStatus() == Payment.Status.CANCELED) {
+                return; // 이미 처리된 건 무시 (멱등성)
+            }
+            payment.setStatus(Payment.Status.CANCELED);
+            payment.setFailReason("토스 콘솔 취소: " + status);
+            paymentRepository.save(payment);
+            log.info("[웹훅] 결제 취소 반영: orderId={}, status={}", orderId, status);
+        }
+    }
+
+    private void verifyTossWebhook(String authorizationHeader) {
+        String expected = "Basic " + Base64.getEncoder()
+                .encodeToString((tossSecretKey + ":").getBytes(StandardCharsets.UTF_8));
+        if (!expected.equals(authorizationHeader)) {
+            throw new IllegalArgumentException("웹훅 인증에 실패했습니다.");
+        }
+    }
+
+    @Transactional
+    public void refundApprovedPayments(Long groupBuyId, String reason) {
+        List<Payment> approvedPayments = paymentRepository.findByGroupBuyIdAndStatus(
+                groupBuyId, Payment.Status.APPROVED);
+        for (Payment payment : approvedPayments) {
+            refundPayment(payment, reason);
+        }
+    }
+
+    private void refundPayment(Payment payment, String reason) {
+        try {
+            restClient.post()
+                    .uri("https://api.tosspayments.com/v1/payments/" + payment.getPaymentKey() + "/cancel")
+                    .header(HttpHeaders.AUTHORIZATION, createTossAuthorizationHeader())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of("cancelReason", reason))
+                    .retrieve()
+                    .toBodilessEntity();
+            payment.setStatus(Payment.Status.CANCELED);
+            payment.setFailReason(reason);
+            paymentRepository.save(payment);
+            log.info("[환불 완료] paymentId={}, orderId={}", payment.getId(), payment.getOrderId());
+        } catch (RestClientResponseException e) {
+            log.error("[환불 실패] paymentId={}, error={}", payment.getId(), e.getResponseBodyAsString());
+        }
     }
 
     private String generateOrderId(Long groupBuyId, Long participationId) {
