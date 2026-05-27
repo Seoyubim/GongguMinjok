@@ -49,6 +49,20 @@ async function updateMyPassword(data) {
   }
 }
 
+async function updateMyAccount(data) {
+  const token = localStorage.getItem('token');
+  const response = await fetch('/api/users/me/account', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify(data)
+  });
+  if (!response.ok) {
+    const result = await response.json().catch(() => ({}));
+    throw new Error(result.message || '계좌 정보 저장에 실패했습니다.');
+  }
+  return response.json();
+}
+
 async function readyPremiumPayment() {
   const token = localStorage.getItem('token');
   const response = await fetch('/api/premium/payments/ready', {

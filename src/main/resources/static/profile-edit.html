@@ -83,6 +83,36 @@
           <div class="addr-result hidden" id="addr-result"></div>
         </div>
 
+        <button type="button" class="btn-password-toggle" id="btn-account-toggle">
+          계좌 정보 등록 <span id="account-toggle-icon">▼</span>
+        </button>
+
+        <div id="account-section" style="display:none">
+          <div class="form-group">
+            <label>은행명</label>
+            <select id="bankName">
+              <option value="">은행 선택</option>
+              <option value="KB국민은행">KB국민은행</option>
+              <option value="신한은행">신한은행</option>
+              <option value="우리은행">우리은행</option>
+              <option value="하나은행">하나은행</option>
+              <option value="NH농협은행">NH농협은행</option>
+              <option value="IBK기업은행">IBK기업은행</option>
+              <option value="카카오뱅크">카카오뱅크</option>
+              <option value="토스뱅크">토스뱅크</option>
+              <option value="케이뱅크">케이뱅크</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>계좌번호</label>
+            <input type="text" id="accountNumber" placeholder="계좌번호 입력 (- 없이)">
+          </div>
+          <div class="form-group">
+            <label>예금주</label>
+            <input type="text" id="accountHolder" placeholder="예금주명 입력">
+          </div>
+        </div>
+
         <div class="edit-actions">
           <button class="btn btn-primary" id="btn-save">저장하기</button>
           <a href="mypage.html" class="btn btn-outline">취소</a>

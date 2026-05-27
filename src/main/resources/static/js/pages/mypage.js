@@ -1,6 +1,12 @@
 checkTokenExpiry();
 document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
+const pendingToast = sessionStorage.getItem('pendingToast');
+if (pendingToast) {
+  sessionStorage.removeItem('pendingToast');
+  showToast(pendingToast);
+}
+
 const STATUS_LABEL = {
   OPEN: '모집중', CLOSING: '마감임박', CLOSED: '모집완료',
   PAYMENT_COMPLETED: '결제완료', HOST_PURCHASED: '주문완료',

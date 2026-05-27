@@ -14,6 +14,21 @@ const loginBtn = document.getElementById("loginBtn");
 const mypageBtn = document.getElementById("mypageBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const writeBtn = document.getElementById("writeBtn");
+
+writeBtn?.addEventListener('click', async (e) => {
+  e.preventDefault();
+  try {
+    const profile = await getMyProfile();
+    if (!profile.bankAccountRegistered) {
+      sessionStorage.setItem('pendingToast', '공동구매 등록은 프로필 수정에서 계좌 등록을 한 후에만 공동구매 생성이 가능합니다.');
+      window.location.href = 'mypage.html';
+      return;
+    }
+    window.location.href = 'write.html';
+  } catch (e) {
+    window.location.href = 'write.html';
+  }
+});
 const toast = document.getElementById("toast");
 
 const loadMoreBtn = document.getElementById("loadMoreBtn");
