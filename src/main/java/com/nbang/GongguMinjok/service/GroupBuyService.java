@@ -337,6 +337,30 @@ public class GroupBuyService {
         return new GroupBuyResponseDto(groupBuy);
     }
 
+    @Transactional
+    public GroupBuyResponseDto completeSettlement(Long id) {
+        GroupBuy groupBuy = groupBuyRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
+
+        if (groupBuy.getStatus() != GroupBuy.Status.PENDING) {
+            throw new IllegalStateException("정산 대기 상태에서만 정산 완료 처리할 수 있습니다.");
+        }
+
+        groupBuy.setStatus(GroupBuy.Status.COMPLETED);
+        groupBuy.setCompletedAt(LocalDateTime.now());
+        groupBuyRepository.save(groupBuy);
+
+        notificationService.sendNotification(
+                groupBuy.getHost().getId(),
+                Notification.NotificationType.SETTLEMENT_COMPLETED,
+                "정산이 완료됐어요",
+                groupBuy.getTitle() + " 공동구매 정산이 완료되었습니다.",
+                groupBuy.getId()
+        );
+
+        return new GroupBuyResponseDto(groupBuy);
+    }
+
     private void validatePaymentAmountChange(GroupBuy groupBuy, GroupBuyRequestDto dto) {
         if (!groupBuy.isPaymentAmountFixed()) {
             return;
