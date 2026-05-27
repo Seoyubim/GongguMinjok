@@ -5,6 +5,7 @@ import com.nbang.GongguMinjok.dto.PaymentConfirmResponseDto;
 import com.nbang.GongguMinjok.dto.PaymentFailRequestDto;
 import com.nbang.GongguMinjok.dto.PaymentReadyResponseDto;
 import com.nbang.GongguMinjok.dto.PaymentResponseDto;
+import com.nbang.GongguMinjok.dto.TossWebhookRequestDto;
 import com.nbang.GongguMinjok.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -54,5 +56,15 @@ public class PaymentController {
             @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(
                 paymentService.getPayment(orderId, userDetails.getUsername()));
+    }
+
+    // POST /api/payments/toss/webhook
+    // 토스페이먼츠 → 우리 서버로 결제 상태 변경 이벤트 수신
+    @PostMapping("/payments/toss/webhook")
+    public ResponseEntity<Void> tossWebhook(
+            @RequestHeader("Authorization") String authorization,
+            @RequestBody TossWebhookRequestDto dto) {
+        paymentService.handleTossWebhook(authorization, dto);
+        return ResponseEntity.ok().build();
     }
 }
