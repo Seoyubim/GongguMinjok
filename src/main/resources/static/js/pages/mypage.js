@@ -375,7 +375,19 @@ window.addEventListener('pageshow', () => {
 });
 
 document.getElementById('btn-profile-edit').addEventListener('click', () => location.href = 'profile-edit.html');
-document.getElementById('btn-withdraw').addEventListener('click', () => showToast('회원 탈퇴 기능은 준비 중입니다.'));
+document.getElementById('btn-withdraw').addEventListener('click', () => showMypageModal('modal-withdraw'));
+document.getElementById('btn-withdraw-cancel').addEventListener('click', () => hideMypageModal('modal-withdraw'));
+document.getElementById('btn-withdraw-confirm').addEventListener('click', async () => {
+  hideMypageModal('modal-withdraw');
+  try {
+    await withdrawMyAccount();
+    localStorage.clear();
+    showToast('회원 탈퇴가 완료되었습니다.');
+    setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+  } catch (e) {
+    showToast(e.message || '회원 탈퇴에 실패했습니다.');
+  }
+});
 document.getElementById('btn-subscribe').addEventListener('click', () => showMypageModal('modal-premium'));
 document.getElementById('btn-premium-cancel').addEventListener('click', () => hideMypageModal('modal-premium'));
 document.getElementById('btn-premium-confirm').addEventListener('click', requestPremiumPayment);
