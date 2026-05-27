@@ -63,6 +63,18 @@ async function updateMyAccount(data) {
   return response.json();
 }
 
+async function withdrawMyAccount() {
+  const token = localStorage.getItem('token');
+  const response = await fetch('/api/users/me/withdraw', {
+    method: 'DELETE',
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  if (!response.ok) {
+    const result = await response.json().catch(() => ({}));
+    throw new Error(result.message || '회원 탈퇴에 실패했습니다.');
+  }
+}
+
 async function readyPremiumPayment() {
   const token = localStorage.getItem('token');
   const response = await fetch('/api/premium/payments/ready', {
