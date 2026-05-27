@@ -6,6 +6,7 @@ const KAKAO_REST_KEY = '6862dc8015e382acfd29f23b95906a08';
 let selectedLat = null;
 let selectedLng = null;
 let selectedCityName = null;
+let hadAccount = false;
 
 async function loadProfile() {
   try {
@@ -23,6 +24,14 @@ async function loadProfile() {
     if (profile.cityName) selectedCityName = profile.cityName;
     if (profile.profileImage) {
       document.getElementById('profilePreview').src = profile.profileImage;
+    }
+    if (profile.bankAccountRegistered) {
+      hadAccount = true;
+      document.getElementById('bankName').value = profile.bankName || '';
+      document.getElementById('accountNumber').value = profile.accountNumber || '';
+      document.getElementById('accountHolder').value = profile.accountHolder || '';
+      document.getElementById('account-section').style.display = 'block';
+      document.getElementById('account-toggle-icon').textContent = '▲';
     }
   } catch (e) {
     showToast(e.message || '프로필을 불러오는데 실패했습니다.');
@@ -50,6 +59,15 @@ document.getElementById('phone').addEventListener('input', (e) => {
   } else {
     e.target.value = digits.slice(0, 3) + '-' + digits.slice(3, 7) + '-' + digits.slice(7);
   }
+});
+
+// 계좌 정보 섹션 토글
+document.getElementById('btn-account-toggle').addEventListener('click', () => {
+  const section = document.getElementById('account-section');
+  const icon = document.getElementById('account-toggle-icon');
+  const isHidden = section.style.display === 'none';
+  section.style.display = isHidden ? 'block' : 'none';
+  icon.textContent = isHidden ? '▲' : '▼';
 });
 
 // 비밀번호 섹션 토글
@@ -101,7 +119,7 @@ function fileToBase64(file) {
   });
 }
 
-// 저장하기 — 프로필 수정 + 비밀번호 변경 (비밀번호 필드 입력 시에만)
+// 저장하기 — 프로필 수정 + 비밀번호 변경 + 계좌 정보 저장 (각 필드 입력 시에만)
 document.getElementById('btn-save').addEventListener('click', async () => {
   const nickname = document.getElementById('nickname').value.trim();
   const phone = document.getElementById('phone').value.trim();
@@ -110,6 +128,9 @@ document.getElementById('btn-save').addEventListener('click', async () => {
   const currentPassword = document.getElementById('currentPassword').value;
   const newPassword = document.getElementById('newPassword').value;
   const newPasswordConfirm = document.getElementById('newPasswordConfirm').value;
+  const bankName = document.getElementById('bankName').value.trim();
+  const accountNumber = document.getElementById('accountNumber').value.trim();
+  const accountHolder = document.getElementById('accountHolder').value.trim();
 
   if (!nickname) { showToast('닉네임을 입력해주세요.'); return; }
 
@@ -126,6 +147,15 @@ document.getElementById('btn-save').addEventListener('click', async () => {
     }
   }
 
+  // 계좌 필드 중 하나라도 입력됐으면 전체 검증
+  const accountFilled = bankName || accountNumber || accountHolder;
+  if (hadAccount || accountFilled) {
+    if (!bankName || !accountNumber || !accountHolder) {
+      showToast('계좌 정보는 은행명, 계좌번호, 예금주 모두 입력해주세요.');
+      return;
+    }
+  }
+
   try {
     const profileData = { nickname, phone };
     if (location) {
@@ -138,6 +168,10 @@ document.getElementById('btn-save').addEventListener('click', async () => {
       profileData.profileImage = await fileToBase64(profileImageFile);
     }
     await updateMyProfile(profileData);
+
+    if (accountFilled) {
+      await updateMyAccount({ bankName, accountNumber, accountHolder });
+    }
 
     if (passwordFilled) {
       await updateMyPassword({ currentPassword, newPassword, newPasswordConfirm });
