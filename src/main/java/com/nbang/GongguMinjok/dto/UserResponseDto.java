@@ -23,6 +23,10 @@ public class UserResponseDto {
     private LocalDateTime premiumUntil;
     private long monthlyGroupBuyCreateCount;
     private Integer monthlyGroupBuyCreateLimit;
+    private String bankName;
+    private String accountNumber;
+    private String accountHolder;
+    private boolean bankAccountRegistered;
 
     // User 엔티티를 받아서 DTO로 변환
     public UserResponseDto(User user) {
@@ -41,6 +45,10 @@ public class UserResponseDto {
         this.premiumUntil = user.getPremiumUntil();
         this.monthlyGroupBuyCreateCount = 0;
         this.monthlyGroupBuyCreateLimit = user.isPremiumActive() ? null : 3;
+        this.bankName = user.getBankName();
+        this.accountNumber = user.getAccountNumber();
+        this.accountHolder = user.getAccountHolder();
+        this.bankAccountRegistered = user.hasBankAccount();
     }
 
     public UserResponseDto(User user, long monthlyGroupBuyCreateCount, Integer monthlyGroupBuyCreateLimit) {
