@@ -178,9 +178,12 @@ public class UserService {
         User user = userRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일이에요!"));
 
-        // 계정 활성화 여부 확인
-        if (!user.isActive()) {
-            throw new IllegalArgumentException("비활성화된 계정이에요!");
+        // 계정 상태 확인
+        if (user.getStatus() == User.UserStatus.WITHDRAWN) {
+            throw new IllegalArgumentException("탈퇴한 계정이에요!");
+        }
+        if (user.getStatus() == User.UserStatus.SUSPENDED) {
+            throw new IllegalArgumentException("정지된 계정이에요!");
         }
 
         // 이메일 인증 여부 확인
@@ -211,8 +214,11 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
-        if (!user.isActive()) {
-            throw new IllegalArgumentException("비활성화된 계정입니다.");
+        if (user.getStatus() == User.UserStatus.WITHDRAWN) {
+            throw new IllegalArgumentException("탈퇴한 계정입니다.");
+        }
+        if (user.getStatus() == User.UserStatus.SUSPENDED) {
+            throw new IllegalArgumentException("정지된 계정입니다.");
         }
 
         return user;
@@ -240,11 +246,28 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
-        if (!user.isActive()) {
-            throw new IllegalArgumentException("비활성화된 계정입니다.");
+        if (user.getStatus() == User.UserStatus.WITHDRAWN) {
+            throw new IllegalArgumentException("탈퇴한 계정입니다.");
+        }
+        if (user.getStatus() == User.UserStatus.SUSPENDED) {
+            throw new IllegalArgumentException("정지된 계정입니다.");
         }
 
         return user;
+    }
+
+    @Transactional
+    public void withdrawUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        if (user.getStatus() == User.UserStatus.WITHDRAWN) {
+            throw new IllegalArgumentException("이미 탈퇴한 계정입니다.");
+        }
+
+        user.setStatus(User.UserStatus.WITHDRAWN);
+        user.setWithdrawnAt(LocalDateTime.now());
+        userRepository.save(user);
     }
 
     private List<ReviewSummaryResponseDto.ItemCountDto> summarizeReviewItems(List<MannerReview> reviews) {

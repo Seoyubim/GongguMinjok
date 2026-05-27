@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -47,6 +48,13 @@ public class UserProfileController {
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody PasswordChangeRequestDto dto) {
         userService.changeMyPassword(userDetails.getUsername(), dto);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/me/withdraw")
+    public ResponseEntity<Void> withdrawMyAccount(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        userService.withdrawUser(userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
 }

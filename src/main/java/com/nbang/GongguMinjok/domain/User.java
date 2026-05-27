@@ -66,10 +66,20 @@ public class User {
     private boolean emailVerified = false;
 
     @Column(nullable = false)
-    private boolean isActive = true;
+    @Enumerated(EnumType.STRING)
+    private UserStatus status = UserStatus.ACTIVE;
+
+    @Column
+    private LocalDateTime withdrawnAt;
 
     @Column
     private LocalDateTime premiumUntil;
+
+    public enum UserStatus {
+        ACTIVE,     // 정상
+        SUSPENDED,  // 정지 (관리자)
+        WITHDRAWN   // 탈퇴
+    }
 
     @CreatedDate
     @Column(updatable = false)
