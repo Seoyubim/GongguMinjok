@@ -13,7 +13,28 @@ const RATING_EMOJI = {
   BAD:   '😢',
 };
 
-document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
+function initHeader() {
+  const isLoggedIn = typeof getLoginState === 'function' ? getLoginState() : false;
+  const loginBtn = document.getElementById('loginBtn');
+  const mypageBtn = document.getElementById('mypageBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const writeBtn = document.getElementById('writeBtn');
+
+  if (isLoggedIn) {
+    loginBtn?.classList.add('hidden');
+    mypageBtn?.classList.remove('hidden');
+    logoutBtn?.classList.remove('hidden');
+    writeBtn?.classList.remove('hidden');
+    logoutBtn?.addEventListener('click', handleLogout);
+  } else {
+    loginBtn?.classList.remove('hidden');
+    mypageBtn?.classList.add('hidden');
+    logoutBtn?.classList.add('hidden');
+    writeBtn?.classList.add('hidden');
+  }
+}
+
+initHeader();
 
 async function init() {
   const params = new URLSearchParams(window.location.search);
@@ -51,6 +72,9 @@ async function init() {
     document.getElementById('mannerScore').textContent = Number(profile.mannerScore).toFixed(1);
     document.getElementById('mannerBar').style.width = profile.mannerScore + '%';
 
+    // 총 참여 횟수
+    document.getElementById('joinCount').textContent = profile.participationCount;
+
     // 총 생성 횟수
     document.getElementById('createCount').textContent = createdList.length;
 
@@ -61,30 +85,30 @@ async function init() {
     document.getElementById('monthlyCount').textContent = monthly;
 
     // 받은 후기
-    renderReviews(profile.recentReviews || []);
+    renderReviews(profile.receivedReviewItemCounts || []);
 
   } catch (e) {
     showToast(e.message || '프로필을 불러오는데 실패했습니다.');
   }
 }
 
-function renderReviews(reviews) {
+function renderReviews(itemCounts) {
   const listEl = document.getElementById('reviewList');
 
-  if (reviews.length === 0) {
+  if (!itemCounts.length) {
     listEl.innerHTML = '<p style="color:#9ca3af;font-size:0.875rem;text-align:center;padding:2rem 0;">아직 받은 후기가 없습니다.</p>';
     return;
   }
 
-  listEl.innerHTML = reviews.map(review => {
-    const emoji = RATING_EMOJI[review.rating] || '💬';
-    const items = (review.checkedItems || []).map(item => `<span>${item}</span>`).join(' · ');
-    return `
-      <div class="review-item">
-        ${emoji} ${items || review.rating}
-        <div style="font-size:0.78rem;color:#9ca3af;margin-top:0.3rem;">${review.reviewerNickname}</div>
-      </div>
-    `;
+  const max = itemCounts[0].count;
+  listEl.innerHTML = itemCounts.map(({ item, count }) => {
+    const pct = (count / max * 100).toFixed(1);
+    const opacity = (0.12 + 0.88 * count / max).toFixed(2);
+    const fillColor = `rgba(163,230,53,${opacity})`;
+    return `<div class="review-item" style="display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to right,${fillColor} ${pct}%,#f9fafb 0%)">
+      <span>"${item}"</span>
+      <span style="font-weight:600;color:#6b7280;flex-shrink:0;margin-left:0.75rem">${count}</span>
+    </div>`;
   }).join('');
 }
 
