@@ -216,6 +216,7 @@ public class UserService {
                 .location(user.getLocation())
                 .premiumActive(user.isPremiumActive())
                 .premiumUntil(user.getPremiumUntil())
+                .role(user.getRole().name())
                 .build();
     }
 

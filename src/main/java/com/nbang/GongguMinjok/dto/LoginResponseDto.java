@@ -16,4 +16,5 @@ public class LoginResponseDto {
     private String location;
     private boolean premiumActive;
     private LocalDateTime premiumUntil;
+    private String role;
 }
