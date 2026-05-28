@@ -42,10 +42,15 @@ loginForm.addEventListener("submit", async (event) => {
     localStorage.setItem("isLoggedIn", "true");
     localStorage.setItem("userId", data.id);
     localStorage.setItem("userNickname", data.nickname);
+    localStorage.setItem("userRole", data.role);
     showToast("로그인되었습니다.");
 
     setTimeout(() => {
-      window.location.href = "index.html";
+      if (data.role === "ADMIN") {
+        window.location.href = "admin.html";
+      } else {
+        window.location.href = "index.html";
+      }
     }, 800);
 
   } catch (e) {
