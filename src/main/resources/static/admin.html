@@ -163,98 +163,379 @@
     </div>
   </div>
 
-  <div id="page-settlements" style="display:none">
+<div id="page-settlements" style="display:none">
 
-    <div class="section">
+  <div class="section">
 
-      <div class="section-header">
+    <div class="section-header">
 
-        <div>
-          <div class="section-title">정산 관리</div>
-          <div class="section-sub">
-            PENDING 상태 공구의 호스트 정산 처리
-          </div>
+      <div>
+        <div class="section-title">정산 관리</div>
+        <div class="section-sub">
+          PENDING 상태 공구의 호스트 정산 처리
+        </div>
+      </div>
+
+      <input
+        type="text"
+        placeholder="공구명 / 호스트 검색"
+        class="search-input"
+      >
+
+    </div>
+
+    <div class="filter-tabs">
+      <button class="active">전체</button>
+      <button>PENDING (3)</button>
+      <button>COMPLETED</button>
+    </div>
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>공구명</th>
+          <th>호스트</th>
+          <th>참여자</th>
+          <th>정산 금액</th>
+          <th>픽업 완료</th>
+          <th>상태</th>
+          <th>처리</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <tr>
+          <td class="td-main">쿠팡 라면 공구</td>
+          <td>김민준</td>
+          <td>5명</td>
+          <td class="amount">137,500원</td>
+          <td>5/5</td>
+
+          <td>
+            <span class="chip chip-pending">PENDING</span>
+          </td>
+
+          <td>
+
+            <button class="btn-sm btn-sm-green">
+              정산 완료
+            </button>
+
+            <button
+              class="btn-sm"
+              onclick="showSettlementDetailModal({
+                title:'쿠팡 라면 공구',
+                host:'김민준',
+                date:'2025-05-15',
+                place:'광주 북구',
+                perPrice:'27,500원',
+                total:'137,500원',
+                final:'130,000원',
+                status:'PENDING',
+                done:null,
+                users:[
+                  {name:'유저1',price:'27,500원',pickup:true},
+                  {name:'유저2',price:'27,500원',pickup:true},
+                  {name:'유저3',price:'27,500원',pickup:false}
+                ]
+              })"
+            >
+              상세
+            </button>
+
+          </td>
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+  <div class="section">
+
+    <div class="section-header">
+      <div>
+        <div class="section-title-row">
+
+          <span class="section-title">
+            픽업 미완료 — 호스트 귀책 · 참여자 환불
+          </span>
+
+          <span class="section-badge red">
+            환불 대기 2건
+          </span>
+
         </div>
 
-        <input
-          type="text"
-          placeholder="공구명 / 호스트 검색"
-          class="search-input"
-        >
-
+        <div class="section-sub">
+          픽업 기한 내 미완료 확인 → 호스트 귀책 처리 → 전 참여자 환불 진행
+        </div>
       </div>
+    </div>
 
-      <div class="filter-tabs">
-        <button class="active">전체</button>
-        <button>PENDING (3)</button>
-        <button>COMPLETED</button>
-      </div>
+    <div class="alert-box red">
+      픽업 기한이 지났음에도 호스트가 상품을 전달하지 않은 경우입니다.
+      호스트 귀책으로 간주하며 참여자 전원에게 환불 처리됩니다.
+    </div>
 
-      <table>
+<div class="filter-bar">
 
-        <thead>
-          <tr>
-            <th>공구명</th>
-            <th>호스트</th>
-            <th>참여자</th>
-            <th>정산 금액</th>
-            <th>픽업 완료</th>
-            <th>상태</th>
-            <th>처리</th>
-          </tr>
-        </thead>
+  <div class="filter-tabs refund-tabs">
 
-        <tbody>
+    <button class="active">
+      전체
+    </button>
 
-          <tr>
-            <td class="td-main">쿠팡 라면 공구</td>
-            <td>김민준</td>
-            <td>5명</td>
-            <td class="amount">137,500원</td>
-            <td>5/5</td>
+    <button>
+      환불 대기 (2)
+    </button>
 
-            <td>
-              <span class="chip chip-pending">PENDING</span>
-            </td>
+    <button>
+      환불 완료
+    </button>
 
-            <td>
+  </div>
 
-              <button class="btn-sm btn-sm-green">
-                정산 완료
+  <input
+    class="search-input"
+    placeholder="공구명 / 호스트 검색"
+  >
+
+</div>
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>공구명</th>
+          <th>호스트</th>
+          <th>참여자</th>
+          <th>픽업 현황</th>
+          <th>픽업 기한</th>
+          <th>환불 총액</th>
+          <th>귀책</th>
+          <th>상태</th>
+          <th>처리</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <tr>
+
+          <td class="td-main">
+            코스트코 견과류
+          </td>
+
+          <td>
+            <div>정해진</div>
+            <div class="score-text">
+              매너점수 61.0
+            </div>
+          </td>
+
+          <td>6명</td>
+
+          <td>
+
+            <div class="pickup-progress">
+
+              <div class="pickup-bar">
+                <div class="pickup-fill none" style="width:0%"></div>
+              </div>
+
+              <span class="pickup-count red">
+                0/6
+              </span>
+
+            </div>
+
+          </td>
+
+          <td>
+            <span class="deadline-badge">
+              5/10 만료
+            </span>
+          </td>
+
+          <td class="amount-red">
+            156,000원
+          </td>
+
+          <td>
+            <span class="chip-host-fault">
+              호스트 귀책
+            </span>
+          </td>
+
+          <td>
+            <span class="chip chip-refund">
+              환불 대기
+            </span>
+          </td>
+
+          <td>
+
+            <div class="action-group">
+
+              <button class="btn-sm btn-sm-purple">
+                환불 처리
               </button>
 
-              <button
-                class="btn-sm"
-                onclick="showSettlementDetailModal({
-                  title:'쿠팡 라면 공구',
-                  host:'김민준',
-                  date:'2025-05-15',
-                  place:'광주 북구',
-                  perPrice:'27,500원',
-                  total:'137,500원',
-                  final:'130,000원',
-                  status:'PENDING',
-                  done:null,
-                  users:[
-                    {name:'유저1',price:'27,500원',pickup:true},
-                    {name:'유저2',price:'27,500원',pickup:true},
-                    {name:'유저3',price:'27,500원',pickup:false}
-                  ]
-                })"
-              >
-                상세
+            </div>
+
+          </td>
+
+        </tr>
+
+        <tr>
+
+          <td class="td-main">
+            무신사 운동화 공구
+          </td>
+
+          <td>
+            <div>서태양</div>
+            <div class="score-text">
+              매너점수 44.0
+            </div>
+          </td>
+
+          <td>4명</td>
+
+          <td>
+
+            <div class="pickup-progress">
+
+              <div class="pickup-bar">
+                <div class="pickup-fill partial" style="width:25%"></div>
+              </div>
+
+              <span class="pickup-count" style="color:#ff9800">
+                1/4
+              </span>
+
+            </div>
+
+          </td>
+
+          <td>
+            <span class="deadline-badge">
+              5/12 만료
+            </span>
+          </td>
+
+          <td class="amount-red">
+            89,000원
+          </td>
+
+          <td>
+            <span class="chip-host-fault">
+              호스트 귀책
+            </span>
+          </td>
+
+          <td>
+            <span class="chip chip-refund">
+              환불 대기
+            </span>
+          </td>
+
+          <td>
+
+            <div class="action-group">
+
+              <button class="btn-sm btn-sm-purple">
+                환불 처리
               </button>
 
-            </td>
-          </tr>
+            </div>
 
-        </tbody>
+          </td>
 
-      </table>
+        </tr>
+
+        <tr>
+
+          <td class="td-main">
+            애플망고 공구
+          </td>
+
+          <td>
+            <div>강보람</div>
+            <div class="score-text">
+              매너점수 35.0 → 20.0
+            </div>
+          </td>
+
+          <td>8명</td>
+
+          <td>
+
+            <div class="pickup-progress">
+
+              <div class="pickup-bar">
+                <div class="pickup-fill full" style="width:100%"></div>
+              </div>
+
+              <span class="pickup-count">
+                8/8
+              </span>
+
+            </div>
+
+          </td>
+
+          <td>
+            <span class="deadline-text">
+              5/8 만료
+            </span>
+          </td>
+
+          <td class="amount-gray">
+            192,000원
+          </td>
+
+          <td>
+            <span class="chip-host-fault done">
+              호스트 귀책
+            </span>
+          </td>
+
+          <td>
+            <span class="chip chip-refund-done">
+              환불 완료
+            </span>
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+    <div class="refund-footer-info">
+
+      <span>
+        * 일부 미픽업이어도 환불 가능
+      </span>
+
+      <span>
+        * 환불 시 호스트 매너점수 차감
+      </span>
+
+      <span>
+        * 반복 귀책 시 이용 제한
+      </span>
 
     </div>
 
   </div>
+
+</div>
 
   <div id="page-users" style="display:none">
 
