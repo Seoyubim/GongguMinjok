@@ -42,6 +42,23 @@ async function updateMyProfile(data) {
   return response.json();
 }
 
+async function uploadMyProfileImage(file) {
+  const token = localStorage.getItem('token');
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const response = await fetch('/api/users/me/profile-image', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: formData
+  });
+  if (!response.ok) {
+    const result = await response.json().catch(() => ({}));
+    throw new Error(result.message || '프로필 이미지 업로드에 실패했습니다.');
+  }
+  return response.json();
+}
+
 async function updateMyPassword(data) {
   const token = localStorage.getItem('token');
   const response = await fetch('/api/users/me/password', {

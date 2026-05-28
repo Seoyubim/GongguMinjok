@@ -14,11 +14,13 @@ import com.nbang.GongguMinjok.dto.UserResponseDto;
 import com.nbang.GongguMinjok.repository.EmailVerificationRepository;
 import com.nbang.GongguMinjok.repository.GroupBuyRepository;
 import com.nbang.GongguMinjok.repository.MannerReviewRepository;
+import com.nbang.GongguMinjok.repository.ParticipationRepository;
 import com.nbang.GongguMinjok.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import com.nbang.GongguMinjok.config.JwtTokenProvider;
 import com.nbang.GongguMinjok.dto.LoginRequestDto;
 import com.nbang.GongguMinjok.dto.LoginResponseDto;
@@ -41,7 +43,9 @@ public class UserService {
     private final EmailVerificationRepository emailVerificationRepository;
     private final GroupBuyRepository groupBuyRepository;
     private final MannerReviewRepository mannerReviewRepository;
+    private final ParticipationRepository participationRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final S3ImageService s3ImageService;
 
     public UserResponseDto getMyProfile(String email) {
         User user = findActiveUserByEmail(email);
@@ -52,6 +56,7 @@ public class UserService {
     public UserPublicProfileResponseDto getPublicProfile(Long userId) {
         User user = findActiveUser(userId);
         MonthlyGroupBuyCount monthlyCount = getMonthlyGroupBuyCount(user);
+        long participationCount = participationRepository.countByParticipantId(user.getId());
         List<MannerReview> receivedReviews = mannerReviewRepository.findByRevieweeId(user.getId());
         long reviewWriterCount = mannerReviewRepository.countDistinctReviewersByRevieweeId(user.getId());
         List<ReviewSummaryResponseDto.ItemCountDto> itemCounts = summarizeReviewItems(receivedReviews);
@@ -67,6 +72,7 @@ public class UserService {
                 user,
                 monthlyCount.count(),
                 monthlyCount.limit(),
+                participationCount,
                 receivedReviews.size(),
                 reviewWriterCount,
                 itemCounts,
@@ -105,7 +111,9 @@ public class UserService {
         user.setLat(dto.getLat());
         user.setLng(dto.getLng());
         user.setCityName(cityName);
-        user.setProfileImage(profileImage);
+        if (profileImage != null) {
+            user.setProfileImage(profileImage);
+        }
 
         String bankName = normalize(dto.getBankName());
         String accountNumber = normalize(dto.getAccountNumber());
@@ -138,7 +146,13 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public UserResponseDto register(UserRequestDto dto) {
+        return register(dto, null);
+    }
+
+    @Transactional
+    public UserResponseDto register(UserRequestDto dto, MultipartFile profileImage) {
 
         // 이메일 인증 확인
         EmailVerification verification = emailVerificationRepository
@@ -178,6 +192,12 @@ public class UserService {
         user.setEmailVerified(true);
 
         User savedUser = userRepository.save(user);
+        if (profileImage != null && !profileImage.isEmpty()) {
+            String profileImageUrl = s3ImageService.uploadProfileImage(savedUser.getId(), profileImage);
+            savedUser.setProfileImage(profileImageUrl);
+            savedUser = userRepository.save(savedUser);
+        }
+
         return new UserResponseDto(savedUser);
     }
 

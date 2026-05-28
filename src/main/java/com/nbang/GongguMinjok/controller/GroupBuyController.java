@@ -1,14 +1,17 @@
 package com.nbang.GongguMinjok.controller;
 
 import com.nbang.GongguMinjok.dto.DistanceRange;
+import com.nbang.GongguMinjok.dto.GroupBuyImageUploadResponseDto;
 import com.nbang.GongguMinjok.dto.GroupBuyRequestDto;
 import com.nbang.GongguMinjok.dto.GroupBuyResponseDto;
 import com.nbang.GongguMinjok.service.GroupBuyService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -47,6 +50,15 @@ public class GroupBuyController {
             @RequestBody GroupBuyRequestDto dto,
             @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(groupBuyService.createGroupBuy(dto, userDetails.getUsername()));
+    }
+
+    // POST /api/groupbuys/images
+    @PostMapping(value = "/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<GroupBuyImageUploadResponseDto> uploadGroupBuyImages(
+            @RequestParam("images") List<MultipartFile> images,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        List<String> imageUrls = groupBuyService.uploadGroupBuyImages(userDetails.getUsername(), images);
+        return ResponseEntity.ok(new GroupBuyImageUploadResponseDto(imageUrls));
     }
 
     // PUT /api/groupbuys/{id}

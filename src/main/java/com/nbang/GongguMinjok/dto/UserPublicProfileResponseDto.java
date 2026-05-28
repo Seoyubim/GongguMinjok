@@ -15,6 +15,7 @@ public class UserPublicProfileResponseDto {
     private final User.MannerGrade mannerGrade;
     private final long monthlyGroupBuyCreateCount;
     private final Integer monthlyGroupBuyCreateLimit;
+    private final long participationCount;
     private final long receivedReviewCount;
     private final long receivedReviewWriterCount;
     private final List<ReviewSummaryResponseDto.ItemCountDto> receivedReviewItemCounts;
@@ -24,6 +25,7 @@ public class UserPublicProfileResponseDto {
             User user,
             long monthlyGroupBuyCreateCount,
             Integer monthlyGroupBuyCreateLimit,
+            long participationCount,
             long receivedReviewCount,
             long receivedReviewWriterCount,
             List<ReviewSummaryResponseDto.ItemCountDto> receivedReviewItemCounts,
@@ -35,6 +37,7 @@ public class UserPublicProfileResponseDto {
         this.mannerGrade = user.getMannerGrade();
         this.monthlyGroupBuyCreateCount = monthlyGroupBuyCreateCount;
         this.monthlyGroupBuyCreateLimit = monthlyGroupBuyCreateLimit;
+        this.participationCount = participationCount;
         this.receivedReviewCount = receivedReviewCount;
         this.receivedReviewWriterCount = receivedReviewWriterCount;
         this.receivedReviewItemCounts = receivedReviewItemCounts;
