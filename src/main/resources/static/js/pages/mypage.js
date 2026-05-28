@@ -56,6 +56,9 @@ async function initMyProfile() {
     document.getElementById('profile-manner-bar').style.width = profile.mannerScore + '%';
 
     document.getElementById('premium-box').style.display = profile.premiumActive ? 'none' : '';
+    if (profile.monthlyGroupBuyCreateLimit === null) {
+      document.getElementById('profile-premium-badge').classList.remove('hidden');
+    }
 
     document.getElementById('profile-join-count').textContent = participations.length;
     document.getElementById('profile-create-count').textContent = createdList.length;

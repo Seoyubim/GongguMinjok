@@ -317,7 +317,9 @@ checkTokenExpiry();
       const spans = metaEl.querySelectorAll("span");
 
       if (spans[0]) {
-        spans[0].textContent = `👤 ${groupBuy.hostNickname}`;
+        const myUserId = localStorage.getItem("userId");
+        const hostTarget = String(groupBuy.hostId) === String(myUserId) ? "mypage.html" : `user-profile.html?id=${groupBuy.hostId}`;
+        spans[0].innerHTML = `👤 <a href="${hostTarget}" style="color:inherit;text-decoration:none;cursor:pointer;">${groupBuy.hostNickname}</a>`;
       }
 
       if (spans[1]) {
@@ -433,7 +435,7 @@ checkTokenExpiry();
 
       row.innerHTML = `
         <div class="avatar-circle-md">${escapeHtml(avatarText)}</div>
-        <span class="small-note">${escapeHtml(participantName)}</span>
+        <span class="small-note" style="cursor:pointer;" onclick="window.location.href=String(${participant.participantId})===localStorage.getItem('userId')?'mypage.html':'user-profile.html?id=${participant.participantId}'">${escapeHtml(participantName)}</span>
         <span class="small-note">${participantBadge}${participantScore !== null ? ` ${Number(participantScore).toFixed(1)}` : ""}</span>
         <span class="small-note">${escapeHtml(participantTime)}</span>
       `;
@@ -469,7 +471,7 @@ checkTokenExpiry();
       <div class="avatar-circle-md">${escapeHtml((comment.writerNickname || '').charAt(0) || '?')}</div>
       <div class="comment-content">
         <div class="comment-meta">
-          <strong>${escapeHtml(comment.writerNickname || '')}</strong>
+          <strong style="cursor:pointer;" onclick="window.location.href=String(${comment.writerId})===localStorage.getItem('userId')?'mypage.html':'user-profile.html?id=${comment.writerId}'">${escapeHtml(comment.writerNickname || '')}</strong>
           ${comment.host ? ' <span class="host-badge">호스트</span>' : ''}
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center;">
