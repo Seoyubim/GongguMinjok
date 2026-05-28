@@ -1,12 +1,16 @@
 package com.nbang.GongguMinjok.dto;
 
 import com.nbang.GongguMinjok.domain.GroupBuy;
+import com.nbang.GongguMinjok.domain.GroupBuyImage;
 import com.nbang.GongguMinjok.domain.Participation;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -32,6 +36,8 @@ public class ParticipationResponseDto {
     private LocalDateTime joinedAt;
     private Long pickupTimeId;
     private LocalDateTime pickupTime;
+    private String participantProfileImage;
+    private List<String> groupBuyImages;
 
     public static ParticipationResponseDto from(Participation participation) {
         ParticipationResponseDto dto = new ParticipationResponseDto();
@@ -56,6 +62,11 @@ public class ParticipationResponseDto {
             dto.pickupTimeId = participation.getPickupTime().getId();
             dto.pickupTime = participation.getPickupTime().getPickupTime();
         }
+        dto.participantProfileImage = participation.getParticipant().getProfileImage();
+        dto.groupBuyImages = participation.getGroupBuy().getImages().stream()
+                .sorted(Comparator.comparingInt(GroupBuyImage::getOrderIndex))
+                .map(GroupBuyImage::getImageUrl)
+                .collect(Collectors.toList());
         return dto;
     }
 }
