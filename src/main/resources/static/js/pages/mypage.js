@@ -1,5 +1,4 @@
 checkTokenExpiry();
-document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
 const pendingToast = sessionStorage.getItem('pendingToast');
 if (pendingToast) {

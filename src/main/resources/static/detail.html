@@ -9,23 +9,6 @@
   <link rel="stylesheet" href="css/detail.css" />
 </head>
 <body>
-  <header class="header">
-    <div class="container">
-      <div class="header-content">
-        <a href="index.html" class="logo">
-          <img src="images/logo.jpg" alt="공구의 민족 로고" class="logo-image" />
-          <h1 class="logo-text">공구의 민족</h1>
-        </a>
-
-        <div class="header-actions">
-          <a href="write.html" id="writeBtn" class="btn btn-primary hidden">공구 만들기</a>
-          <a href="login.html" id="loginBtn" class="btn btn-outline">로그인</a>
-          <a href="mypage.html" id="mypageBtn" class="btn btn-outline hidden">마이페이지</a>
-          <button id="logoutBtn" class="btn btn-outline hidden" type="button">로그아웃</button>
-        </div>
-      </div>
-    </div>
-  </header>
 
   <main class="main-content">
     <div class="detail-page">
@@ -227,6 +210,8 @@
     onerror="console.error('카카오맵 SDK 스크립트 로드 실패');"
   ></script>
   <script src="https://js.tosspayments.com/v2/standard"></script>
+  <script src="js/api/userApi.js"></script>
+  <script src="js/utils/header.js"></script>
   <script src="js/pages/detail.js"></script>
 </body>
 </html>

@@ -10,25 +10,6 @@ const groupbuyGrid = document.getElementById("groupbuyGrid");
 const groupCount = document.getElementById("groupCount");
 const tabButtons = document.querySelectorAll(".tab-trigger");
 
-const loginBtn = document.getElementById("loginBtn");
-const mypageBtn = document.getElementById("mypageBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-const writeBtn = document.getElementById("writeBtn");
-
-writeBtn?.addEventListener('click', async (e) => {
-  e.preventDefault();
-  try {
-    const profile = await getMyProfile();
-    if (!profile.bankAccountRegistered) {
-      sessionStorage.setItem('pendingToast', '공동구매 등록은 프로필 수정에서 계좌 등록을 한 후에만 공동구매 생성이 가능합니다.');
-      window.location.href = 'mypage.html';
-      return;
-    }
-    window.location.href = 'write.html';
-  } catch (e) {
-    window.location.href = 'write.html';
-  }
-});
 const toast = document.getElementById("toast");
 
 const loadMoreBtn = document.getElementById("loadMoreBtn");
@@ -55,21 +36,6 @@ function updateSectionTitle() {
   sectionTitle.textContent = userCityName ? `${userCityName} 공동구매` : "내 주변 공동구매";
 }
 
-function renderAuthButtons() {
-  const loggedIn = getLoginState();
-
-  if (loggedIn) {
-    loginBtn.classList.add("hidden");
-    mypageBtn.classList.remove("hidden");
-    logoutBtn.classList.remove("hidden");
-    writeBtn?.classList.remove("hidden");
-  } else {
-    loginBtn.classList.remove("hidden");
-    mypageBtn.classList.add("hidden");
-    logoutBtn.classList.add("hidden");
-    writeBtn?.classList.add("hidden");
-  }
-}
 
 function bindCategoryCheckboxes() {
   const checkboxes = document.querySelectorAll('#categoryFilter input[type="checkbox"]');
@@ -324,8 +290,6 @@ loadMoreBtn.addEventListener("click", () => {
   renderGroupBuys();
 });
 
-logoutBtn.addEventListener("click", handleLogout);
-
 function setSearchMode(active) {
   isSearchMode = active;
   const radiusTabList = document.querySelector('.tabs2 .tabs-list');
@@ -378,7 +342,6 @@ searchInput.addEventListener('keydown', (e) => {
 });
 
 async function initPage() {
-  renderAuthButtons();
   bindCategoryCheckboxes();
   bindClusterModalEvents();
   if (getLoginState()) {

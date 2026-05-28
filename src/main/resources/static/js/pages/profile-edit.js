@@ -1,5 +1,4 @@
 checkTokenExpiry();
-document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
 const KAKAO_REST_KEY = '6862dc8015e382acfd29f23b95906a08';
 
