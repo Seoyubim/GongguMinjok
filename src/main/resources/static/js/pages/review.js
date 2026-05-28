@@ -152,9 +152,5 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   }
 });
 
-document.getElementById('logoutBtn').addEventListener('click', () => {
-  localStorage.removeItem('token');
-  location.href = 'login.html';
-});
 
 init();

@@ -14,7 +14,6 @@ checkTokenExpiry();
   };
 
   document.addEventListener("DOMContentLoaded", () => {
-    updateAuthUI();
     init();
     bindPickupMapEvents();
   });
@@ -209,31 +208,6 @@ checkTokenExpiry();
           { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
         );
       });
-    }
-  }
-
-  function updateAuthUI() {
-    const loginBtn = document.getElementById("loginBtn");
-    const mypageBtn = document.getElementById("mypageBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const writeBtn = document.getElementById("writeBtn");
-
-    if (!loginBtn || !mypageBtn || !logoutBtn) return;
-
-    const isLoggedIn =
-      typeof getLoginState === "function" ? getLoginState() : false;
-
-    if (isLoggedIn) {
-      loginBtn.classList.add("hidden");
-      mypageBtn.classList.remove("hidden");
-      logoutBtn.classList.remove("hidden");
-      writeBtn?.classList.remove("hidden");
-      logoutBtn.addEventListener("click", handleLogout);
-    } else {
-      loginBtn.classList.remove("hidden");
-      mypageBtn.classList.add("hidden");
-      logoutBtn.classList.add("hidden");
-      writeBtn?.classList.add("hidden");
     }
   }
 

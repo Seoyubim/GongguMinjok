@@ -13,28 +13,6 @@ const RATING_EMOJI = {
   BAD:   '😢',
 };
 
-function initHeader() {
-  const isLoggedIn = typeof getLoginState === 'function' ? getLoginState() : false;
-  const loginBtn = document.getElementById('loginBtn');
-  const mypageBtn = document.getElementById('mypageBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const writeBtn = document.getElementById('writeBtn');
-
-  if (isLoggedIn) {
-    loginBtn?.classList.add('hidden');
-    mypageBtn?.classList.remove('hidden');
-    logoutBtn?.classList.remove('hidden');
-    writeBtn?.classList.remove('hidden');
-    logoutBtn?.addEventListener('click', handleLogout);
-  } else {
-    loginBtn?.classList.remove('hidden');
-    mypageBtn?.classList.add('hidden');
-    logoutBtn?.classList.add('hidden');
-    writeBtn?.classList.add('hidden');
-  }
-}
-
-initHeader();
 
 async function init() {
   const params = new URLSearchParams(window.location.search);

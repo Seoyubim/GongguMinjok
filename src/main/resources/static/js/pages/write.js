@@ -503,11 +503,6 @@ function searchAddress() {
   }).open();
 }
 
-const logoutBtn = document.getElementById('logoutBtn');
-if (logoutBtn) {
-  logoutBtn.addEventListener('click', handleLogout);
-}
-
 function submitGroupBuy() {
   if (!localStorage.getItem('token')) {
     window.location.href = 'login.html';
