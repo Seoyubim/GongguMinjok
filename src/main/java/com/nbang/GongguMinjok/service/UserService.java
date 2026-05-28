@@ -14,6 +14,7 @@ import com.nbang.GongguMinjok.dto.UserResponseDto;
 import com.nbang.GongguMinjok.repository.EmailVerificationRepository;
 import com.nbang.GongguMinjok.repository.GroupBuyRepository;
 import com.nbang.GongguMinjok.repository.MannerReviewRepository;
+import com.nbang.GongguMinjok.repository.ParticipationRepository;
 import com.nbang.GongguMinjok.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,6 +42,7 @@ public class UserService {
     private final EmailVerificationRepository emailVerificationRepository;
     private final GroupBuyRepository groupBuyRepository;
     private final MannerReviewRepository mannerReviewRepository;
+    private final ParticipationRepository participationRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
     public UserResponseDto getMyProfile(String email) {
@@ -52,6 +54,7 @@ public class UserService {
     public UserPublicProfileResponseDto getPublicProfile(Long userId) {
         User user = findActiveUser(userId);
         MonthlyGroupBuyCount monthlyCount = getMonthlyGroupBuyCount(user);
+        long participationCount = participationRepository.countByParticipantId(user.getId());
         List<MannerReview> receivedReviews = mannerReviewRepository.findByRevieweeId(user.getId());
         long reviewWriterCount = mannerReviewRepository.countDistinctReviewersByRevieweeId(user.getId());
         List<ReviewSummaryResponseDto.ItemCountDto> itemCounts = summarizeReviewItems(receivedReviews);
@@ -67,6 +70,7 @@ public class UserService {
                 user,
                 monthlyCount.count(),
                 monthlyCount.limit(),
+                participationCount,
                 receivedReviews.size(),
                 reviewWriterCount,
                 itemCounts,
