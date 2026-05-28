@@ -15,9 +15,11 @@ import com.nbang.GongguMinjok.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +38,7 @@ public class GroupBuyService {
     private final UserRepository userRepository;
     private final ParticipationRepository participationRepository;
     private final NotificationService notificationService;
+    private final S3ImageService s3ImageService;
 
     // 전체 목록 조회 (위치 필터/정렬 선택적 적용)
     @Transactional(readOnly = true)
@@ -65,6 +68,28 @@ public class GroupBuyService {
                 })
                 .sorted(Comparator.comparingDouble(GroupBuyResponseDto::getDistance))
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> uploadGroupBuyImages(String email, List<MultipartFile> images) {
+        User host = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        if (host.isRestricted()) {
+            throw new IllegalStateException("매너점수 BLOCKED 등급은 공동구매 활동이 제한됩니다.");
+        }
+        if (images == null || images.isEmpty()) {
+            throw new IllegalArgumentException("업로드할 공동구매 이미지를 선택해주세요.");
+        }
+        if (images.size() > 5) {
+            throw new IllegalArgumentException("공동구매 이미지는 최대 5장까지 업로드할 수 있습니다.");
+        }
+
+        List<String> imageUrls = new ArrayList<>();
+        for (MultipartFile image : images) {
+            imageUrls.add(s3ImageService.uploadGroupBuyImage(host.getId(), image));
+        }
+        return imageUrls;
     }
 
     private double calculateDistance(double lat1, double lng1, double lat2, double lng2) {

@@ -5,10 +5,12 @@ import com.nbang.GongguMinjok.dto.UserResponseDto;
 import com.nbang.GongguMinjok.service.EmailService;
 import com.nbang.GongguMinjok.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.nbang.GongguMinjok.dto.LoginRequestDto;
 import com.nbang.GongguMinjok.dto.LoginResponseDto;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -38,9 +40,17 @@ public class UserController {
 
     // 회원가입
     // POST /api/auth/register
-    @PostMapping("/register")
+    @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserResponseDto> register(@RequestBody UserRequestDto dto) {
         UserResponseDto response = userService.register(dto);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UserResponseDto> registerWithProfileImage(
+            @RequestPart("user") UserRequestDto dto,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
+        UserResponseDto response = userService.register(dto, profileImage);
         return ResponseEntity.ok(response);
     }
 
