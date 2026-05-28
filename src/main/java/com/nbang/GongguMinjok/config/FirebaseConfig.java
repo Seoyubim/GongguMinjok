@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.FileInputStream;
 
 @Configuration
 public class FirebaseConfig {
@@ -18,14 +19,16 @@ public class FirebaseConfig {
 
     @Bean
     public FirebaseApp firebaseApp() throws IOException {
-        if (!FirebaseApp.getApps().isEmpty()) {
-            return FirebaseApp.getInstance();
-        }
-        InputStream serviceAccount =
-                getClass().getClassLoader().getResourceAsStream(serviceAccountPath);
+        FileInputStream serviceAccount = new FileInputStream(serviceAccountPath);
+
         FirebaseOptions options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                 .build();
-        return FirebaseApp.initializeApp(options);
+
+        if (FirebaseApp.getApps().isEmpty()) {
+            return FirebaseApp.initializeApp(options);
+        }
+
+        return FirebaseApp.getInstance();
     }
 }
