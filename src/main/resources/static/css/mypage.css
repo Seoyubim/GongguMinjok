@@ -288,6 +288,15 @@ input[type="radio"] {
   color: #9ca3af;
 }
 
+.premium-badge {
+  background: linear-gradient(135deg, #84cc16, #65a30d);
+  color: white;
+  padding: 0.2rem 0.7rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
 .premium-box {
   display: flex;
   justify-content: space-between;

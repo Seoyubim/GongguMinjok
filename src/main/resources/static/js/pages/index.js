@@ -196,7 +196,7 @@ function createGroupBuyCard(item) {
           <div class="card-host">
             <div class="host-info">
               <div class="host-avatar">${getBadgeEmoji(item.hostMannerGrade)}</div>
-              <span>${item.hostNickname}</span>
+              <span onclick="event.preventDefault();event.stopPropagation();window.location.href=String(${item.hostId})===localStorage.getItem('userId')?'mypage.html':'user-profile.html?id=${item.hostId}';" style="cursor:pointer;">${item.hostNickname}</span>
             </div>
             <div class="host-rating">
               ${mannerScoreHtml}

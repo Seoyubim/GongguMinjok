@@ -26,10 +26,10 @@
         </a>
 
         <div class="header-actions">
-          <a href="mypage.html" class="btn btn-outline">
-            마이페이지
-          </a>
-          <button id="logoutBtn" class="btn btn-outline">로그아웃</button>
+          <a href="write.html" id="writeBtn" class="btn btn-primary hidden">공구 만들기</a>
+          <a href="login.html" id="loginBtn" class="btn btn-outline">로그인</a>
+          <a href="mypage.html" id="mypageBtn" class="btn btn-outline hidden">마이페이지</a>
+          <button id="logoutBtn" class="btn btn-outline hidden" type="button">로그아웃</button>
         </div>
 
       </div>
@@ -45,25 +45,19 @@
 
         <div class="profile-top">
 
-          <img src="images/default-profile.png" class="profile-img-lg">
+          <img id="profileImg" src="images/default-profile.png" class="profile-img-lg">
 
           <div class="profile-info">
 
             <div class="profile-name-wrap">
-              <h2 class="nickname">공구왕</h2>
+              <h2 id="profileNickname" class="nickname"></h2>
 
-              <div class="premium-badge">
-                👑 PREMIUM
+              <div id="premiumBadge" class="premium-badge hidden">
+                👑PREMIUM
               </div>
             </div>
 
-            <p class="user-location">
-              📍 광주 북구
-            </p>
-
-            <div class="manner-grade legend">
-              👑 LEGEND
-            </div>
+            <div id="mannerGrade" class="manner-grade"></div>
 
           </div>
 
@@ -73,11 +67,11 @@
 
           <div class="manner-header">
             <span>매너 점수</span>
-            <strong>4.8</strong>
+            <strong id="mannerScore"></strong>
           </div>
 
           <div class="progress-bar">
-            <div class="progress-fill" style="width:96%"></div>
+            <div id="mannerBar" class="progress-fill" style="width:0%"></div>
           </div>
 
         </div>
@@ -86,23 +80,19 @@
 
           <div>
             <span>참여</span>
-            <strong>32</strong>
+            <strong id="joinCount">-</strong>
           </div>
 
           <div>
             <span>생성</span>
-            <strong>14</strong>
+            <strong id="createCount">-</strong>
           </div>
 
           <div>
             <span>월 생성횟수</span>
-            <strong>1/3</strong>
+            <strong id="monthlyCount">-</strong>
           </div>
 
-        </div>
-
-        <div class="profile-extra">
-          <p><strong>가입일</strong> : 2024.03</p>
         </div>
 
       </section>
@@ -110,32 +100,22 @@
       <section class="review-card">
 
         <div class="review-card-header">
-
           <h3>받은 후기</h3>
-
         </div>
 
-        <div class="review-list">
-
-          <div class="review-item">
-            😄 "시간 약속 잘 지켜주셨어요!"
-          </div>
-
-          <div class="review-item">
-            👍 "응답이 빨라서 거래하기 편했어요."
-          </div>
-
-          <div class="review-item">
-            🌟 "포장도 깔끔하고 친절했습니다."
-          </div>
-
-        </div>
+        <div id="reviewList" class="review-list"></div>
 
       </section>
 
     </div>
 
   </main>
+
+  <script src="js/utils/storage.js"></script>
+  <script src="js/utils/ui.js"></script>
+  <script src="js/api/userApi.js"></script>
+  <script src="js/api/groupBuyApi.js"></script>
+  <script src="js/pages/user-profile.js"></script>
 
 </body>
 

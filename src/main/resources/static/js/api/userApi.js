@@ -16,6 +16,12 @@ async function getMyProfile() {
   return response.json();
 }
 
+async function getUserPublicProfile(userId) {
+  const response = await fetch('/api/users/' + userId + '/profile');
+  if (!response.ok) throw new Error('유저 프로필을 불러오는데 실패했습니다.');
+  return response.json();
+}
+
 async function getReceivedReviews(userId) {
   const response = await fetch('/api/users/' + userId + '/reviews');
   if (!response.ok) throw new Error('받은 후기 목록을 불러오는데 실패했습니다.');
