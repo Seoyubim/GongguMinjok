@@ -13,6 +13,8 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
 
     boolean existsByGroupBuyIdAndParticipantId(Long groupBuyId, Long participantId);
 
+    long countByParticipantId(Long participantId);
+
     List<Participation> findByGroupBuyId(Long groupBuyId);
 
     @Query("""
