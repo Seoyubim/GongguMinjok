@@ -8,13 +8,21 @@ async function sendEmailCode(email) {
     body: JSON.stringify({ email })
   });
 
-  const data = await response.text();
+  const text = await response.text();
 
   if (!response.ok) {
-    throw new Error(data || "인증코드 발송에 실패했습니다.");
+    if (response.status >= 500) {
+      throw new Error("인증코드 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+    }
+    try {
+      const json = JSON.parse(text);
+      throw new Error(json.message || "인증코드 발송에 실패했습니다.");
+    } catch {
+      throw new Error("인증코드 발송에 실패했습니다.");
+    }
   }
 
-  return data;
+  return text;
 }
 
 // 이메일 인증코드 확인
@@ -54,19 +62,29 @@ async function loginUser(loginData) {
   return data;
 }
 
-async function signupUser(signupData) {
-  const response = await fetch("/api/auth/register", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(signupData)
-  });
+async function signupUser(signupData, profileImageFile) {
+  let body, headers = {};
+
+  if (profileImageFile) {
+    const formData = new FormData();
+    formData.append("user", new Blob([JSON.stringify(signupData)], { type: "application/json" }));
+    formData.append("profileImage", profileImageFile);
+    body = formData;
+  } else {
+    headers["Content-Type"] = "application/json";
+    body = JSON.stringify(signupData);
+  }
+
+  const response = await fetch("/api/auth/register", { method: "POST", headers, body });
 
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || "회원가입에 실패했습니다.");
+    const msg = data.message || '';
+    if (profileImageFile && (response.status >= 500 || msg.includes('S3') || msg.includes('bucket'))) {
+      throw new Error("이미지 업로드에 실패했습니다. 다시 시도해 주세요.");
+    }
+    throw new Error(msg || "회원가입에 실패했습니다.");
   }
 
   return data;

@@ -6,6 +6,7 @@ let selectedLat = null;
 let selectedLng = null;
 let selectedDongName = '';
 let selectedCityName = '';
+let uploadedImageUrls = [];
 
 // 마감일/픽업 datetime 최솟값 설정
 (() => {
@@ -87,12 +88,6 @@ function applyDraft() {
 function dismissDraft() {
   localStorage.removeItem('groupbuy_draft');
   document.getElementById('cr-draft-modal').style.display = 'none';
-}
-
-// 이미지 업로드 미지원 안내
-function alertImageUpload() {
-  showToast('이미지 업로드는 추후 지원 예정입니다.');
-  return false;
 }
 
 // 페이지 이동
@@ -382,12 +377,30 @@ function updateStepUI() {
   nextBtn.textContent = currentStep === 4 ? '등록하기' : '다음 단계 →';
 }
 
-function crNext() {
+async function crNext() {
   if (currentStep === 4) {
     submitGroupBuy();
     return;
   }
   if (!validateStep(currentStep)) return;
+
+  if (currentStep === 1) {
+    const imageFiles = Array.from(document.getElementById('cr-images').files);
+    const imageErrEl = document.getElementById('cr-images-err');
+    if (imageFiles.length > 0) {
+      try {
+        uploadedImageUrls = await uploadGroupBuyImages(imageFiles);
+        imageErrEl.style.display = 'none';
+      } catch (err) {
+        imageErrEl.textContent = err.message || '이미지 업로드에 실패했습니다. 다시 시도해 주세요.';
+        imageErrEl.style.display = 'block';
+        return;
+      }
+    } else {
+      uploadedImageUrls = [];
+    }
+  }
+
   if (currentStep === 3) renderPreview();
   currentStep++;
   updateStepUI();
@@ -503,39 +516,43 @@ function searchAddress() {
   }).open();
 }
 
-function submitGroupBuy() {
+async function submitGroupBuy() {
   if (!localStorage.getItem('token')) {
     window.location.href = 'login.html';
     return;
   }
-  const data = {
-    title: document.getElementById('cr-title').value.trim(),
-    description: document.getElementById('cr-desc').value.trim(),
-    productType: selectedType,
-    category: document.getElementById('cr-category').value,
-    totalPrice: parseInt(document.getElementById('cr-total').value),
-    totalQuantity: parseInt(document.getElementById('cr-qty').value),
-    maxParticipants: parseInt(document.getElementById('cr-head').value),
-    pickupLocation: (() => { const d = document.getElementById('cr-addr-detail').value.trim(); return document.getElementById('cr-addr').value.trim() + (d ? '|' + d : ''); })(),
-    lat: selectedLat,
-    lng: selectedLng,
-    dongName: selectedDongName,
-    cityName: selectedCityName,
-    deadline: document.getElementById('cr-deadline').value + 'T23:59:00',
-    pickupTimes: pickupTimes.slice(),
-    imageUrls: []
-  };
 
   const nextBtn = document.getElementById('cr-next-btn');
   nextBtn.disabled = true;
   nextBtn.textContent = '등록 중...';
 
-  createGroupBuy(data).then(() => {
+  try {
+    const imageUrls = uploadedImageUrls;
+
+    const data = {
+      title: document.getElementById('cr-title').value.trim(),
+      description: document.getElementById('cr-desc').value.trim(),
+      productType: selectedType,
+      category: document.getElementById('cr-category').value,
+      totalPrice: parseInt(document.getElementById('cr-total').value),
+      totalQuantity: parseInt(document.getElementById('cr-qty').value),
+      maxParticipants: parseInt(document.getElementById('cr-head').value),
+      pickupLocation: (() => { const d = document.getElementById('cr-addr-detail').value.trim(); return document.getElementById('cr-addr').value.trim() + (d ? '|' + d : ''); })(),
+      lat: selectedLat,
+      lng: selectedLng,
+      dongName: selectedDongName,
+      cityName: selectedCityName,
+      deadline: document.getElementById('cr-deadline').value + 'T23:59:00',
+      pickupTimes: pickupTimes.slice(),
+      imageUrls
+    };
+
+    await createGroupBuy(data);
     localStorage.removeItem('groupbuy_draft');
     window.location.href = 'index.html';
-  }).catch((err) => {
+  } catch (err) {
     showToast(err.message || '등록에 실패했습니다.');
     nextBtn.disabled = false;
     nextBtn.textContent = '등록하기';
-  });
+  }
 }

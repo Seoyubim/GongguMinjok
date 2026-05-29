@@ -26,6 +26,15 @@
       <div class="signup-box">
         <form id="signup-form">
 
+          <div class="profile-image-section">
+            <div class="profile-img-wrapper" id="profileWrapper">
+              <img src="images/default-profile.png" class="profile-preview" id="profilePreview">
+              <div class="profile-overlay" id="profileOverlay">✕</div>
+            </div>
+            <label for="profile-image" class="btn btn-outline profile-upload-btn">프로필 사진</label>
+            <input type="file" id="profile-image" accept="image/*" hidden>
+          </div>
+
           <label>이메일</label>
           <div class="input-with-btn">
             <input type="email" id="email" placeholder="example@email.com">
@@ -68,9 +77,6 @@
           <p id="addr-err" class="field-error"></p>
           <div id="addr-result" class="addr-result hidden"></div>
 
-          <label>프로필 사진 (선택)</label>
-          <input type="file" id="profile-image" accept="image/*">
-
           <p id="form-error" class="form-error"></p>
 
           <button type="submit" class="btn-signup">회원가입</button>
@@ -87,10 +93,12 @@
   </main>
 
   <div id="signup-toast" class="toast">회원가입이 완료되었습니다!</div>
+  <div id="toast" class="toast"></div>
 
   <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   <script src="js/api/authApi.js"></script>
   <script src="js/utils/format.js"></script>
+  <script src="js/utils/ui.js"></script>
   <script src="js/pages/signup.js"></script>
 </body>
 </html>

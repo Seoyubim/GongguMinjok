@@ -53,8 +53,7 @@ async function uploadMyProfileImage(file) {
     body: formData
   });
   if (!response.ok) {
-    const result = await response.json().catch(() => ({}));
-    throw new Error(result.message || '프로필 이미지 업로드에 실패했습니다.');
+    throw new Error('이미지 업로드에 실패했습니다. 다시 시도해 주세요.');
   }
   return response.json();
 }

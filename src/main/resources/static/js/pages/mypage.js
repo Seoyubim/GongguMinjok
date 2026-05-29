@@ -166,7 +166,7 @@ function renderCreatedCards(list, reviewMap) {
     card.dataset.id = g.id;
     const btnsHtml = getCreatedButtons(g, reviewMap[g.id]);
     card.innerHTML = `
-      <div class="card-img-placeholder"></div>
+      ${g.imageUrls?.[0] ? `<img class="card-img" src="${g.imageUrls[0]}" onerror="this.outerHTML='<div class=\\'card-img-placeholder\\'></div>'" alt="${g.title}">` : '<div class="card-img-placeholder"></div>'}
       <div class="card-body">
         <div class="card-title-row">
           <span class="card-status ${STATUS_CLASS[g.status] || ''}">${STATUS_LABEL[g.status] || g.status}</span>
@@ -470,7 +470,7 @@ function renderJoinedCards(list, reviewMap) {
     const btnsHtml = getJoinedButtons(p, reviewMap[p.groupBuyId]);
     const pickupText = formatJoinedPickup(p);
     card.innerHTML = `
-      <div class="card-img-placeholder"></div>
+      ${p.groupBuyImages?.[0] ? `<img class="card-img" src="${p.groupBuyImages[0]}" onerror="this.outerHTML='<div class=\\'card-img-placeholder\\'></div>'" alt="${p.groupBuyTitle}">` : '<div class="card-img-placeholder"></div>'}
       <div class="card-body">
         <div class="card-title-row">
           <span class="card-status ${p.groupBuyDeleted ? 'badge-expired' : (p.pickupCompletedAt && p.groupBuyStatus === 'PICKUP_READY' ? 'badge-pickup-done' :(STATUS_CLASS[p.groupBuyStatus] || ''))}">${p.groupBuyDeleted ? '삭제됨' : (p.pickupCompletedAt && p.groupBuyStatus === 'PICKUP_READY' ? '픽업완료' : (STATUS_LABEL[p.groupBuyStatus] || p.groupBuyStatus))}</span>

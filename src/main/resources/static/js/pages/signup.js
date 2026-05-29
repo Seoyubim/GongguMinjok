@@ -66,6 +66,30 @@ emailInput.addEventListener('input', () => {
 
 document.getElementById('btn-search-addr').addEventListener('click', searchAddress);
 
+document.getElementById('profile-image').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    document.getElementById('profilePreview').src = ev.target.result;
+    document.getElementById('profileWrapper').classList.add('has-image');
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('profileOverlay').addEventListener('click', () => {
+  document.getElementById('profilePreview').src = 'images/default-profile.png';
+  document.getElementById('profile-image').value = '';
+  document.getElementById('profileWrapper').classList.remove('has-image', 'overlay-visible');
+});
+
+document.getElementById('profileWrapper').addEventListener('touchstart', (e) => {
+  const wrapper = document.getElementById('profileWrapper');
+  if (!wrapper.classList.contains('has-image')) return;
+  e.preventDefault();
+  wrapper.classList.toggle('overlay-visible');
+});
+
 document.getElementById('phone').addEventListener('input', (e) => {
   const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
   if (digits.length <= 3) {
@@ -194,12 +218,17 @@ signupForm.addEventListener('submit', async (e) => {
   submitBtn.textContent = '처리 중...';
 
   try {
-    await signupUser({ email, password, passwordConfirm, nickname, phone, location, lat: selectedLat, lng: selectedLng, cityName: selectedCityName });
+    const profileImageFile = document.getElementById('profile-image').files[0] || null;
+    await signupUser({ email, password, passwordConfirm, nickname, phone, location, lat: selectedLat, lng: selectedLng, cityName: selectedCityName }, profileImageFile);
 
     signupToast.classList.add('show');
     setTimeout(() => { window.location.href = 'login.html'; }, 2000);
   } catch (e) {
-    formError.textContent = e.message;
+    if (e.message === '이미지 업로드에 실패했습니다. 다시 시도해 주세요.') {
+      showToast(e.message);
+    } else {
+      formError.textContent = e.message;
+    }
     submitBtn.disabled = false;
     submitBtn.textContent = '회원가입';
   }

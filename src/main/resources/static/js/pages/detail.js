@@ -397,7 +397,6 @@ checkTokenExpiry();
       row.className = "inline-info-row";
 
       const participantName = participant.participantNickname || participant.nickname || "이웃";
-      const avatarText = participant.avatarText || participantName.charAt(0);
       const participantScore = participant.mannerScore ?? null;
       const participantBadge = getBadgeEmoji(participant.mannerGrade);
 
@@ -408,7 +407,7 @@ checkTokenExpiry();
       ) || "시간 미정";
 
       row.innerHTML = `
-        <div class="avatar-circle-md">${escapeHtml(avatarText)}</div>
+        <img class="avatar-circle-md" src="${participant.participantProfileImage || 'images/default-profile.png'}" onerror="this.src='images/default-profile.png'" alt="${escapeHtml(participantName)}">
         <span class="small-note" style="cursor:pointer;" onclick="window.location.href=String(${participant.participantId})===localStorage.getItem('userId')?'mypage.html':'user-profile.html?id=${participant.participantId}'">${escapeHtml(participantName)}</span>
         <span class="small-note">${participantBadge}${participantScore !== null ? ` ${Number(participantScore).toFixed(1)}` : ""}</span>
         <span class="small-note">${escapeHtml(participantTime)}</span>
@@ -442,7 +441,7 @@ checkTokenExpiry();
     const canDelete = userId && String(comment.writerId) === String(userId);
 
     commentItem.innerHTML = `
-      <div class="avatar-circle-md">${escapeHtml((comment.writerNickname || '').charAt(0) || '?')}</div>
+      <img class="avatar-circle-md" src="${comment.writerProfileImage || 'images/default-profile.png'}" onerror="this.src='images/default-profile.png'" alt="${escapeHtml(comment.writerNickname || '')}">
       <div class="comment-content">
         <div class="comment-meta">
           <strong style="cursor:pointer;" onclick="window.location.href=String(${comment.writerId})===localStorage.getItem('userId')?'mypage.html':'user-profile.html?id=${comment.writerId}'">${escapeHtml(comment.writerNickname || '')}</strong>

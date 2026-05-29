@@ -5,6 +5,8 @@ const KAKAO_REST_KEY = '6862dc8015e382acfd29f23b95906a08';
 let selectedLat = null;
 let selectedLng = null;
 let selectedCityName = null;
+let hadAccount = false;
+let originalProfileImage = 'images/default-profile.png';
 
 async function loadProfile() {
   try {
@@ -22,6 +24,15 @@ async function loadProfile() {
     if (profile.cityName) selectedCityName = profile.cityName;
     if (profile.profileImage) {
       document.getElementById('profilePreview').src = profile.profileImage;
+      originalProfileImage = profile.profileImage;
+    }
+    if (profile.bankAccountRegistered) {
+      hadAccount = true;
+      document.getElementById('bankName').value = profile.bankName || '';
+      document.getElementById('accountNumber').value = profile.accountNumber || '';
+      document.getElementById('accountHolder').value = profile.accountHolder || '';
+      document.getElementById('account-section').style.display = 'block';
+      document.getElementById('account-toggle-icon').textContent = '▲';
     }
   } catch (e) {
     showToast(e.message || '프로필을 불러오는데 실패했습니다.');
@@ -35,9 +46,29 @@ document.getElementById('profileImage').addEventListener('change', (e) => {
   const reader = new FileReader();
   reader.onload = (ev) => {
     document.getElementById('profilePreview').src = ev.target.result;
+    document.getElementById('profileWrapper').classList.add('has-image');
   };
   reader.readAsDataURL(file);
 });
+
+const profileOverlay = document.getElementById('profileOverlay');
+const profileWrapper = document.getElementById('profileWrapper');
+
+if (profileOverlay) {
+  profileOverlay.addEventListener('click', () => {
+    document.getElementById('profilePreview').src = originalProfileImage;
+    document.getElementById('profileImage').value = '';
+    profileWrapper.classList.remove('has-image', 'overlay-visible');
+  });
+}
+
+if (profileWrapper) {
+  profileWrapper.addEventListener('touchstart', (e) => {
+    if (!profileWrapper.classList.contains('has-image')) return;
+    e.preventDefault();
+    profileWrapper.classList.toggle('overlay-visible');
+  });
+}
 
 // 전화번호 자동 하이픈
 document.getElementById('phone').addEventListener('input', (e) => {
@@ -49,6 +80,15 @@ document.getElementById('phone').addEventListener('input', (e) => {
   } else {
     e.target.value = digits.slice(0, 3) + '-' + digits.slice(3, 7) + '-' + digits.slice(7);
   }
+});
+
+// 계좌 섹션 토글
+document.getElementById('btn-account-toggle').addEventListener('click', () => {
+  const section = document.getElementById('account-section');
+  const icon = document.getElementById('account-toggle-icon');
+  const isHidden = section.style.display === 'none';
+  section.style.display = isHidden ? 'block' : 'none';
+  icon.textContent = isHidden ? '▲' : '▼';
 });
 
 // 비밀번호 섹션 토글
@@ -100,8 +140,19 @@ document.getElementById('btn-save').addEventListener('click', async () => {
   const currentPassword = document.getElementById('currentPassword').value;
   const newPassword = document.getElementById('newPassword').value;
   const newPasswordConfirm = document.getElementById('newPasswordConfirm').value;
+  const bankName = document.getElementById('bankName').value.trim();
+  const accountNumber = document.getElementById('accountNumber').value.trim();
+  const accountHolder = document.getElementById('accountHolder').value.trim();
 
   if (!nickname) { showToast('닉네임을 입력해주세요.'); return; }
+
+  const accountFilled = bankName || accountNumber || accountHolder;
+  if (hadAccount || accountFilled) {
+    if (!bankName || !accountNumber || !accountHolder) {
+      showToast('계좌 정보는 은행명, 계좌번호, 예금주 모두 입력해주세요.');
+      return;
+    }
+  }
 
   // 비밀번호 필드 중 하나라도 입력됐으면 전체 검증
   const passwordFilled = currentPassword || newPassword || newPasswordConfirm;
@@ -129,6 +180,10 @@ document.getElementById('btn-save').addEventListener('click', async () => {
       profileData.profileImage = uploaded.imageUrl;
     }
     await updateMyProfile(profileData);
+
+    if (accountFilled) {
+      await updateMyAccount({ bankName, accountNumber, accountHolder });
+    }
 
     if (passwordFilled) {
       await updateMyPassword({ currentPassword, newPassword, newPasswordConfirm });
