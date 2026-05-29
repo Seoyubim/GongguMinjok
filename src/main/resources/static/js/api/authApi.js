@@ -80,10 +80,11 @@ async function signupUser(signupData, profileImageFile) {
   const data = await response.json();
 
   if (!response.ok) {
-    if (profileImageFile && response.status >= 500) {
+    const msg = data.message || '';
+    if (profileImageFile && (response.status >= 500 || msg.includes('S3') || msg.includes('bucket'))) {
       throw new Error("이미지 업로드에 실패했습니다. 다시 시도해 주세요.");
     }
-    throw new Error(data.message || "회원가입에 실패했습니다.");
+    throw new Error(msg || "회원가입에 실패했습니다.");
   }
 
   return data;

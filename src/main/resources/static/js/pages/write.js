@@ -6,6 +6,7 @@ let selectedLat = null;
 let selectedLng = null;
 let selectedDongName = '';
 let selectedCityName = '';
+let uploadedImageUrls = [];
 
 // 마감일/픽업 datetime 최솟값 설정
 (() => {
@@ -376,12 +377,30 @@ function updateStepUI() {
   nextBtn.textContent = currentStep === 4 ? '등록하기' : '다음 단계 →';
 }
 
-function crNext() {
+async function crNext() {
   if (currentStep === 4) {
     submitGroupBuy();
     return;
   }
   if (!validateStep(currentStep)) return;
+
+  if (currentStep === 1) {
+    const imageFiles = Array.from(document.getElementById('cr-images').files);
+    const imageErrEl = document.getElementById('cr-images-err');
+    if (imageFiles.length > 0) {
+      try {
+        uploadedImageUrls = await uploadGroupBuyImages(imageFiles);
+        imageErrEl.style.display = 'none';
+      } catch (err) {
+        imageErrEl.textContent = err.message || '이미지 업로드에 실패했습니다. 다시 시도해 주세요.';
+        imageErrEl.style.display = 'block';
+        return;
+      }
+    } else {
+      uploadedImageUrls = [];
+    }
+  }
+
   if (currentStep === 3) renderPreview();
   currentStep++;
   updateStepUI();
@@ -508,8 +527,7 @@ async function submitGroupBuy() {
   nextBtn.textContent = '등록 중...';
 
   try {
-    const imageFiles = Array.from(document.getElementById('cr-images').files);
-    const imageUrls = imageFiles.length > 0 ? await uploadGroupBuyImages(imageFiles) : [];
+    const imageUrls = uploadedImageUrls;
 
     const data = {
       title: document.getElementById('cr-title').value.trim(),

@@ -6,6 +6,7 @@ let selectedLat = null;
 let selectedLng = null;
 let selectedCityName = null;
 let hadAccount = false;
+let originalProfileImage = 'images/default-profile.png';
 
 async function loadProfile() {
   try {
@@ -23,6 +24,7 @@ async function loadProfile() {
     if (profile.cityName) selectedCityName = profile.cityName;
     if (profile.profileImage) {
       document.getElementById('profilePreview').src = profile.profileImage;
+      originalProfileImage = profile.profileImage;
     }
     if (profile.bankAccountRegistered) {
       hadAccount = true;
@@ -44,9 +46,29 @@ document.getElementById('profileImage').addEventListener('change', (e) => {
   const reader = new FileReader();
   reader.onload = (ev) => {
     document.getElementById('profilePreview').src = ev.target.result;
+    document.getElementById('profileWrapper').classList.add('has-image');
   };
   reader.readAsDataURL(file);
 });
+
+const profileOverlay = document.getElementById('profileOverlay');
+const profileWrapper = document.getElementById('profileWrapper');
+
+if (profileOverlay) {
+  profileOverlay.addEventListener('click', () => {
+    document.getElementById('profilePreview').src = originalProfileImage;
+    document.getElementById('profileImage').value = '';
+    profileWrapper.classList.remove('has-image', 'overlay-visible');
+  });
+}
+
+if (profileWrapper) {
+  profileWrapper.addEventListener('touchstart', (e) => {
+    if (!profileWrapper.classList.contains('has-image')) return;
+    e.preventDefault();
+    profileWrapper.classList.toggle('overlay-visible');
+  });
+}
 
 // 전화번호 자동 하이픈
 document.getElementById('phone').addEventListener('input', (e) => {

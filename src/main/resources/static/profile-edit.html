@@ -24,7 +24,10 @@
         <h2 class="edit-title">내 정보 수정</h2>
 
         <div class="profile-image-section">
-          <img src="images/default-profile.png" class="profile-preview" id="profilePreview">
+          <div class="profile-img-wrapper" id="profileWrapper">
+            <img src="images/default-profile.png" class="profile-preview" id="profilePreview">
+            <div class="profile-overlay" id="profileOverlay">✕</div>
+          </div>
           <label for="profileImage" class="btn btn-outline profile-upload-btn">프로필 사진 변경</label>
           <input type="file" id="profileImage" accept="image/*" hidden>
         </div>

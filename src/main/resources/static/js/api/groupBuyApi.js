@@ -196,8 +196,8 @@ async function uploadGroupBuyImages(files) {
     headers: { 'Authorization': 'Bearer ' + token },
     body: formData
   });
+  if (!response.ok) throw new Error('이미지 업로드에 실패했습니다. 다시 시도해 주세요.');
   const result = await response.json();
-  if (!response.ok) throw new Error(result.message || '이미지 업로드에 실패했습니다.');
   return result.imageUrls;
 }
 
