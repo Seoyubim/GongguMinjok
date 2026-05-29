@@ -63,11 +63,6 @@ let protectedPickupTimes = [];
   updatePickupMin();
 })();
 
-function alertImageUpload() {
-  showToast('이미지 업로드는 추후 지원 예정입니다.');
-  return false;
-}
-
 function go(page) {
   if (page === 'list') window.location.href = 'index.html';
 }
@@ -330,39 +325,45 @@ function searchAddress() {
   }).open();
 }
 
-function submitGroupBuy() {
+async function submitGroupBuy() {
   if (!localStorage.getItem('token')) {
     window.location.href = 'login.html';
     return;
   }
 
-  const data = {
-    title: document.getElementById('cr-title').value.trim(),
-    description: document.getElementById('cr-desc').value.trim(),
-    productType: originalData.productType,
-    category: document.getElementById('cr-category').value,
-    totalPrice: originalData.totalPrice,
-    totalQuantity: originalData.totalQuantity,
-    maxParticipants: originalData.maxParticipants,
-    pickupLocation: (() => { const d = document.getElementById('cr-addr-detail').value.trim(); return document.getElementById('cr-addr').value.trim() + (d ? '|' + d : ''); })(),
-    lat: selectedLat,
-    lng: selectedLng,
-    dongName: selectedDongName,
-    cityName: selectedCityName,
-    deadline: document.getElementById('cr-deadline').value + 'T23:59:00',
-    pickupTimes: pickupTimes.slice(),
-    imageUrls: originalData.imageUrls || []
-  };
-
   const nextBtn = document.getElementById('cr-next-btn');
   nextBtn.disabled = true;
   nextBtn.textContent = '수정 중...';
 
-  updateGroupBuy(groupBuyId, data).then(() => {
+  try {
+    const imageFiles = Array.from(document.getElementById('cr-images').files);
+    const imageUrls = imageFiles.length > 0
+      ? await uploadGroupBuyImages(imageFiles)
+      : (originalData.imageUrls || []);
+
+    const data = {
+      title: document.getElementById('cr-title').value.trim(),
+      description: document.getElementById('cr-desc').value.trim(),
+      productType: originalData.productType,
+      category: document.getElementById('cr-category').value,
+      totalPrice: originalData.totalPrice,
+      totalQuantity: originalData.totalQuantity,
+      maxParticipants: originalData.maxParticipants,
+      pickupLocation: (() => { const d = document.getElementById('cr-addr-detail').value.trim(); return document.getElementById('cr-addr').value.trim() + (d ? '|' + d : ''); })(),
+      lat: selectedLat,
+      lng: selectedLng,
+      dongName: selectedDongName,
+      cityName: selectedCityName,
+      deadline: document.getElementById('cr-deadline').value + 'T23:59:00',
+      pickupTimes: pickupTimes.slice(),
+      imageUrls
+    };
+
+    await updateGroupBuy(groupBuyId, data);
     window.location.href = 'detail.html?id=' + groupBuyId;
-  }).catch((err) => {
+  } catch (err) {
     showToast(err.message || '수정에 실패했습니다.');
     nextBtn.disabled = false;
     nextBtn.textContent = '수정하기';
-  });
+  }
 }

@@ -114,6 +114,9 @@ function getMainStatusClass(status) {
 function createGroupBuyCard(item) {
   const progress = (item.currentParticipants / item.maxParticipants) * 100;
   const imageUrl = item.imageUrls?.[0] || "";
+  const imageTag = imageUrl
+    ? `<img src="${imageUrl}" onerror="this.style.display='none'" alt="${item.title}">`
+    : '';
   const distanceText = item.distance != null ? item.distance.toFixed(1) + "km" : "";
   const pickupTimeText = (item.pickupTimes || []).length > 0
     ? [...new Set(
@@ -131,7 +134,7 @@ function createGroupBuyCard(item) {
     <a class="groupbuy-card-link" href="detail.html?id=${item.id}">
       <div class="groupbuy-card">
         <div class="card-image">
-          <img src="${imageUrl}" alt="${item.title}">
+          ${imageTag}
           <div class="card-badge ${getMainStatusClass(item.status)}">
             ${getMainStatusLabel(item.status)}
           </div>
@@ -161,7 +164,7 @@ function createGroupBuyCard(item) {
 
           <div class="card-host">
             <div class="host-info">
-              <div class="host-avatar">${getBadgeEmoji(item.hostMannerGrade)}</div>
+              <img class="host-avatar" src="${item.hostProfileImage || 'images/default-profile.png'}" onerror="this.src='images/default-profile.png'" alt="${item.hostNickname}">
               <span onclick="event.preventDefault();event.stopPropagation();window.location.href=String(${item.hostId})===localStorage.getItem('userId')?'mypage.html':'user-profile.html?id=${item.hostId}';" style="cursor:pointer;">${item.hostNickname}</span>
             </div>
             <div class="host-rating">
@@ -197,7 +200,7 @@ function createClusterCard(item) {
             <span class="cluster-card-title">${item.title}</span>
           </div>
           <div class="cluster-card-top-right">
-            ${getBadgeEmoji(item.hostMannerGrade)} ${item.hostNickname} ${mannerScoreHtml}
+            <img class="host-avatar" src="${item.hostProfileImage || 'images/default-profile.png'}" onerror="this.src='images/default-profile.png'" alt="${item.hostNickname}"> ${item.hostNickname} ${mannerScoreHtml}
           </div>
         </div>
         <div class="cluster-card-info"><span class="cluster-card-label">금액</span>${formatPrice(item.participantFinalPrice)}</div>

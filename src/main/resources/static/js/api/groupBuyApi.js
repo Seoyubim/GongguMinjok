@@ -187,6 +187,20 @@ async function postComment(groupBuyId, content) {
   return result;
 }
 
+async function uploadGroupBuyImages(files) {
+  const token = localStorage.getItem('token');
+  const formData = new FormData();
+  files.forEach(file => formData.append('images', file));
+  const response = await fetch('/api/groupbuys/images', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: formData
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || '이미지 업로드에 실패했습니다.');
+  return result.imageUrls;
+}
+
 async function deleteComment(commentId) {
   const token = localStorage.getItem('token');
   const response = await fetch(`/api/comments/${commentId}`, {

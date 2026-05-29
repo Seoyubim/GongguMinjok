@@ -194,7 +194,8 @@ signupForm.addEventListener('submit', async (e) => {
   submitBtn.textContent = '처리 중...';
 
   try {
-    await signupUser({ email, password, passwordConfirm, nickname, phone, location, lat: selectedLat, lng: selectedLng, cityName: selectedCityName });
+    const profileImageFile = document.getElementById('profile-image').files[0] || null;
+    await signupUser({ email, password, passwordConfirm, nickname, phone, location, lat: selectedLat, lng: selectedLng, cityName: selectedCityName }, profileImageFile);
 
     signupToast.classList.add('show');
     setTimeout(() => { window.location.href = 'login.html'; }, 2000);
