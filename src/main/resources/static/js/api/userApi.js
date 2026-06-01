@@ -18,8 +18,24 @@ async function getMyProfile() {
 
 async function getUserPublicProfile(userId) {
   const response = await fetch('/api/users/' + userId + '/profile');
-  if (!response.ok) throw new Error('유저 프로필을 불러오는데 실패했습니다.');
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.message || '유저 프로필을 불러오는데 실패했습니다.');
+  }
   return response.json();
+}
+
+async function goToUserProfile(userId) {
+  try {
+    await getUserPublicProfile(userId);
+    window.location.href = 'user-profile.html?id=' + userId;
+  } catch (e) {
+    if (e.message && e.message.includes('정지')) {
+      showToast('이용이 제한된 계정입니다.');
+    } else {
+      window.location.href = 'user-profile.html?id=' + userId;
+    }
+  }
 }
 
 async function getReceivedReviews(userId) {
