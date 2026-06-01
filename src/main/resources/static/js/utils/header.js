@@ -196,6 +196,13 @@
     if (!isMypage) {
       document.getElementById('mypageBtn').classList.remove('hidden');
     }
+    if (localStorage.getItem('userRole') === 'ADMIN' && currentPage === 'index.html') {
+      const adminBtn = document.createElement('a');
+      adminBtn.href = 'admin.html';
+      adminBtn.className = 'btn btn-outline';
+      adminBtn.textContent = '관리자';
+      header.querySelector('.notification-wrap').before(adminBtn);
+    }
     updateBadge();
   }
 })();

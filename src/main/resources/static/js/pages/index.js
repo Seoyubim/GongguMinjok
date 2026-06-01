@@ -165,7 +165,7 @@ function createGroupBuyCard(item) {
           <div class="card-host">
             <div class="host-info">
               <img class="host-avatar" src="${item.hostProfileImage || 'images/default-profile.png'}" onerror="this.src='images/default-profile.png'" alt="${item.hostNickname}">
-              <span onclick="event.preventDefault();event.stopPropagation();window.location.href=String(${item.hostId})===localStorage.getItem('userId')?'mypage.html':'user-profile.html?id=${item.hostId}';" style="cursor:pointer;">${item.hostNickname}</span>
+              <span onclick="event.preventDefault();event.stopPropagation();String(${item.hostId})===localStorage.getItem('userId')?window.location.href='mypage.html':goToUserProfile(${item.hostId});" style="cursor:pointer;">${item.hostNickname}</span>
             </div>
             <div class="host-rating">
               ${mannerScoreHtml}

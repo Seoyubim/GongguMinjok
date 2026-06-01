@@ -23,8 +23,8 @@
       </a>
 
       <div class="header-right">
-        <span class="admin-email">admin@gonggu.com</span>
-        <button class="header-btn">로그아웃</button>
+        <span id="admin-email" class="admin-email"></span>
+        <button class="header-btn" onclick="logout()">로그아웃</button>
       </div>
 
     </div>
@@ -37,11 +37,11 @@
   </div>
 
   <div class="nav-tab" onclick="showPage('settlements')">
-    정산 관리 <span class="nav-badge green">3</span>
+    정산 관리 <span id="nav-badge-settlement" class="nav-badge green" style="display:none"></span>
   </div>
 
   <div class="nav-tab" onclick="showPage('users')">
-    유저 관리 <span class="nav-badge">2</span>
+    유저 관리
   </div>
 
   <div class="nav-tab" onclick="showPage('groupbuys')">
@@ -57,26 +57,22 @@
 
       <div class="stat-card">
         <div class="stat-label">정산 대기</div>
-        <div class="stat-value">3<span>건</span></div>
-        <div class="stat-sub green">총 412,500원 대기 중</div>
+        <div class="stat-value"><span id="stat-pending">-</span><span>건</span></div>
       </div>
 
       <div class="stat-card orange">
         <div class="stat-label">진행중 공구</div>
-        <div class="stat-value">17<span>건</span></div>
-        <div class="stat-sub">OPEN / CLOSING 포함</div>
+        <div class="stat-value"><span id="stat-active">-</span><span>건</span></div>
       </div>
 
       <div class="stat-card red">
         <div class="stat-label">BLOCKED 유저</div>
-        <div class="stat-value">2<span>명</span></div>
-        <div class="stat-sub red">이번 주 +1명</div>
+        <div class="stat-value"><span id="stat-blocked">-</span><span>명</span></div>
       </div>
 
       <div class="stat-card blue">
         <div class="stat-label">오늘 신규 가입</div>
-        <div class="stat-value">8<span>명</span></div>
-        <div class="stat-sub green">어제 대비 +3명</div>
+        <div class="stat-value"><span id="stat-today">-</span><span>명</span></div>
       </div>
 
     </div>
@@ -106,17 +102,9 @@
             </tr>
           </thead>
 
-          <tbody>
-            <tr>
-              <td class="td-main">쿠팡 라면 공구</td>
-              <td>김민준</td>
-              <td class="amount">137,500원</td>
-              <td>
-                <span class="chip chip-pending">PENDING</span>
-              </td>
-            </tr>
-          </tbody>
+          <tbody id="dashboard-settlement-tbody"></tbody>
         </table>
+        <button id="btn-more-settlement" class="btn btn-outline" onclick="loadMoreSettlements()" style="display:none;width:100%;margin-top:8px">더보기</button>
 
       </div>
 
@@ -138,25 +126,12 @@
             <tr>
               <th>닉네임</th>
               <th>매너점수</th>
-              <th>사유</th>
-              <th></th>
             </tr>
           </thead>
 
-          <tbody>
-            <tr>
-              <td class="td-main">나쁜유저1</td>
-              <td style="color:#f44336;font-weight:600">-3.2</td>
-              <td>미결제 반복</td>
-
-              <td>
-                <button class="btn-sm btn-sm-green">
-                  해제
-                </button>
-              </td>
-            </tr>
-          </tbody>
+          <tbody id="dashboard-blocked-tbody"></tbody>
         </table>
+        <button id="btn-more-blocked" class="btn btn-outline" onclick="loadMoreBlockedUsers()" style="display:none;width:100%;margin-top:8px">더보기</button>
 
       </div>
 
@@ -176,79 +151,34 @@
         </div>
       </div>
 
-      <input
-        type="text"
-        placeholder="공구명 / 호스트 검색"
-        class="search-input"
-      >
+      <div style="display:flex;gap:6px">
+        <input id="settlement-search" type="text" placeholder="공구명 / 호스트 검색" class="search-input">
+        <button class="btn btn-outline" onclick="searchSettlements()">검색</button>
+      </div>
 
     </div>
 
-    <div class="filter-tabs">
-      <button class="active">전체</button>
-      <button>PENDING (3)</button>
-      <button>COMPLETED</button>
+    <div class="filter-tabs" id="settlement-filter-tabs">
+      <button class="active" onclick="loadSettlements(null)">전체</button>
+      <button onclick="loadSettlements('PENDING')">PENDING</button>
+      <button onclick="loadSettlements('COMPLETED')">COMPLETED</button>
     </div>
 
-    <table>
+    <table class="fixed-table">
 
       <thead>
         <tr>
-          <th>공구명</th>
-          <th>호스트</th>
-          <th>참여자</th>
-          <th>정산 금액</th>
-          <th>픽업 완료</th>
-          <th>상태</th>
-          <th>처리</th>
+          <th style="width:20%">공구명</th>
+          <th style="width:15%">호스트</th>
+          <th style="width:10%">참여자</th>
+          <th style="width:15%">정산 금액</th>
+          <th style="width:10%">픽업 완료</th>
+          <th style="width:15%">상태</th>
+          <th style="width:15%">처리</th>
         </tr>
       </thead>
 
-      <tbody>
-
-        <tr>
-          <td class="td-main">쿠팡 라면 공구</td>
-          <td>김민준</td>
-          <td>5명</td>
-          <td class="amount">137,500원</td>
-          <td>5/5</td>
-
-          <td>
-            <span class="chip chip-pending">PENDING</span>
-          </td>
-
-          <td>
-
-            <button class="btn-sm btn-sm-green">
-              정산 완료
-            </button>
-
-            <button
-              class="btn-sm"
-              onclick="showSettlementDetailModal({
-                title:'쿠팡 라면 공구',
-                host:'김민준',
-                date:'2025-05-15',
-                place:'광주 북구',
-                perPrice:'27,500원',
-                total:'137,500원',
-                final:'130,000원',
-                status:'PENDING',
-                done:null,
-                users:[
-                  {name:'유저1',price:'27,500원',pickup:true},
-                  {name:'유저2',price:'27,500원',pickup:true},
-                  {name:'유저3',price:'27,500원',pickup:false}
-                ]
-              })"
-            >
-              상세
-            </button>
-
-          </td>
-        </tr>
-
-      </tbody>
+      <tbody id="settlement-tbody"></tbody>
 
     </table>
 
@@ -264,9 +194,7 @@
             픽업 미완료 — 호스트 귀책 · 참여자 환불
           </span>
 
-          <span class="section-badge red">
-            환불 대기 2건
-          </span>
+          <span id="refund-badge" class="section-badge red" style="display:none"></span>
 
         </div>
 
@@ -283,237 +211,33 @@
 
 <div class="filter-bar">
 
-  <div class="filter-tabs refund-tabs">
-
-    <button class="active">
-      전체
-    </button>
-
-    <button>
-      환불 대기 (2)
-    </button>
-
-    <button>
-      환불 완료
-    </button>
-
+  <div class="filter-tabs refund-tabs" id="refund-filter-tabs">
+    <button class="active" onclick="filterRefunds(null)">전체</button>
+    <button onclick="filterRefunds('환불대기')">환불 대기</button>
+    <button onclick="filterRefunds('환불완료')">환불 완료</button>
   </div>
 
-  <input
-    class="search-input"
-    placeholder="공구명 / 호스트 검색"
-  >
+  <div style="display:flex;gap:6px">
+    <input id="refund-search" class="search-input" placeholder="공구명 / 호스트 검색">
+    <button class="btn btn-outline" onclick="searchRefunds()">검색</button>
+  </div>
 
 </div>
 
-    <table>
+    <table class="fixed-table">
 
       <thead>
         <tr>
-          <th>공구명</th>
-          <th>호스트</th>
-          <th>참여자</th>
-          <th>픽업 현황</th>
-          <th>픽업 기한</th>
-          <th>환불 총액</th>
-          <th>귀책</th>
-          <th>상태</th>
-          <th>처리</th>
+          <th style="width:22%">공구명</th>
+          <th style="width:18%">호스트</th>
+          <th style="width:18%">픽업 기한</th>
+          <th style="width:13%">환불 총액</th>
+          <th style="width:12%">상태</th>
+          <th style="width:17%">처리</th>
         </tr>
       </thead>
 
-      <tbody>
-
-        <tr>
-
-          <td class="td-main">
-            코스트코 견과류
-          </td>
-
-          <td>
-            <div>정해진</div>
-            <div class="score-text">
-              매너점수 61.0
-            </div>
-          </td>
-
-          <td>6명</td>
-
-          <td>
-
-            <div class="pickup-progress">
-
-              <div class="pickup-bar">
-                <div class="pickup-fill none" style="width:0%"></div>
-              </div>
-
-              <span class="pickup-count red">
-                0/6
-              </span>
-
-            </div>
-
-          </td>
-
-          <td>
-            <span class="deadline-badge">
-              5/10 만료
-            </span>
-          </td>
-
-          <td class="amount-red">
-            156,000원
-          </td>
-
-          <td>
-            <span class="chip-host-fault">
-              호스트 귀책
-            </span>
-          </td>
-
-          <td>
-            <span class="chip chip-refund">
-              환불 대기
-            </span>
-          </td>
-
-          <td>
-
-            <div class="action-group">
-
-              <button class="btn-sm btn-sm-purple">
-                환불 처리
-              </button>
-
-            </div>
-
-          </td>
-
-        </tr>
-
-        <tr>
-
-          <td class="td-main">
-            무신사 운동화 공구
-          </td>
-
-          <td>
-            <div>서태양</div>
-            <div class="score-text">
-              매너점수 44.0
-            </div>
-          </td>
-
-          <td>4명</td>
-
-          <td>
-
-            <div class="pickup-progress">
-
-              <div class="pickup-bar">
-                <div class="pickup-fill partial" style="width:25%"></div>
-              </div>
-
-              <span class="pickup-count" style="color:#ff9800">
-                1/4
-              </span>
-
-            </div>
-
-          </td>
-
-          <td>
-            <span class="deadline-badge">
-              5/12 만료
-            </span>
-          </td>
-
-          <td class="amount-red">
-            89,000원
-          </td>
-
-          <td>
-            <span class="chip-host-fault">
-              호스트 귀책
-            </span>
-          </td>
-
-          <td>
-            <span class="chip chip-refund">
-              환불 대기
-            </span>
-          </td>
-
-          <td>
-
-            <div class="action-group">
-
-              <button class="btn-sm btn-sm-purple">
-                환불 처리
-              </button>
-
-            </div>
-
-          </td>
-
-        </tr>
-
-        <tr>
-
-          <td class="td-main">
-            애플망고 공구
-          </td>
-
-          <td>
-            <div>강보람</div>
-            <div class="score-text">
-              매너점수 35.0 → 20.0
-            </div>
-          </td>
-
-          <td>8명</td>
-
-          <td>
-
-            <div class="pickup-progress">
-
-              <div class="pickup-bar">
-                <div class="pickup-fill full" style="width:100%"></div>
-              </div>
-
-              <span class="pickup-count">
-                8/8
-              </span>
-
-            </div>
-
-          </td>
-
-          <td>
-            <span class="deadline-text">
-              5/8 만료
-            </span>
-          </td>
-
-          <td class="amount-gray">
-            192,000원
-          </td>
-
-          <td>
-            <span class="chip-host-fault done">
-              호스트 귀책
-            </span>
-          </td>
-
-          <td>
-            <span class="chip chip-refund-done">
-              환불 완료
-            </span>
-          </td>
-
-        </tr>
-
-      </tbody>
+      <tbody id="refund-tbody"></tbody>
 
     </table>
 
@@ -550,84 +274,33 @@
           </div>
         </div>
 
-        <input
-          type="text"
-          placeholder="닉네임 / 이메일 검색"
-          class="search-input"
-        >
+        <div style="display:flex;gap:6px">
+          <input id="user-search" type="text" placeholder="닉네임 / 이메일 검색" class="search-input">
+          <button class="btn btn-outline" onclick="searchUsers()">검색</button>
+        </div>
 
       </div>
 
-      <div class="filter-tabs">
-        <button class="active">전체</button>
-        <button>BLOCKED (2)</button>
-        <button>프리미엄</button>
+      <div class="filter-tabs" id="user-filter-tabs">
+        <button class="active" onclick="loadUsers(null)">전체</button>
+        <button onclick="loadUsers('BLOCKED')">BLOCKED</button>
+        <button onclick="loadUsers('PREMIUM')">프리미엄</button>
       </div>
 
-      <table>
+      <table class="fixed-table">
 
         <thead>
           <tr>
-            <th>닉네임</th>
-            <th>이메일</th>
-            <th>매너점수</th>
-            <th>등급</th>
-            <th>가입일</th>
-            <th>상태</th>
-            <th>처리</th>
+            <th style="width:12%">닉네임</th>
+            <th style="width:30%">이메일</th>
+            <th style="width:15%">가입일</th>
+            <th style="width:12%">상태</th>
+            <th style="width:12%">역할</th>
+            <th style="width:19%">처리</th>
           </tr>
         </thead>
 
-        <tbody>
-
-          <tr>
-
-            <td class="td-main">test1</td>
-            <td>test1@test.com</td>
-
-            <td style="color:#4caf50;font-weight:600">
-              72.3
-            </td>
-
-            <td>
-              <span class="chip chip-green">GREAT</span>
-            </td>
-
-            <td>2025-03-01</td>
-
-            <td>
-              <span class="chip chip-blue">ACTIVE</span>
-            </td>
-
-            <td>
-
-              <button class="btn-sm btn-sm-red">
-                차단
-              </button>
-
-              <button
-                class="btn-sm"
-                onclick="showUserDetailModal({
-                  nickname:'test1',
-                  email:'test1@test.com',
-                  joinDate:'2025-03-01',
-                  score:'72.3',
-                  hostCount:'3',
-                  joinCount:'12',
-                  lastActivity:'2025-05-15',
-                  premium:true,
-                  expire:'2025-12-31',
-                  postUsage:'4/10'
-                })"
-              >
-                상세
-              </button>
-
-            </td>
-
-          </tr>
-
-        </tbody>
+        <tbody id="user-tbody"></tbody>
 
       </table>
 
@@ -648,95 +321,40 @@
           </div>
         </div>
 
-        <input
-          type="text"
-          placeholder="공구명 / 호스트 검색"
-          class="search-input"
-        >
+        <div style="display:flex;gap:6px">
+          <input id="groupbuy-search" type="text" placeholder="공구명 / 호스트 검색" class="search-input">
+          <button class="btn btn-outline" onclick="searchGroupBuys()">검색</button>
+        </div>
 
       </div>
 
-      <div class="filter-tabs">
-        <button class="active">전체</button>
-        <button>OPEN</button>
-        <button>CLOSED</button>
-        <button>EXPIRED</button>
+      <div class="filter-tabs" id="groupbuy-filter-tabs">
+        <button class="active" onclick="loadGroupBuys(null)">전체</button>
+        <button onclick="loadGroupBuys('OPEN')">OPEN</button>
+        <button onclick="loadGroupBuys('CLOSING')">CLOSING</button>
+        <button onclick="loadGroupBuys('CLOSED')">CLOSED</button>
+        <button onclick="loadGroupBuys('PAYMENT_COMPLETED')">PAYMENT_COMPLETED</button>
+        <button onclick="loadGroupBuys('HOST_PURCHASED')">HOST_PURCHASED</button>
+        <button onclick="loadGroupBuys('PICKUP_READY')">PICKUP_READY</button>
+        <button onclick="loadGroupBuys('PENDING')">PENDING</button>
+        <button onclick="loadGroupBuys('COMPLETED')">COMPLETED</button>
+        <button onclick="loadGroupBuys('EXPIRED')">EXPIRED</button>
       </div>
 
-      <table>
+      <table class="fixed-table">
 
         <thead>
           <tr>
-            <th>공구명</th>
-            <th>호스트</th>
-            <th>참여</th>
-            <th>마감일</th>
-            <th>상태</th>
-            <th>처리</th>
+            <th style="width:25%">공구명</th>
+            <th style="width:15%">호스트</th>
+            <th style="width:10%">참여</th>
+            <th style="width:15%">마감일</th>
+            <th style="width:15%">상태</th>
+            <th style="width:20%">처리</th>
           </tr>
         </thead>
 
-        <tbody>
-
-          <tr>
-
-            <td class="td-main">쿠팡 라면 박스</td>
-            <td>김민준</td>
-            <td>3/5</td>
-            <td>2025-05-15</td>
-
-            <td>
-              <span class="chip chip-blue">OPEN</span>
-            </td>
-
-            <td>
-
-              <button class="btn-sm btn-sm-red">
-                삭제
-              </button>
-
-              <button
-                class="btn-sm"
-                onclick="showPostDetailModal({
-                  title:'쿠팡 라면 박스',
-                  category:'식품',
-                  host:'김민준',
-                  count:'3/5',
-                  price:'25,000원',
-                  date:'2025-05-15',
-                  desc:'쿠팡 라면 공동구매 진행합니다.',
-                  users:[
-                    {
-                      name:'유저1',
-                      joinDate:'2025-05-10',
-                      status:'참여중'
-                    },
-                    {
-                      name:'유저2',
-                      joinDate:'2025-05-11',
-                      status:'픽업완료'
-                    }
-                  ],
-                  history:[
-                    {
-                      action:'게시글 생성',
-                      date:'2025-05-09'
-                    },
-                    {
-                      action:'참여자 증가',
-                      date:'2025-05-10'
-                    }
-                  ]
-                })"
-              >
-                상세
-              </button>
-
-            </td>
-
-          </tr>
-
-        </tbody>
+        <tbody id="groupbuy-tbody"></tbody>
 
       </table>
 
@@ -776,12 +394,126 @@
         <span id="u-score"></span>
       </div>
 
+      <div class="modal-row">
+        <span>등급</span>
+        <span id="u-grade"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>상태</span>
+        <span id="u-status"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>역할</span>
+        <span id="u-role"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>프리미엄</span>
+        <span id="u-premium"></span>
+      </div>
+
     </div>
 
     <div class="modal-foot">
       <button class="btn btn-outline" onclick="closeModal()">
         닫기
       </button>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="block-confirm-modal">
+
+  <div class="modal">
+
+    <div class="modal-head" id="block-confirm-title"></div>
+
+    <div class="modal-body">
+      <p id="block-confirm-msg"></p>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal()">취소</button>
+      <button class="btn btn-danger" id="block-confirm-btn">확인</button>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="refund-action-modal">
+
+  <div class="modal">
+
+    <div class="modal-head">환불 상세</div>
+
+    <div class="modal-body">
+
+      <div class="modal-row">
+        <span>공구명</span>
+        <span id="rd-title"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>호스트</span>
+        <span id="rd-host"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>호스트 매너점수</span>
+        <span id="rd-score"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>참여자</span>
+        <span id="rd-count"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>픽업 현황</span>
+        <span id="rd-pickup"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>픽업 기한</span>
+        <span id="rd-deadline"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>환불 총액</span>
+        <span id="rd-total"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>상태</span>
+        <span id="rd-status"></span>
+      </div>
+
+    </div>
+
+    <div class="modal-foot" id="refund-action-foot"></div>
+
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="settlement-complete-modal">
+
+  <div class="modal">
+
+    <div class="modal-head">정산 완료 처리</div>
+
+    <div class="modal-body">
+      <p>정산을 완료 처리하시겠습니까?</p>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal()">취소</button>
+      <button class="btn btn-primary" id="settlement-complete-btn">확인</button>
     </div>
 
   </div>
@@ -818,7 +550,26 @@
         <span id="s-place"></span>
       </div>
 
+      <div class="modal-row">
+        <span>정산 금액</span>
+        <span id="s-total"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>픽업 현황</span>
+        <span id="s-pickup"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>상태</span>
+        <span id="s-status"></span>
+      </div>
+
+      <div class="modal-section-label">참여자</div>
       <table>
+        <thead>
+          <tr><th>닉네임</th><th>결제금액</th><th>픽업완료</th></tr>
+        </thead>
         <tbody id="s-users"></tbody>
       </table>
 
@@ -865,25 +616,29 @@
       </div>
 
       <div class="modal-row">
-        <span>금액</span>
-        <span id="p-price"></span>
-      </div>
-
-      <div class="modal-row">
         <span>마감일</span>
         <span id="p-date"></span>
       </div>
 
-      <hr>
+      <div class="modal-row">
+        <span>상태</span>
+        <span id="p-status"></span>
+      </div>
 
-      <div id="p-desc"></div>
+      <div class="modal-row">
+        <span>게시글 생성</span>
+        <span id="p-created"></span>
+      </div>
 
+      <div class="modal-section-label">설명</div>
+      <div id="p-desc" class="modal-desc-box"></div>
+
+      <div class="modal-section-label">참여자</div>
       <table>
+        <thead>
+          <tr><th>닉네임</th><th>참여일</th><th>상태</th></tr>
+        </thead>
         <tbody id="p-users"></tbody>
-      </table>
-
-      <table>
-        <tbody id="p-history"></tbody>
       </table>
 
     </div>
@@ -898,6 +653,26 @@
 
 </div>
 
+<div class="modal-overlay" id="delete-confirm-modal">
+
+  <div class="modal">
+
+    <div class="modal-head">게시글 삭제</div>
+
+    <div class="modal-body">
+      <p>게시글을 삭제하시겠습니까? 삭제된 게시글은 복구할 수 없습니다.</p>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal()">취소</button>
+      <button class="btn btn-danger" id="delete-confirm-btn">삭제</button>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="js/api/adminApi.js"></script>
 <script src="js/pages/admin.js"></script>
 
 </body>
