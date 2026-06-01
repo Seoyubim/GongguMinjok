@@ -572,95 +572,40 @@
           </div>
         </div>
 
-        <input
-          type="text"
-          placeholder="공구명 / 호스트 검색"
-          class="search-input"
-        >
+        <div style="display:flex;gap:6px">
+          <input id="groupbuy-search" type="text" placeholder="공구명 / 호스트 검색" class="search-input">
+          <button class="btn btn-outline" onclick="searchGroupBuys()">검색</button>
+        </div>
 
       </div>
 
-      <div class="filter-tabs">
-        <button class="active">전체</button>
-        <button>OPEN</button>
-        <button>CLOSED</button>
-        <button>EXPIRED</button>
+      <div class="filter-tabs" id="groupbuy-filter-tabs">
+        <button class="active" onclick="loadGroupBuys(null)">전체</button>
+        <button onclick="loadGroupBuys('OPEN')">OPEN</button>
+        <button onclick="loadGroupBuys('CLOSING')">CLOSING</button>
+        <button onclick="loadGroupBuys('CLOSED')">CLOSED</button>
+        <button onclick="loadGroupBuys('PAYMENT_COMPLETED')">PAYMENT_COMPLETED</button>
+        <button onclick="loadGroupBuys('HOST_PURCHASED')">HOST_PURCHASED</button>
+        <button onclick="loadGroupBuys('PICKUP_READY')">PICKUP_READY</button>
+        <button onclick="loadGroupBuys('PENDING')">PENDING</button>
+        <button onclick="loadGroupBuys('COMPLETED')">COMPLETED</button>
+        <button onclick="loadGroupBuys('EXPIRED')">EXPIRED</button>
       </div>
 
-      <table>
+      <table class="fixed-table">
 
         <thead>
           <tr>
-            <th>공구명</th>
-            <th>호스트</th>
-            <th>참여</th>
-            <th>마감일</th>
-            <th>상태</th>
-            <th>처리</th>
+            <th style="width:25%">공구명</th>
+            <th style="width:15%">호스트</th>
+            <th style="width:10%">참여</th>
+            <th style="width:15%">마감일</th>
+            <th style="width:15%">상태</th>
+            <th style="width:20%">처리</th>
           </tr>
         </thead>
 
-        <tbody>
-
-          <tr>
-
-            <td class="td-main">쿠팡 라면 박스</td>
-            <td>김민준</td>
-            <td>3/5</td>
-            <td>2025-05-15</td>
-
-            <td>
-              <span class="chip chip-blue">OPEN</span>
-            </td>
-
-            <td>
-
-              <button class="btn-sm btn-sm-red">
-                삭제
-              </button>
-
-              <button
-                class="btn-sm"
-                onclick="showPostDetailModal({
-                  title:'쿠팡 라면 박스',
-                  category:'식품',
-                  host:'김민준',
-                  count:'3/5',
-                  price:'25,000원',
-                  date:'2025-05-15',
-                  desc:'쿠팡 라면 공동구매 진행합니다.',
-                  users:[
-                    {
-                      name:'유저1',
-                      joinDate:'2025-05-10',
-                      status:'참여중'
-                    },
-                    {
-                      name:'유저2',
-                      joinDate:'2025-05-11',
-                      status:'픽업완료'
-                    }
-                  ],
-                  history:[
-                    {
-                      action:'게시글 생성',
-                      date:'2025-05-09'
-                    },
-                    {
-                      action:'참여자 증가',
-                      date:'2025-05-10'
-                    }
-                  ]
-                })"
-              >
-                상세
-              </button>
-
-            </td>
-
-          </tr>
-
-        </tbody>
+        <tbody id="groupbuy-tbody"></tbody>
 
       </table>
 
@@ -744,7 +689,7 @@
 
     <div class="modal-foot">
       <button class="btn btn-outline" onclick="closeModal()">취소</button>
-      <button class="btn btn-primary" id="block-confirm-btn">확인</button>
+      <button class="btn btn-danger" id="block-confirm-btn">확인</button>
     </div>
 
   </div>
@@ -828,25 +773,29 @@
       </div>
 
       <div class="modal-row">
-        <span>금액</span>
-        <span id="p-price"></span>
-      </div>
-
-      <div class="modal-row">
         <span>마감일</span>
         <span id="p-date"></span>
       </div>
 
-      <hr>
+      <div class="modal-row">
+        <span>상태</span>
+        <span id="p-status"></span>
+      </div>
 
-      <div id="p-desc"></div>
+      <div class="modal-row">
+        <span>게시글 생성</span>
+        <span id="p-created"></span>
+      </div>
 
+      <div class="modal-section-label">설명</div>
+      <div id="p-desc" class="modal-desc-box"></div>
+
+      <div class="modal-section-label">참여자</div>
       <table>
+        <thead>
+          <tr><th>닉네임</th><th>참여일</th><th>상태</th></tr>
+        </thead>
         <tbody id="p-users"></tbody>
-      </table>
-
-      <table>
-        <tbody id="p-history"></tbody>
       </table>
 
     </div>
@@ -855,6 +804,25 @@
       <button class="btn btn-outline" onclick="closeModal()">
         닫기
       </button>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="delete-confirm-modal">
+
+  <div class="modal">
+
+    <div class="modal-head">게시글 삭제</div>
+
+    <div class="modal-body">
+      <p>게시글을 삭제하시겠습니까? 삭제된 게시글은 복구할 수 없습니다.</p>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal()">취소</button>
+      <button class="btn btn-danger" id="delete-confirm-btn">삭제</button>
     </div>
 
   </div>

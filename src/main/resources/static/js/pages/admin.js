@@ -161,6 +161,120 @@ function handleBlockUser(userId, isBlock) {
   document.getElementById('block-confirm-modal').classList.add('show');
 }
 
+const CATEGORY_MAP = {
+  ELECTRONICS: '전자제품',
+  HOME_APPLIANCES: '가전제품',
+  FURNITURE_INTERIOR: '가구/인테리어',
+  HOME_KITCHEN: '생활/주방용품',
+  BABY_KIDS: '유아/아동',
+  WOMENS_CLOTHING: '여성의류',
+  WOMENS_ACCESSORIES: '여성잡화',
+  MENS_FASHION_ACCESSORIES: '남성패션/잡화',
+  BEAUTY_PERSONAL_CARE: '뷰티/개인관리',
+  SPORTS_LEISURE: '스포츠/레저',
+  HOBBIES_GAMES_MUSIC: '취미/게임/음악',
+  BOOKS: '도서',
+  TICKETS_VOUCHERS: '티켓/상품권',
+  E_COUPONS: '전자쿠폰',
+  PROCESSED_FOODS: '가공식품',
+  HEALTH_SUPPLEMENTS: '건강식품/영양제',
+  PET_SUPPLIES: '반려동물용품',
+  PLANTS: '식물',
+  OTHERS: '기타'
+};
+
+let allGroupBuyData = [];
+let currentGroupBuyStatus = null;
+
+const statusChipMap = {
+  OPEN: 'chip-blue', CLOSING: 'chip-pending', CLOSED: 'chip-pending',
+  PAYMENT_COMPLETED: 'chip-green', HOST_PURCHASED: 'chip-green',
+  PICKUP_READY: 'chip-green', PENDING: 'chip-pending',
+  COMPLETED: 'chip-green', EXPIRED: 'chip-red'
+};
+
+function renderGroupBuyTable(list) {
+  const tbody = document.getElementById('groupbuy-tbody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">게시글이 없습니다</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(g => {
+    const chipClass = statusChipMap[g.status] || '';
+    const deadline = g.deadline ? g.deadline.substring(0, 10) : '-';
+    return `
+      <tr>
+        <td class="td-main">${g.title}</td>
+        <td>${g.hostNickname}</td>
+        <td>${g.currentCount}/${g.maxCount}</td>
+        <td>${deadline}</td>
+        <td><span class="chip ${chipClass}">${g.status}</span></td>
+        <td>
+          <button class="btn-sm btn-sm-red" onclick="handleDeleteGroupBuy(${g.id})">삭제</button>
+          <button class="btn-sm" onclick="showPostDetailModal(${g.id})">상세</button>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+async function loadGroupBuys(status) {
+  currentGroupBuyStatus = status;
+
+  document.querySelectorAll('#groupbuy-filter-tabs button').forEach(btn => {
+    btn.classList.remove('active');
+    const text = btn.textContent.trim();
+    if ((!status && text === '전체') || (status && text === status)) {
+      btn.classList.add('active');
+    }
+  });
+
+  allGroupBuyData = await getAdminGroupBuys(status);
+  renderGroupBuyTable(allGroupBuyData);
+}
+
+function searchGroupBuys() {
+  const keyword = document.getElementById('groupbuy-search').value.trim().toLowerCase();
+  const filtered = allGroupBuyData.filter(g =>
+    g.title.toLowerCase().includes(keyword) ||
+    g.hostNickname.toLowerCase().includes(keyword)
+  );
+  renderGroupBuyTable(filtered);
+}
+
+function handleDeleteGroupBuy(id) {
+  document.getElementById('delete-confirm-btn').onclick = async () => {
+    closeModal();
+    const ok = await deleteAdminGroupBuy(id);
+    if (ok) loadGroupBuys(currentGroupBuyStatus);
+  };
+  document.getElementById('delete-confirm-modal').classList.add('show');
+}
+
+async function showPostDetailModal(id) {
+  const data = await getAdminGroupBuyDetail(id);
+
+  document.getElementById('p-title').textContent = data.title;
+  document.getElementById('p-category').textContent = CATEGORY_MAP[data.category] || data.category;
+  document.getElementById('p-host').textContent = data.hostNickname;
+  document.getElementById('p-count').textContent = `${data.currentCount}/${data.maxCount}`;
+  document.getElementById('p-date').textContent = data.deadline ? data.deadline.substring(0, 10) : '-';
+  document.getElementById('p-status').textContent = data.status;
+  const firstHistory = data.history && data.history[0];
+  document.getElementById('p-created').textContent = firstHistory && firstHistory.date
+    ? firstHistory.date.substring(0, 10) : '-';
+  document.getElementById('p-desc').textContent = data.description || '-';
+
+  const uBody = document.getElementById('p-users');
+  uBody.innerHTML = (data.participants || []).map(u => `
+    <tr>
+      <td>${u.nickname}</td>
+      <td>${u.joinDate ? u.joinDate.substring(0, 10) : '-'}</td>
+      <td>${u.statusLabel}</td>
+    </tr>`).join('') || '<tr><td colspan="3">참여자 없음</td></tr>';
+
+  document.getElementById('post-detail-modal').classList.add('show');
+}
+
 function showPage(name) {
 
   pages.forEach(p => {
@@ -193,7 +307,9 @@ function showPage(name) {
 
   });
 
+  if (name === 'dashboard') loadDashboard();
   if (name === 'users') loadUsers(null);
+  if (name === 'groupbuys') loadGroupBuys(null);
 
 }
 
@@ -238,51 +354,6 @@ function showSettlementDetailModal(data) {
     .classList.add('show');
 }
 
-function showPostDetailModal(post) {
-
-  document.getElementById('p-title').textContent = post.title;
-  document.getElementById('p-category').textContent = post.category;
-  document.getElementById('p-host').textContent = post.host;
-  document.getElementById('p-count').textContent = post.count;
-  document.getElementById('p-price').textContent = post.price;
-  document.getElementById('p-date').textContent = post.date;
-
-  document.getElementById('p-desc').textContent = post.desc;
-
-  const uBody = document.getElementById('p-users');
-
-  uBody.innerHTML = '';
-
-  post.users.forEach(u => {
-
-    uBody.innerHTML += `
-      <tr>
-        <td>${u.name}</td>
-        <td>${u.joinDate}</td>
-        <td>${u.status}</td>
-      </tr>
-    `;
-
-  });
-
-  const hBody = document.getElementById('p-history');
-
-  hBody.innerHTML = '';
-
-  post.history.forEach(h => {
-
-    hBody.innerHTML += `
-      <tr>
-        <td>${h.action}</td>
-        <td>${h.date}</td>
-      </tr>
-    `;
-
-  });
-
-  document.getElementById('post-detail-modal')
-    .classList.add('show');
-}
 
 function closeModal() {
 
@@ -323,6 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
   document.getElementById('user-search').addEventListener('input', searchUsers);
+  document.getElementById('groupbuy-search').addEventListener('input', searchGroupBuys);
 
   document.querySelectorAll('.filter-tabs button')
     .forEach(btn => {
