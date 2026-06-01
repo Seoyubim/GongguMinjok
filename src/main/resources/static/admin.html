@@ -525,84 +525,33 @@
           </div>
         </div>
 
-        <input
-          type="text"
-          placeholder="닉네임 / 이메일 검색"
-          class="search-input"
-        >
+        <div style="display:flex;gap:6px">
+          <input id="user-search" type="text" placeholder="닉네임 / 이메일 검색" class="search-input">
+          <button class="btn btn-outline" onclick="searchUsers()">검색</button>
+        </div>
 
       </div>
 
-      <div class="filter-tabs">
-        <button class="active">전체</button>
-        <button>BLOCKED (2)</button>
-        <button>프리미엄</button>
+      <div class="filter-tabs" id="user-filter-tabs">
+        <button class="active" onclick="loadUsers(null)">전체</button>
+        <button onclick="loadUsers('BLOCKED')">BLOCKED</button>
+        <button onclick="loadUsers('PREMIUM')">프리미엄</button>
       </div>
 
-      <table>
+      <table class="fixed-table">
 
         <thead>
           <tr>
-            <th>닉네임</th>
-            <th>이메일</th>
-            <th>매너점수</th>
-            <th>등급</th>
-            <th>가입일</th>
-            <th>상태</th>
-            <th>처리</th>
+            <th style="width:12%">닉네임</th>
+            <th style="width:30%">이메일</th>
+            <th style="width:15%">가입일</th>
+            <th style="width:12%">상태</th>
+            <th style="width:12%">역할</th>
+            <th style="width:19%">처리</th>
           </tr>
         </thead>
 
-        <tbody>
-
-          <tr>
-
-            <td class="td-main">test1</td>
-            <td>test1@test.com</td>
-
-            <td style="color:#4caf50;font-weight:600">
-              72.3
-            </td>
-
-            <td>
-              <span class="chip chip-green">GREAT</span>
-            </td>
-
-            <td>2025-03-01</td>
-
-            <td>
-              <span class="chip chip-blue">ACTIVE</span>
-            </td>
-
-            <td>
-
-              <button class="btn-sm btn-sm-red">
-                차단
-              </button>
-
-              <button
-                class="btn-sm"
-                onclick="showUserDetailModal({
-                  nickname:'test1',
-                  email:'test1@test.com',
-                  joinDate:'2025-03-01',
-                  score:'72.3',
-                  hostCount:'3',
-                  joinCount:'12',
-                  lastActivity:'2025-05-15',
-                  premium:true,
-                  expire:'2025-12-31',
-                  postUsage:'4/10'
-                })"
-              >
-                상세
-              </button>
-
-            </td>
-
-          </tr>
-
-        </tbody>
+        <tbody id="user-tbody"></tbody>
 
       </table>
 
@@ -751,12 +700,51 @@
         <span id="u-score"></span>
       </div>
 
+      <div class="modal-row">
+        <span>등급</span>
+        <span id="u-grade"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>상태</span>
+        <span id="u-status"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>역할</span>
+        <span id="u-role"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>프리미엄</span>
+        <span id="u-premium"></span>
+      </div>
+
     </div>
 
     <div class="modal-foot">
       <button class="btn btn-outline" onclick="closeModal()">
         닫기
       </button>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="block-confirm-modal">
+
+  <div class="modal">
+
+    <div class="modal-head" id="block-confirm-title"></div>
+
+    <div class="modal-body">
+      <p id="block-confirm-msg"></p>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal()">취소</button>
+      <button class="btn btn-primary" id="block-confirm-btn">확인</button>
     </div>
 
   </div>

@@ -80,6 +80,87 @@ async function loadDashboard() {
   renderBlockedUserRows();
 }
 
+let allUserData = [];
+let currentUserFilter = null;
+
+function getMannerScoreColor(grade) {
+  if (grade === 'BLOCKED' || grade === 'BAD') return '#f44336';
+  if (grade === 'GREAT' || grade === 'EXCELLENT') return '#4caf50';
+  return '#ff9800';
+}
+
+function renderUserTable(list) {
+  const tbody = document.getElementById('user-tbody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center">유저가 없습니다</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(u => {
+    const isBlocked = u.mannerGrade === 'BLOCKED';
+    const statusChip = isBlocked
+      ? '<span class="chip chip-red">BLOCKED</span>'
+      : '<span class="chip chip-blue">ACTIVE</span>';
+    const roleChip = u.role === 'ADMIN'
+      ? '<span class="chip chip-pending">ADMIN</span>'
+      : '<span class="chip">USER</span>';
+    const blockBtn = isBlocked
+      ? `<button class="btn-sm btn-sm-green" onclick="handleBlockUser(${u.id}, false)">해제</button>`
+      : `<button class="btn-sm btn-sm-red" onclick="handleBlockUser(${u.id}, true)">차단</button>`;
+    const joinDate = u.createdAt ? u.createdAt.substring(0, 10) : '-';
+    return `
+      <tr>
+        <td class="td-main">${u.nickname}</td>
+        <td>${u.email}</td>
+        <td>${joinDate}</td>
+        <td>${statusChip}</td>
+        <td>${roleChip}</td>
+        <td>
+          ${blockBtn}
+          <button class="btn-sm" onclick="showUserDetailModal(${JSON.stringify(u).replace(/"/g, '&quot;')})">상세</button>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function searchUsers() {
+  const keyword = document.getElementById('user-search').value.trim().toLowerCase();
+  const filtered = allUserData.filter(u =>
+    u.nickname.toLowerCase().includes(keyword) ||
+    u.email.toLowerCase().includes(keyword)
+  );
+  renderUserTable(filtered);
+}
+
+async function loadUsers(filter) {
+  currentUserFilter = filter;
+
+  document.querySelectorAll('#user-filter-tabs button').forEach(btn => {
+    btn.classList.remove('active');
+    const text = btn.textContent.trim();
+    if (
+      (!filter && text === '전체') ||
+      (filter === 'BLOCKED' && text === 'BLOCKED') ||
+      (filter === 'PREMIUM' && text === '프리미엄')
+    ) btn.classList.add('active');
+  });
+
+  allUserData = await getAdminUsers(filter);
+  renderUserTable(allUserData);
+}
+
+function handleBlockUser(userId, isBlock) {
+  document.getElementById('block-confirm-title').textContent = isBlock ? '차단' : '차단 해제';
+  document.getElementById('block-confirm-msg').textContent = isBlock
+    ? '차단하시겠습니까? 해당 유저는 로그인이 불가능해집니다.'
+    : '차단을 해제하시겠습니까? 매너점수가 50으로 초기화됩니다.';
+  document.getElementById('block-confirm-btn').onclick = async () => {
+    closeModal();
+    const ok = await blockAdminUser(userId, isBlock);
+    if (ok) loadUsers(currentUserFilter);
+  };
+  document.getElementById('block-confirm-modal').classList.add('show');
+}
+
 function showPage(name) {
 
   pages.forEach(p => {
@@ -112,17 +193,22 @@ function showPage(name) {
 
   });
 
+  if (name === 'users') loadUsers(null);
+
 }
 
 function showUserDetailModal(user) {
-
   document.getElementById('u-nickname').textContent = user.nickname;
   document.getElementById('u-email').textContent = user.email;
-  document.getElementById('u-join').textContent = user.joinDate;
-  document.getElementById('u-score').textContent = user.score;
-
-  document.getElementById('user-detail-modal')
-    .classList.add('show');
+  document.getElementById('u-join').textContent = user.createdAt ? user.createdAt.substring(0, 10) : '-';
+  document.getElementById('u-score').textContent = user.mannerScore;
+  document.getElementById('u-grade').textContent = user.mannerGrade;
+  document.getElementById('u-status').textContent = user.status;
+  document.getElementById('u-role').textContent = user.role;
+  document.getElementById('u-premium').textContent = user.premium
+    ? `프리미엄 (${user.premiumUntil ? user.premiumUntil.substring(0, 10) : ''}까지)`
+    : '일반';
+  document.getElementById('user-detail-modal').classList.add('show');
 }
 
 function showSettlementDetailModal(data) {
@@ -235,6 +321,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
     });
+
+  document.getElementById('user-search').addEventListener('input', searchUsers);
 
   document.querySelectorAll('.filter-tabs button')
     .forEach(btn => {

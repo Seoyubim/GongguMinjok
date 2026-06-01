@@ -322,10 +322,12 @@ border: 1px solid #d1c4e9;
 }
 
 .modal {
+  display: block;
   background: #fff;
   width: 100%;
   max-width: 520px;
 
+  height: auto;
   max-height: 80vh;
   overflow-y: auto;
 
@@ -333,6 +335,12 @@ border: 1px solid #d1c4e9;
   box-shadow: 0 10px 30px rgba(0,0,0,0.25);
 
   position: relative;
+}
+
+.btn-primary {
+  background: #4caf50;
+  color: #fff;
+  border: none;
 }
 
 .modal-head {
@@ -435,6 +443,17 @@ line-height: 1.5;
 background: #fff5f5;
 color: #d32f2f;
 border-left: 4px solid #f44336;
+}
+
+.fixed-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.fixed-table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .search-input {
