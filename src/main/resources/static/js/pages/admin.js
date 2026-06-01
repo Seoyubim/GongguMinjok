@@ -1,5 +1,20 @@
 const pages = ['dashboard', 'settlements', 'users', 'groupbuys'];
 
+function logout() {
+  localStorage.clear();
+  window.location.href = 'login.html';
+}
+
+function updateNavBadge(id, count) {
+  const el = document.getElementById(id);
+  if (count > 0) {
+    el.textContent = count;
+    el.style.display = '';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
 function showPage(name) {
 
   pages.forEach(p => {
@@ -128,6 +143,24 @@ function closeModal() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('userRole');
+
+  if (!token || role !== 'ADMIN') {
+    window.location.href = 'index.html';
+    return;
+  }
+
+  fetch('/api/users/me', { headers: { Authorization: 'Bearer ' + token } })
+    .then(r => r.json())
+    .then(data => { document.getElementById('admin-email').textContent = data.email; });
+
+  fetch('/api/admin/stats', { headers: { Authorization: 'Bearer ' + token } })
+    .then(r => r.json())
+    .then(stats => {
+      updateNavBadge('nav-badge-settlement', stats.pendingSettlementCount);
+    });
+
 
   document.querySelectorAll('.modal-overlay')
     .forEach(m => {

@@ -23,8 +23,8 @@
       </a>
 
       <div class="header-right">
-        <span class="admin-email">admin@gonggu.com</span>
-        <button class="header-btn">로그아웃</button>
+        <span id="admin-email" class="admin-email"></span>
+        <button class="header-btn" onclick="logout()">로그아웃</button>
       </div>
 
     </div>
@@ -37,11 +37,11 @@
   </div>
 
   <div class="nav-tab" onclick="showPage('settlements')">
-    정산 관리 <span class="nav-badge green">3</span>
+    정산 관리 <span id="nav-badge-settlement" class="nav-badge green" style="display:none"></span>
   </div>
 
   <div class="nav-tab" onclick="showPage('users')">
-    유저 관리 <span class="nav-badge">2</span>
+    유저 관리
   </div>
 
   <div class="nav-tab" onclick="showPage('groupbuys')">
