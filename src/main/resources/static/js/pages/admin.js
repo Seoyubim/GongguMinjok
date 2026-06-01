@@ -15,6 +15,71 @@ function updateNavBadge(id, count) {
   }
 }
 
+let settlementData = [];
+let settlementShown = 0;
+let blockedUserData = [];
+let blockedUserShown = 0;
+const PAGE_SIZE = 5;
+
+function renderSettlementRows() {
+  const tbody = document.getElementById('dashboard-settlement-tbody');
+  const rows = settlementData.slice(0, settlementShown);
+  tbody.innerHTML = rows.length
+    ? rows.map(s => `
+        <tr>
+          <td class="td-main">${s.title}</td>
+          <td>${s.hostNickname}</td>
+          <td class="amount">${s.totalAmount.toLocaleString()}원</td>
+          <td><span class="chip chip-pending">PENDING</span></td>
+        </tr>`).join('')
+    : '<tr><td colspan="4" style="text-align:center">대기 중인 정산이 없습니다</td></tr>';
+
+  const btn = document.getElementById('btn-more-settlement');
+  btn.style.display = settlementShown < settlementData.length ? '' : 'none';
+}
+
+function loadMoreSettlements() {
+  settlementShown = Math.min(settlementShown + PAGE_SIZE, settlementData.length);
+  renderSettlementRows();
+}
+
+function renderBlockedUserRows() {
+  const tbody = document.getElementById('dashboard-blocked-tbody');
+  const rows = blockedUserData.slice(0, blockedUserShown);
+  tbody.innerHTML = rows.length
+    ? rows.map(u => `
+        <tr>
+          <td class="td-main">${u.nickname}</td>
+          <td style="color:#f44336;font-weight:600">${u.mannerScore}</td>
+        </tr>`).join('')
+    : '<tr><td colspan="2" style="text-align:center">차단된 유저가 없습니다</td></tr>';
+
+  const btn = document.getElementById('btn-more-blocked');
+  btn.style.display = blockedUserShown < blockedUserData.length ? '' : 'none';
+}
+
+function loadMoreBlockedUsers() {
+  blockedUserShown = Math.min(blockedUserShown + PAGE_SIZE, blockedUserData.length);
+  renderBlockedUserRows();
+}
+
+async function loadDashboard() {
+  const stats = await getAdminStats();
+  document.getElementById('stat-pending').textContent = stats.pendingSettlementCount;
+  document.getElementById('stat-active').textContent = stats.activeGroupBuyCount;
+  document.getElementById('stat-blocked').textContent = stats.blockedUserCount;
+  document.getElementById('stat-today').textContent = stats.todaySignupCount;
+  updateNavBadge('nav-badge-settlement', stats.pendingSettlementCount);
+
+  settlementData = await getAdminSettlements('PENDING');
+  settlementShown = Math.min(PAGE_SIZE, settlementData.length);
+  renderSettlementRows();
+
+  blockedUserData = await getAdminUsers('BLOCKED');
+  blockedUserShown = Math.min(PAGE_SIZE, blockedUserData.length);
+  renderBlockedUserRows();
+}
+
 function showPage(name) {
 
   pages.forEach(p => {
@@ -155,11 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(r => r.json())
     .then(data => { document.getElementById('admin-email').textContent = data.email; });
 
-  fetch('/api/admin/stats', { headers: { Authorization: 'Bearer ' + token } })
-    .then(r => r.json())
-    .then(stats => {
-      updateNavBadge('nav-badge-settlement', stats.pendingSettlementCount);
-    });
+  loadDashboard();
 
 
   document.querySelectorAll('.modal-overlay')
