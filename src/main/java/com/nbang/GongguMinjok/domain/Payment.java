@@ -64,6 +64,7 @@ public class Payment {
         APPROVED,
         FAILED,
         CANCELED,
-        EXPIRED
+        EXPIRED,
+        REFUNDED
     }
 }

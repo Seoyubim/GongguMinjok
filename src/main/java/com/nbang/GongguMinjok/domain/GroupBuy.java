@@ -150,6 +150,11 @@ public class GroupBuy {
     @Column
     private LocalDateTime deletedAt;
 
+    // 관리자 수동 환불 처리 여부 (processRefund() 호출 시 true, 스케줄러 자동처리와 구분)
+    // Schema: ALTER TABLE group_buys ADD COLUMN refund_processed TINYINT(1) NOT NULL DEFAULT 0;
+    @Column(nullable = false)
+    private boolean refundProcessed = false;
+
     @Column
     private LocalDateTime completedAt;
 
