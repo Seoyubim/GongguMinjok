@@ -277,6 +277,123 @@ async function loadSettlements(filter) {
   renderSettlementTable(allSettlementData);
 }
 
+let allRefundData = [];
+let currentRefundStatus = null;
+
+function getPickupFillClass(completed, total) {
+  if (total === 0) return 'none';
+  const ratio = completed / total;
+  if (ratio === 0) return 'none';
+  if (ratio === 1) return 'full';
+  return 'partial';
+}
+
+function renderRefundTable(list) {
+  const tbody = document.getElementById('refund-tbody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center">환불 내역이 없습니다</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(r => {
+    const deadline = r.pickupDeadline ? r.pickupDeadline.substring(0, 10) : '-';
+    const isDone = r.refundStatus === '환불완료';
+    const statusChip = isDone
+      ? '<span class="chip chip-refund-done">환불 완료</span>'
+      : '<span class="chip chip-refund">환불 대기</span>';
+    const actionBtn = isDone
+      ? `<button class="btn-sm" onclick="showRefundActionModal(${r.groupBuyId})">상세</button>`
+      : `<button class="btn-sm btn-sm-purple" onclick="showRefundActionModal(${r.groupBuyId})">환불 처리</button>`;
+    return `
+      <tr>
+        <td class="td-main">${r.title}</td>
+        <td>
+          <div>${r.hostNickname}</div>
+          <div class="score-text">매너점수 ${r.hostMannerScore}</div>
+        </td>
+        <td><span class="${isDone ? 'deadline-text' : 'deadline-badge'}">${deadline} 만료</span></td>
+        <td class="${isDone ? 'amount-gray' : 'amount-red'}">${r.refundTotal.toLocaleString()}원</td>
+        <td>${statusChip}</td>
+        <td>${actionBtn}</td>
+      </tr>`;
+  }).join('');
+}
+
+async function loadRefunds() {
+  allRefundData = await getAdminRefunds();
+  const pendingCount = allRefundData.filter(r => r.refundStatus === '환불대기').length;
+  const badge = document.getElementById('refund-badge');
+  if (pendingCount > 0) {
+    badge.textContent = `환불 대기 ${pendingCount}건`;
+    badge.style.display = '';
+  } else {
+    badge.style.display = 'none';
+  }
+  filterRefunds(currentRefundStatus);
+}
+
+function filterRefunds(status) {
+  currentRefundStatus = status;
+  document.querySelectorAll('#refund-filter-tabs button').forEach(btn => {
+    btn.classList.remove('active');
+    const text = btn.textContent.trim();
+    if (
+      (!status && text === '전체') ||
+      (status === '환불대기' && text === '환불 대기') ||
+      (status === '환불완료' && text === '환불 완료')
+    ) btn.classList.add('active');
+  });
+  const filtered = status ? allRefundData.filter(r => r.refundStatus === status) : allRefundData;
+  renderRefundTable(filtered);
+}
+
+function searchRefunds() {
+  const keyword = document.getElementById('refund-search').value.trim().toLowerCase();
+  const base = currentRefundStatus ? allRefundData.filter(r => r.refundStatus === currentRefundStatus) : allRefundData;
+  renderRefundTable(base.filter(r =>
+    r.title.toLowerCase().includes(keyword) ||
+    r.hostNickname.toLowerCase().includes(keyword)
+  ));
+}
+
+function showRefundActionModal(id) {
+  const r = allRefundData.find(r => r.groupBuyId === id);
+  if (!r) return;
+
+  const pct = r.pickupTotalCount > 0 ? Math.round(r.pickupCompletedCount / r.pickupTotalCount * 100) : 0;
+  const fillClass = getPickupFillClass(r.pickupCompletedCount, r.pickupTotalCount);
+
+  document.getElementById('rd-title').textContent = r.title;
+  document.getElementById('rd-host').textContent = r.hostNickname;
+  document.getElementById('rd-score').textContent = r.hostMannerScore;
+  document.getElementById('rd-count').textContent = r.participantCount + '명';
+  document.getElementById('rd-pickup').innerHTML = `
+    <div class="pickup-progress">
+      <div class="pickup-bar"><div class="pickup-fill ${fillClass}" style="width:${pct}%"></div></div>
+      <span class="pickup-count ${fillClass === 'none' ? 'red' : ''}" ${fillClass === 'partial' ? 'style="color:#ff9800"' : ''}>${r.pickupCompletedCount}/${r.pickupTotalCount}</span>
+    </div>`;
+  document.getElementById('rd-deadline').textContent = r.pickupDeadline ? r.pickupDeadline.substring(0, 10) : '-';
+  document.getElementById('rd-total').textContent = r.refundTotal.toLocaleString() + '원';
+  document.getElementById('rd-status').textContent = r.refundStatus;
+
+  const isDone = r.refundStatus === '환불완료';
+  const foot = document.getElementById('refund-action-foot');
+  if (isDone) {
+    foot.innerHTML = `<button class="btn btn-outline" onclick="closeModal()">닫기</button>`;
+  } else {
+    foot.innerHTML = `
+      <button class="btn btn-outline" onclick="closeModal()">취소</button>
+      <button class="btn btn-danger" onclick="confirmProcessRefund(${r.groupBuyId})">환불 처리</button>`;
+  }
+
+  document.getElementById('refund-action-modal').classList.add('show');
+}
+
+async function confirmProcessRefund(id) {
+  closeModal();
+  const ok = await processAdminRefund(id);
+  if (ok) loadRefunds();
+}
+
 function searchSettlements() {
   const keyword = document.getElementById('settlement-search').value.trim().toLowerCase();
   const filtered = allSettlementData.filter(s =>
@@ -371,7 +488,7 @@ function showPage(name) {
   });
 
   if (name === 'dashboard') loadDashboard();
-  if (name === 'settlements') loadSettlements(null);
+  if (name === 'settlements') { loadSettlements(null); loadRefunds(); }
   if (name === 'users') loadUsers(null);
   if (name === 'groupbuys') loadGroupBuys(null);
 
@@ -452,6 +569,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
   document.getElementById('settlement-search').addEventListener('input', searchSettlements);
+  document.getElementById('refund-search').addEventListener('input', searchRefunds);
   document.getElementById('user-search').addEventListener('input', searchUsers);
   document.getElementById('groupbuy-search').addEventListener('input', searchGroupBuys);
 

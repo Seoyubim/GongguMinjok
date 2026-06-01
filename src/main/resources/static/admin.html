@@ -194,9 +194,7 @@
             픽업 미완료 — 호스트 귀책 · 참여자 환불
           </span>
 
-          <span class="section-badge red">
-            환불 대기 2건
-          </span>
+          <span id="refund-badge" class="section-badge red" style="display:none"></span>
 
         </div>
 
@@ -213,237 +211,33 @@
 
 <div class="filter-bar">
 
-  <div class="filter-tabs refund-tabs">
-
-    <button class="active">
-      전체
-    </button>
-
-    <button>
-      환불 대기 (2)
-    </button>
-
-    <button>
-      환불 완료
-    </button>
-
+  <div class="filter-tabs refund-tabs" id="refund-filter-tabs">
+    <button class="active" onclick="filterRefunds(null)">전체</button>
+    <button onclick="filterRefunds('환불대기')">환불 대기</button>
+    <button onclick="filterRefunds('환불완료')">환불 완료</button>
   </div>
 
-  <input
-    class="search-input"
-    placeholder="공구명 / 호스트 검색"
-  >
+  <div style="display:flex;gap:6px">
+    <input id="refund-search" class="search-input" placeholder="공구명 / 호스트 검색">
+    <button class="btn btn-outline" onclick="searchRefunds()">검색</button>
+  </div>
 
 </div>
 
-    <table>
+    <table class="fixed-table">
 
       <thead>
         <tr>
-          <th>공구명</th>
-          <th>호스트</th>
-          <th>참여자</th>
-          <th>픽업 현황</th>
-          <th>픽업 기한</th>
-          <th>환불 총액</th>
-          <th>귀책</th>
-          <th>상태</th>
-          <th>처리</th>
+          <th style="width:22%">공구명</th>
+          <th style="width:18%">호스트</th>
+          <th style="width:18%">픽업 기한</th>
+          <th style="width:13%">환불 총액</th>
+          <th style="width:12%">상태</th>
+          <th style="width:17%">처리</th>
         </tr>
       </thead>
 
-      <tbody>
-
-        <tr>
-
-          <td class="td-main">
-            코스트코 견과류
-          </td>
-
-          <td>
-            <div>정해진</div>
-            <div class="score-text">
-              매너점수 61.0
-            </div>
-          </td>
-
-          <td>6명</td>
-
-          <td>
-
-            <div class="pickup-progress">
-
-              <div class="pickup-bar">
-                <div class="pickup-fill none" style="width:0%"></div>
-              </div>
-
-              <span class="pickup-count red">
-                0/6
-              </span>
-
-            </div>
-
-          </td>
-
-          <td>
-            <span class="deadline-badge">
-              5/10 만료
-            </span>
-          </td>
-
-          <td class="amount-red">
-            156,000원
-          </td>
-
-          <td>
-            <span class="chip-host-fault">
-              호스트 귀책
-            </span>
-          </td>
-
-          <td>
-            <span class="chip chip-refund">
-              환불 대기
-            </span>
-          </td>
-
-          <td>
-
-            <div class="action-group">
-
-              <button class="btn-sm btn-sm-purple">
-                환불 처리
-              </button>
-
-            </div>
-
-          </td>
-
-        </tr>
-
-        <tr>
-
-          <td class="td-main">
-            무신사 운동화 공구
-          </td>
-
-          <td>
-            <div>서태양</div>
-            <div class="score-text">
-              매너점수 44.0
-            </div>
-          </td>
-
-          <td>4명</td>
-
-          <td>
-
-            <div class="pickup-progress">
-
-              <div class="pickup-bar">
-                <div class="pickup-fill partial" style="width:25%"></div>
-              </div>
-
-              <span class="pickup-count" style="color:#ff9800">
-                1/4
-              </span>
-
-            </div>
-
-          </td>
-
-          <td>
-            <span class="deadline-badge">
-              5/12 만료
-            </span>
-          </td>
-
-          <td class="amount-red">
-            89,000원
-          </td>
-
-          <td>
-            <span class="chip-host-fault">
-              호스트 귀책
-            </span>
-          </td>
-
-          <td>
-            <span class="chip chip-refund">
-              환불 대기
-            </span>
-          </td>
-
-          <td>
-
-            <div class="action-group">
-
-              <button class="btn-sm btn-sm-purple">
-                환불 처리
-              </button>
-
-            </div>
-
-          </td>
-
-        </tr>
-
-        <tr>
-
-          <td class="td-main">
-            애플망고 공구
-          </td>
-
-          <td>
-            <div>강보람</div>
-            <div class="score-text">
-              매너점수 35.0 → 20.0
-            </div>
-          </td>
-
-          <td>8명</td>
-
-          <td>
-
-            <div class="pickup-progress">
-
-              <div class="pickup-bar">
-                <div class="pickup-fill full" style="width:100%"></div>
-              </div>
-
-              <span class="pickup-count">
-                8/8
-              </span>
-
-            </div>
-
-          </td>
-
-          <td>
-            <span class="deadline-text">
-              5/8 만료
-            </span>
-          </td>
-
-          <td class="amount-gray">
-            192,000원
-          </td>
-
-          <td>
-            <span class="chip-host-fault done">
-              호스트 귀책
-            </span>
-          </td>
-
-          <td>
-            <span class="chip chip-refund-done">
-              환불 완료
-            </span>
-          </td>
-
-        </tr>
-
-      </tbody>
+      <tbody id="refund-tbody"></tbody>
 
     </table>
 
@@ -646,6 +440,62 @@
       <button class="btn btn-outline" onclick="closeModal()">취소</button>
       <button class="btn btn-danger" id="block-confirm-btn">확인</button>
     </div>
+
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="refund-action-modal">
+
+  <div class="modal">
+
+    <div class="modal-head">환불 상세</div>
+
+    <div class="modal-body">
+
+      <div class="modal-row">
+        <span>공구명</span>
+        <span id="rd-title"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>호스트</span>
+        <span id="rd-host"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>호스트 매너점수</span>
+        <span id="rd-score"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>참여자</span>
+        <span id="rd-count"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>픽업 현황</span>
+        <span id="rd-pickup"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>픽업 기한</span>
+        <span id="rd-deadline"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>환불 총액</span>
+        <span id="rd-total"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>상태</span>
+        <span id="rd-status"></span>
+      </div>
+
+    </div>
+
+    <div class="modal-foot" id="refund-action-foot"></div>
 
   </div>
 
