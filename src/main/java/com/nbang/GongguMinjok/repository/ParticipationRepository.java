@@ -34,4 +34,6 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
     // Logic B: 결제 기한 초과 미확정 참여자 조회
     List<Participation> findByGroupBuyIdAndPaymentConfirmedFalseAndPaymentDeadlineBefore(
             Long groupBuyId, LocalDateTime now);
+
+    long countByGroupBuyIdAndPickupCompletedAtIsNotNull(Long groupBuyId);
 }

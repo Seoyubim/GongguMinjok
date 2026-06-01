@@ -27,4 +27,9 @@ public interface GroupBuyRepository extends JpaRepository<GroupBuy, Long> {
 
     @Query("SELECT g FROM GroupBuy g WHERE g.deleted = false AND (g.title LIKE %:keyword% OR g.description LIKE %:keyword%)")
     List<GroupBuy> searchByKeyword(@Param("keyword") String keyword);
+
+    long countByStatusAndDeletedFalse(GroupBuy.Status status);
+    long countByStatusInAndDeletedFalse(List<GroupBuy.Status> statuses);
+    List<GroupBuy> findByStatusInAndDeletedFalse(List<GroupBuy.Status> statuses);
+    List<GroupBuy> findByStatusAndRefundProcessedTrueAndDeletedFalse(GroupBuy.Status status);
 }
