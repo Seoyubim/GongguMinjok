@@ -232,6 +232,69 @@ async function loadGroupBuys(status) {
   renderGroupBuyTable(allGroupBuyData);
 }
 
+let allSettlementData = [];
+let currentSettlementFilter = null;
+
+function renderSettlementTable(list) {
+  const tbody = document.getElementById('settlement-tbody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center">정산 내역이 없습니다</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(s => {
+    const chipClass = s.status === 'COMPLETED' ? 'chip-green' : 'chip-pending';
+    const completeBtn = s.status !== 'COMPLETED'
+      ? `<button class="btn-sm btn-sm-green" onclick="handleCompleteSettlement(${s.groupBuyId})">정산 완료</button>`
+      : '';
+    return `
+      <tr>
+        <td class="td-main">${s.title}</td>
+        <td>${s.hostNickname}</td>
+        <td>${s.participantCount}명</td>
+        <td class="amount">${s.totalAmount.toLocaleString()}원</td>
+        <td>${s.pickupCompletedCount}/${s.pickupTotalCount}</td>
+        <td><span class="chip ${chipClass}">${s.status}</span></td>
+        <td>
+          ${completeBtn}
+          <button class="btn-sm" onclick="showSettlementDetailModal(${s.groupBuyId})">상세</button>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+async function loadSettlements(filter) {
+  currentSettlementFilter = filter;
+
+  document.querySelectorAll('#settlement-filter-tabs button').forEach(btn => {
+    btn.classList.remove('active');
+    const text = btn.textContent.trim();
+    if ((!filter && text === '전체') || (filter && text === filter)) {
+      btn.classList.add('active');
+    }
+  });
+
+  allSettlementData = await getAdminSettlements(filter);
+  renderSettlementTable(allSettlementData);
+}
+
+function searchSettlements() {
+  const keyword = document.getElementById('settlement-search').value.trim().toLowerCase();
+  const filtered = allSettlementData.filter(s =>
+    s.title.toLowerCase().includes(keyword) ||
+    s.hostNickname.toLowerCase().includes(keyword)
+  );
+  renderSettlementTable(filtered);
+}
+
+function handleCompleteSettlement(id) {
+  document.getElementById('settlement-complete-btn').onclick = async () => {
+    closeModal();
+    const ok = await completeAdminSettlement(id);
+    if (ok) loadSettlements(currentSettlementFilter);
+  };
+  document.getElementById('settlement-complete-modal').classList.add('show');
+}
+
 function searchGroupBuys() {
   const keyword = document.getElementById('groupbuy-search').value.trim().toLowerCase();
   const filtered = allGroupBuyData.filter(g =>
@@ -308,6 +371,7 @@ function showPage(name) {
   });
 
   if (name === 'dashboard') loadDashboard();
+  if (name === 'settlements') loadSettlements(null);
   if (name === 'users') loadUsers(null);
   if (name === 'groupbuys') loadGroupBuys(null);
 
@@ -327,31 +391,25 @@ function showUserDetailModal(user) {
   document.getElementById('user-detail-modal').classList.add('show');
 }
 
-function showSettlementDetailModal(data) {
+async function showSettlementDetailModal(id) {
+  const data = await getAdminSettlementDetail(id);
 
   document.getElementById('s-title').textContent = data.title;
-  document.getElementById('s-host').textContent = data.host;
-  document.getElementById('s-date').textContent = data.date;
-  document.getElementById('s-place').textContent = data.place;
+  document.getElementById('s-host').textContent = data.hostNickname;
+  document.getElementById('s-date').textContent = data.deadline ? data.deadline.substring(0, 10) : '-';
+  document.getElementById('s-place').textContent = data.pickupLocation || '-';
+  document.getElementById('s-total').textContent = data.totalAmount.toLocaleString() + '원';
+  document.getElementById('s-pickup').textContent = `${data.pickupCompletedCount}/${data.pickupTotalCount}`;
+  document.getElementById('s-status').textContent = data.status;
 
-  const tbody = document.getElementById('s-users');
+  document.getElementById('s-users').innerHTML = (data.participants || []).map(u => `
+    <tr>
+      <td>${u.nickname}</td>
+      <td>${u.amount.toLocaleString()}원</td>
+      <td>${u.pickupCompleted ? '완료' : '미완료'}</td>
+    </tr>`).join('') || '<tr><td colspan="3">참여자 없음</td></tr>';
 
-  tbody.innerHTML = '';
-
-  data.users.forEach(u => {
-
-    tbody.innerHTML += `
-      <tr>
-        <td>${u.name}</td>
-        <td>${u.price}</td>
-        <td>${u.pickup ? '완료' : '미완료'}</td>
-      </tr>
-    `;
-
-  });
-
-  document.getElementById('settlement-detail-modal')
-    .classList.add('show');
+  document.getElementById('settlement-detail-modal').classList.add('show');
 }
 
 
@@ -393,6 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     });
 
+  document.getElementById('settlement-search').addEventListener('input', searchSettlements);
   document.getElementById('user-search').addEventListener('input', searchUsers);
   document.getElementById('groupbuy-search').addEventListener('input', searchGroupBuys);
 

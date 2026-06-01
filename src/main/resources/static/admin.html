@@ -151,79 +151,34 @@
         </div>
       </div>
 
-      <input
-        type="text"
-        placeholder="공구명 / 호스트 검색"
-        class="search-input"
-      >
+      <div style="display:flex;gap:6px">
+        <input id="settlement-search" type="text" placeholder="공구명 / 호스트 검색" class="search-input">
+        <button class="btn btn-outline" onclick="searchSettlements()">검색</button>
+      </div>
 
     </div>
 
-    <div class="filter-tabs">
-      <button class="active">전체</button>
-      <button>PENDING (3)</button>
-      <button>COMPLETED</button>
+    <div class="filter-tabs" id="settlement-filter-tabs">
+      <button class="active" onclick="loadSettlements(null)">전체</button>
+      <button onclick="loadSettlements('PENDING')">PENDING</button>
+      <button onclick="loadSettlements('COMPLETED')">COMPLETED</button>
     </div>
 
-    <table>
+    <table class="fixed-table">
 
       <thead>
         <tr>
-          <th>공구명</th>
-          <th>호스트</th>
-          <th>참여자</th>
-          <th>정산 금액</th>
-          <th>픽업 완료</th>
-          <th>상태</th>
-          <th>처리</th>
+          <th style="width:20%">공구명</th>
+          <th style="width:15%">호스트</th>
+          <th style="width:10%">참여자</th>
+          <th style="width:15%">정산 금액</th>
+          <th style="width:10%">픽업 완료</th>
+          <th style="width:15%">상태</th>
+          <th style="width:15%">처리</th>
         </tr>
       </thead>
 
-      <tbody>
-
-        <tr>
-          <td class="td-main">쿠팡 라면 공구</td>
-          <td>김민준</td>
-          <td>5명</td>
-          <td class="amount">137,500원</td>
-          <td>5/5</td>
-
-          <td>
-            <span class="chip chip-pending">PENDING</span>
-          </td>
-
-          <td>
-
-            <button class="btn-sm btn-sm-green">
-              정산 완료
-            </button>
-
-            <button
-              class="btn-sm"
-              onclick="showSettlementDetailModal({
-                title:'쿠팡 라면 공구',
-                host:'김민준',
-                date:'2025-05-15',
-                place:'광주 북구',
-                perPrice:'27,500원',
-                total:'137,500원',
-                final:'130,000원',
-                status:'PENDING',
-                done:null,
-                users:[
-                  {name:'유저1',price:'27,500원',pickup:true},
-                  {name:'유저2',price:'27,500원',pickup:true},
-                  {name:'유저3',price:'27,500원',pickup:false}
-                ]
-              })"
-            >
-              상세
-            </button>
-
-          </td>
-        </tr>
-
-      </tbody>
+      <tbody id="settlement-tbody"></tbody>
 
     </table>
 
@@ -696,6 +651,25 @@
 
 </div>
 
+<div class="modal-overlay" id="settlement-complete-modal">
+
+  <div class="modal">
+
+    <div class="modal-head">정산 완료 처리</div>
+
+    <div class="modal-body">
+      <p>정산을 완료 처리하시겠습니까?</p>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal()">취소</button>
+      <button class="btn btn-primary" id="settlement-complete-btn">확인</button>
+    </div>
+
+  </div>
+
+</div>
+
 <div class="modal-overlay" id="settlement-detail-modal">
 
   <div class="modal">
@@ -726,7 +700,26 @@
         <span id="s-place"></span>
       </div>
 
+      <div class="modal-row">
+        <span>정산 금액</span>
+        <span id="s-total"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>픽업 현황</span>
+        <span id="s-pickup"></span>
+      </div>
+
+      <div class="modal-row">
+        <span>상태</span>
+        <span id="s-status"></span>
+      </div>
+
+      <div class="modal-section-label">참여자</div>
       <table>
+        <thead>
+          <tr><th>닉네임</th><th>결제금액</th><th>픽업완료</th></tr>
+        </thead>
         <tbody id="s-users"></tbody>
       </table>
 
