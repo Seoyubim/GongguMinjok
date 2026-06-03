@@ -68,7 +68,11 @@ async function blockAdminUser(userId, isBlock) {
     },
     body: JSON.stringify({ block: isBlock })
   });
-  return res.ok;
+  if (!res.ok) {
+    const data = await res.json();
+    throw new Error(data.message || '처리 중 오류가 발생했습니다.');
+  }
+  return true;
 }
 
 async function getAdminRefunds() {
@@ -76,12 +80,4 @@ async function getAdminRefunds() {
     headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
   });
   return res.json();
-}
-
-async function processAdminRefund(id) {
-  const res = await fetch(`/api/admin/refunds/${id}/process`, {
-    method: 'POST',
-    headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
-  });
-  return res.ok;
 }
