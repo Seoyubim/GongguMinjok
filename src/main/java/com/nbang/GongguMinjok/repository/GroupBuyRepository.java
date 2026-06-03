@@ -32,5 +32,4 @@ public interface GroupBuyRepository extends JpaRepository<GroupBuy, Long> {
     long countByStatusAndDeletedFalse(GroupBuy.Status status);
     long countByStatusInAndDeletedFalse(List<GroupBuy.Status> statuses);
     List<GroupBuy> findByStatusInAndDeletedFalse(List<GroupBuy.Status> statuses);
-    List<GroupBuy> findByStatusAndRefundProcessedTrueAndDeletedFalse(GroupBuy.Status status);
 }
