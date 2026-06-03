@@ -155,8 +155,13 @@ function handleBlockUser(userId, isBlock) {
     : '차단을 해제하시겠습니까? 매너점수가 50으로 초기화됩니다.';
   document.getElementById('block-confirm-btn').onclick = async () => {
     closeModal();
-    const ok = await blockAdminUser(userId, isBlock);
-    if (ok) loadUsers(currentUserFilter);
+    try {
+      await blockAdminUser(userId, isBlock);
+      showToast(isBlock ? '차단이 완료됐습니다.' : '차단이 해제됐습니다.');
+      loadUsers(currentUserFilter);
+    } catch (e) {
+      showToast(e.message);
+    }
   };
   document.getElementById('block-confirm-modal').classList.add('show');
 }
@@ -300,9 +305,7 @@ function renderRefundTable(list) {
     const statusChip = isDone
       ? '<span class="chip chip-refund-done">환불 완료</span>'
       : '<span class="chip chip-refund">환불 대기</span>';
-    const actionBtn = isDone
-      ? `<button class="btn-sm" onclick="showRefundActionModal(${r.groupBuyId})">상세</button>`
-      : `<button class="btn-sm btn-sm-purple" onclick="showRefundActionModal(${r.groupBuyId})">환불 처리</button>`;
+    const actionBtn = `<button class="btn-sm" onclick="showRefundActionModal(${r.groupBuyId})">상세</button>`;
     return `
       <tr>
         <td class="td-main">${r.title}</td>
@@ -375,23 +378,13 @@ function showRefundActionModal(id) {
   document.getElementById('rd-total').textContent = r.refundTotal.toLocaleString() + '원';
   document.getElementById('rd-status').textContent = r.refundStatus;
 
-  const isDone = r.refundStatus === '환불완료';
+  const isDoneFoot = r.refundStatus === '환불완료';
   const foot = document.getElementById('refund-action-foot');
-  if (isDone) {
-    foot.innerHTML = `<button class="btn btn-outline" onclick="closeModal()">닫기</button>`;
-  } else {
-    foot.innerHTML = `
-      <button class="btn btn-outline" onclick="closeModal()">취소</button>
-      <button class="btn btn-danger" onclick="confirmProcessRefund(${r.groupBuyId})">환불 처리</button>`;
-  }
+  foot.innerHTML = `
+    ${!isDoneFoot ? '<p class="modal-info-text">스케줄러가 자동으로 환불 처리합니다.</p>' : ''}
+    <button class="btn btn-outline" onclick="closeModal()">닫기</button>`;
 
   document.getElementById('refund-action-modal').classList.add('show');
-}
-
-async function confirmProcessRefund(id) {
-  closeModal();
-  const ok = await processAdminRefund(id);
-  if (ok) loadRefunds();
 }
 
 function searchSettlements() {
@@ -407,7 +400,10 @@ function handleCompleteSettlement(id) {
   document.getElementById('settlement-complete-btn').onclick = async () => {
     closeModal();
     const ok = await completeAdminSettlement(id);
-    if (ok) loadSettlements(currentSettlementFilter);
+    if (ok) {
+      loadSettlements(currentSettlementFilter);
+      getAdminStats().then(stats => updateNavBadge('nav-badge-settlement', stats.pendingSettlementCount));
+    }
   };
   document.getElementById('settlement-complete-modal').classList.add('show');
 }
