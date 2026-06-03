@@ -152,10 +152,6 @@
                 <span class="notice-date">2026.05.01</span>
               </label>
               <label for="notice9" class="notice-item">
-                <span class="notice-title">🚨 신고 기능 안내</span>
-                <span class="notice-date">2026.05.01</span>
-              </label>
-              <label for="notice10" class="notice-item">
                 <span class="notice-title">📞 문의 및 고객센터</span>
                 <span class="notice-date">2026.05.01</span>
               </label>
@@ -189,10 +185,11 @@
               <h4>결제 진행 흐름</h4>
               <ul>
                 <li>공동구매 모집 중 (OPEN)</li>
-                <li>모집 인원 전원 참여 완료 → 자동 CLOSED 전환</li>
+                <li>모집 인원 전원 참여 완료 → 자동 마감 (CLOSED)</li>
                 <li>24시간 이내 결제 진행</li>
-                <li>전원 결제 완료 → PAYMENT_COMPLETED</li>
-                <li>픽업 진행 → 공동구매 완료 (COMPLETED)</li>
+                <li>전원 결제 완료 (PAYMENT_COMPLETED)</li>
+                <li>픽업 진행 → 정산 대기 (PENDING)</li>
+                <li>관리자 정산 완료 → 공동구매 완료 (COMPLETED)</li>
               </ul>
               <h4>결제 기한</h4>
               <p>모집 인원이 모두 채워지면 해당 시점으로부터 24시간 이내에 결제를 완료해야 합니다. 24시간 이내 미결제 시 참여가 자동으로 취소되며 매너점수가 차감됩니다.</p>
@@ -200,7 +197,7 @@
               <p>결제 금액은 모집 완료 시점에 확정됩니다.</p>
               <p>결제금액 = 단가 + (호스트 할인금액 ÷ 참여자 수)</p>
               <h4>결제 취소</h4>
-              <p>모집 중(OPEN) 상태에서는 참여 취소가 자유롭습니다. 단, CLOSED 전환 이후에는 참여 취소가 불가능합니다. 결제 완료 후 취소는 고객센터를 통해 문의해 주세요.</p>
+              <p>모집 중(OPEN) 상태에서는 참여 취소가 자유롭습니다. 단, 마감(CLOSED) 전환 이후에는 참여 취소가 불가능합니다. 결제 완료 후 취소는 고객센터를 통해 문의해 주세요.</p>
             </div>
           </div>
 
@@ -341,6 +338,7 @@
               <p>픽업이 완료되지 않은 경우 호스트 귀책으로 간주됩니다. 픽업 가능 시간 종료 후 24시간이 초과되면 아래 처리가 자동으로 진행됩니다.</p>
               <ul>
                 <li>픽업이 완료되지 않은 참여자의 결제가 자동 환불됩니다.</li>
+                <li>환불은 결제 시 사용한 수단으로 처리되며, 프로필 계좌 정보와 무관합니다.</li>
                 <li>환불 처리된 참여자는 호스트 정산 대상에서 제외됩니다.</li>
                 <li>호스트의 매너점수가 30점 차감됩니다.</li>
               </ul>
@@ -405,37 +403,12 @@
           <div class="modal">
             <div class="modal-content">
               <label for="notice9" class="modal-close">✕</label>
-              <h2>🚨 신고 기능 안내</h2>
-              <p>다른 회원의 불건전한 활동은 신고 기능을 통해 제보해 주세요.</p>
-              <h4>신고 대상</h4>
-              <ul>
-                <li>허위 공동구매 게시글 (실제 진행 의사 없음, 존재하지 않는 상품 등)</li>
-                <li>비매너 행위 (욕설, 협박, 기만적 행동 등)</li>
-                <li>결제 후 잠적 또는 연락 두절</li>
-                <li>기타 서비스 이용 정책 위반 행위</li>
-              </ul>
-              <h4>신고 방법</h4>
-              <p>공동구매 게시글 상세 화면 또는 회원 프로필에서 신고 버튼을 누른 후 신고 사유를 선택하여 제출하세요.</p>
-              <h4>신고 처리</h4>
-              <ul>
-                <li>접수된 신고는 운영팀이 검토 후 조치합니다.</li>
-                <li>신고 결과는 별도로 안내되지 않을 수 있습니다.</li>
-                <li>허위 신고가 확인될 경우 신고자에게 불이익이 있을 수 있습니다.</li>
-              </ul>
-            </div>
-          </div>
-
-          <input type="checkbox" id="notice10">
-          <div class="modal">
-            <div class="modal-content">
-              <label for="notice10" class="modal-close">✕</label>
               <h2>📞 문의 및 고객센터</h2>
               <p>서비스 이용 중 불편한 점이 있거나 정책에 대한 문의가 있으시면 아래로 연락해 주세요.</p>
               <ul>
                 <li>이메일: gongguminjok@gmail.com</li>
                 <li>운영 시간: 평일 09:00 ~ 18:00 (주말 및 공휴일 제외)</li>
               </ul>
-              <p>자주 묻는 질문(FAQ)은 앱 내 고객센터 메뉴에서 확인하실 수 있습니다.</p>
             </div>
           </div>
 
