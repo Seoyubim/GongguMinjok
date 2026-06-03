@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AdminService {
+
+    private static final String PICKUP_INCOMPLETE_REFUND_REASON = "픽업 미완료로 인한 공동구매 취소";
 
     private final UserRepository userRepository;
     private final GroupBuyRepository groupBuyRepository;
@@ -284,12 +287,18 @@ public class AdminService {
                     .build());
         }
 
-        // 환불 완료: 관리자가 processRefund()로 처리한 건 (refundProcessed = true)
-        List<GroupBuy> refundedList = groupBuyRepository
-                .findByStatusAndRefundProcessedTrueAndDeletedFalse(GroupBuy.Status.EXPIRED);
+        // 환불 완료: 스케줄러가 실제 Toss 취소 후 CANCELED로 반영한 건
+        List<GroupBuy> refundedList = paymentRepository
+                .findByStatusAndFailReason(Payment.Status.CANCELED, PICKUP_INCOMPLETE_REFUND_REASON)
+                .stream()
+                .map(Payment::getGroupBuy)
+                .filter(gb -> !gb.isDeleted())
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toMap(GroupBuy::getId, gb -> gb, (left, right) -> left, LinkedHashMap::new),
+                        map -> new ArrayList<>(map.values())));
         for (GroupBuy gb : refundedList) {
             List<Participation> parts = participationRepository.findByGroupBuyId(gb.getId());
-            int refundTotal = paymentRepository.findByGroupBuyIdAndStatus(gb.getId(), Payment.Status.REFUNDED)
+            int refundTotal = paymentRepository.findByGroupBuyIdAndStatus(gb.getId(), Payment.Status.CANCELED)
                     .stream().mapToInt(Payment::getAmount).sum();
             long pickupCompletedCount = parts.stream().filter(p -> p.getPickupCompletedAt() != null).count();
 
@@ -313,27 +322,6 @@ public class AdminService {
         }
 
         return result;
-    }
-
-    @Transactional
-    public void processRefund(Long groupBuyId) {
-        GroupBuy groupBuy = groupBuyRepository.findById(groupBuyId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
-
-        groupBuy.setStatus(GroupBuy.Status.EXPIRED);
-        groupBuy.setRefundProcessed(true);
-
-        groupBuy.getHost().updateMannerScore(-30.0);
-        userRepository.save(groupBuy.getHost());
-
-        List<Payment> approvedPayments = paymentRepository.findByGroupBuyIdAndStatus(
-                groupBuyId, Payment.Status.APPROVED);
-        for (Payment payment : approvedPayments) {
-            payment.setStatus(Payment.Status.REFUNDED);
-        }
-        paymentRepository.saveAll(approvedPayments);
-
-        groupBuyRepository.save(groupBuy);
     }
 
     private AdminUserDto toAdminUserDto(User user) {

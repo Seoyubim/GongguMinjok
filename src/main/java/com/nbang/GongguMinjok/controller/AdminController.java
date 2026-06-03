@@ -95,11 +95,4 @@ public class AdminController {
     public ResponseEntity<List<AdminRefundDto>> getRefunds() {
         return ResponseEntity.ok(adminService.getRefunds());
     }
-
-    @PostMapping("/refunds/{groupBuyId}/process")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> processRefund(@PathVariable Long groupBuyId) {
-        adminService.processRefund(groupBuyId);
-        return ResponseEntity.ok().build();
-    }
 }
