@@ -15,6 +15,7 @@ public interface GroupBuyRepository extends JpaRepository<GroupBuy, Long> {
     List<GroupBuy> findByHostIdAndDeletedFalse(Long hostId);
     List<GroupBuy> findByCategoryAndDeletedFalse(GroupBuy.Category category);
     List<GroupBuy> findByStatusAndDeletedFalse(GroupBuy.Status status);
+    long countByHostIdAndStatusInAndDeletedFalse(Long hostId, List<GroupBuy.Status> statuses);
 
     long countByHostIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(
             Long hostId, LocalDateTime start, LocalDateTime end);

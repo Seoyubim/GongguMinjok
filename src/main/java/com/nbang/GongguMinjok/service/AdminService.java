@@ -34,6 +34,15 @@ import java.util.stream.Collectors;
 public class AdminService {
 
     private static final String PICKUP_INCOMPLETE_REFUND_REASON = "픽업 미완료로 인한 공동구매 취소";
+    private static final List<GroupBuy.Status> ACTIVE_GROUP_BUY_STATUSES = List.of(
+            GroupBuy.Status.OPEN,
+            GroupBuy.Status.CLOSING,
+            GroupBuy.Status.CLOSED,
+            GroupBuy.Status.PAYMENT_COMPLETED,
+            GroupBuy.Status.HOST_PURCHASED,
+            GroupBuy.Status.PICKUP_READY,
+            GroupBuy.Status.PENDING
+    );
 
     private final UserRepository userRepository;
     private final GroupBuyRepository groupBuyRepository;
@@ -84,6 +93,7 @@ public class AdminService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
         if (block) {
+            validateNoActiveGroupBuys(user);
             user.setStatus(User.UserStatus.SUSPENDED);
             user.setMannerScore(-1.0);
             user.setMannerGrade(User.MannerGrade.BLOCKED);
@@ -93,6 +103,17 @@ public class AdminService {
             user.setMannerGrade(User.MannerGrade.GOOD);
         }
         userRepository.save(user);
+    }
+
+    private void validateNoActiveGroupBuys(User user) {
+        long hostedCount = groupBuyRepository.countByHostIdAndStatusInAndDeletedFalse(
+                user.getId(), ACTIVE_GROUP_BUY_STATUSES);
+        long participatingCount = participationRepository.countByParticipantIdAndActiveGroupBuyStatusIn(
+                user.getId(), ACTIVE_GROUP_BUY_STATUSES);
+
+        if (hostedCount > 0 || participatingCount > 0) {
+            throw new IllegalStateException("진행 중인 공동구매가 있는 유저는 차단할 수 없습니다.");
+        }
     }
 
     public List<AdminGroupBuyDto> getGroupBuys(String statusFilter) {

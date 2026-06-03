@@ -1,6 +1,7 @@
 package com.nbang.GongguMinjok.repository;
 
 import com.nbang.GongguMinjok.domain.Participation;
+import com.nbang.GongguMinjok.domain.GroupBuy;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -26,6 +27,17 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
     List<Participation> findByGroupBuyIdWithPickupTime(@Param("groupBuyId") Long groupBuyId);
 
     List<Participation> findByParticipantId(Long participantId);
+
+    @Query("""
+        SELECT COUNT(p)
+        FROM Participation p
+        WHERE p.participant.id = :participantId
+          AND p.groupBuy.deleted = false
+          AND p.groupBuy.status IN :statuses
+    """)
+    long countByParticipantIdAndActiveGroupBuyStatusIn(
+            @Param("participantId") Long participantId,
+            @Param("statuses") List<GroupBuy.Status> statuses);
 
     Optional<Participation> findByGroupBuyIdAndParticipantEmail(Long groupBuyId, String email);
 
