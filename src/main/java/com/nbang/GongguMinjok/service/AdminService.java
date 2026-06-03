@@ -41,7 +41,7 @@ public class AdminService {
         LocalDateTime todayStart = LocalDate.now().atStartOfDay();
         LocalDateTime todayEnd = todayStart.plusDays(1).minusNanos(1);
 
-        long pendingSettlementCount = groupBuyRepository.countByStatusAndDeletedFalse(GroupBuy.Status.PICKUP_READY);
+        long pendingSettlementCount = groupBuyRepository.countByStatusAndDeletedFalse(GroupBuy.Status.PENDING);
         long activeGroupBuyCount = groupBuyRepository.countByStatusInAndDeletedFalse(
                 List.of(GroupBuy.Status.OPEN, GroupBuy.Status.CLOSING));
         long blockedUserCount = userRepository.countByMannerGrade(User.MannerGrade.BLOCKED);
@@ -149,13 +149,12 @@ public class AdminService {
 
     public List<AdminSettlementDto> getSettlements(String filter) {
         List<GroupBuy> groupBuys;
-        if ("PENDING".equals(filter)) {
-            groupBuys = groupBuyRepository.findByStatusAndDeletedFalse(GroupBuy.Status.PICKUP_READY);
-        } else if ("COMPLETED".equals(filter)) {
-            groupBuys = groupBuyRepository.findByStatusAndDeletedFalse(GroupBuy.Status.COMPLETED);
+        GroupBuy.Status status = parseSettlementStatus(filter);
+        if (status != null) {
+            groupBuys = groupBuyRepository.findByStatusAndDeletedFalse(status);
         } else {
             groupBuys = groupBuyRepository.findByStatusInAndDeletedFalse(
-                    List.of(GroupBuy.Status.PICKUP_READY, GroupBuy.Status.COMPLETED));
+                    List.of(GroupBuy.Status.PENDING, GroupBuy.Status.COMPLETED));
         }
         return groupBuys.stream()
                 .map(gb -> {
@@ -179,6 +178,7 @@ public class AdminService {
     public AdminSettlementDetailDto getSettlementDetail(Long groupBuyId) {
         GroupBuy groupBuy = groupBuyRepository.findById(groupBuyId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
+        validateSettlementStatus(groupBuy);
         List<Participation> participations = participationRepository.findByGroupBuyId(groupBuyId);
 
         long pickupCompletedCount = participations.stream()
@@ -218,9 +218,30 @@ public class AdminService {
     public void completeSettlement(Long groupBuyId) {
         GroupBuy groupBuy = groupBuyRepository.findById(groupBuyId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공동구매입니다."));
+        if (groupBuy.getStatus() != GroupBuy.Status.PENDING) {
+            throw new IllegalStateException("정산 대기 상태에서만 정산 완료 처리할 수 있습니다.");
+        }
         groupBuy.setStatus(GroupBuy.Status.COMPLETED);
         groupBuy.setCompletedAt(LocalDateTime.now());
         groupBuyRepository.save(groupBuy);
+    }
+
+    private GroupBuy.Status parseSettlementStatus(String filter) {
+        if (filter == null || filter.isBlank()) {
+            return null;
+        }
+        return switch (filter.trim().toUpperCase()) {
+            case "PENDING" -> GroupBuy.Status.PENDING;
+            case "COMPLETED" -> GroupBuy.Status.COMPLETED;
+            default -> throw new IllegalArgumentException("정산 목록은 PENDING 또는 COMPLETED 상태만 조회할 수 있습니다.");
+        };
+    }
+
+    private void validateSettlementStatus(GroupBuy groupBuy) {
+        if (groupBuy.getStatus() != GroupBuy.Status.PENDING
+                && groupBuy.getStatus() != GroupBuy.Status.COMPLETED) {
+            throw new IllegalStateException("정산 대상 공동구매가 아닙니다.");
+        }
     }
 
     public List<AdminRefundDto> getRefunds() {
