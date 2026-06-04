@@ -46,7 +46,7 @@ public class User {
     @Column(length = 50)
     private String cityName;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String profileImage;
 
     // double로 저장 (0.1 단위 소수점 처리)
