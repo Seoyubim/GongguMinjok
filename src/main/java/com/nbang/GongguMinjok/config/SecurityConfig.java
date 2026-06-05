@@ -77,11 +77,16 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         // 와일드카드 대신 명시적 origin 지정
         config.setAllowedOrigins(List.of(
-                "http://localhost:3000",  // 로컬 프론트 개발 서버
-                "http://localhost:5500"
+                "http://localhost:3000",
+                "http://localhost:5500",
+                "http://gongguminjok.com",
+                "https://gongguminjok.com",
+                "http://54.180.144.87:8080",
+                "http://3.39.93.172:8080"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
