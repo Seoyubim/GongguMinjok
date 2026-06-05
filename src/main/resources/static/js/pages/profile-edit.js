@@ -23,7 +23,9 @@ async function loadProfile() {
     if (profile.lng) selectedLng = profile.lng;
     if (profile.cityName) selectedCityName = profile.cityName;
     if (profile.profileImage) {
-      document.getElementById('profilePreview').src = profile.profileImage;
+      const profilePreview = document.getElementById('profilePreview');
+      profilePreview.src = profile.profileImage;
+      profilePreview.onerror = () => { profilePreview.src = 'images/default-profile.png'; };
       originalProfileImage = profile.profileImage;
     }
     if (profile.bankAccountRegistered) {

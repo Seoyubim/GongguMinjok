@@ -42,7 +42,9 @@ async function initMyProfile() {
       getReceivedReviews(userId),
     ]);
 
-    document.getElementById('profile-img').src = profile.profileImage || 'images/default-profile.png';
+    const profileImg = document.getElementById('profile-img');
+    profileImg.src = profile.profileImage || 'images/default-profile.png';
+    profileImg.onerror = () => { profileImg.src = 'images/default-profile.png'; };
     document.getElementById('profile-nickname').textContent = profile.nickname;
     document.getElementById('profile-email').textContent = profile.email;
 
