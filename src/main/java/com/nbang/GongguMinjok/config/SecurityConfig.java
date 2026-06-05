@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
                                 "/",
                                 "/**/*.html",
@@ -81,6 +82,10 @@ public class SecurityConfig {
                 "http://localhost:5500",
                 "http://gongguminjok.com",
                 "https://gongguminjok.com",
+                "http://www.gongguminjok.com",
+                "https://www.gongguminjok.com",
+                "http://gongguminjok.com:8080",
+                "http://www.gongguminjok.com:8080",
                 "http://54.180.144.87:8080",
                 "http://3.39.93.172:8080"
         ));
