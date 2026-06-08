@@ -89,7 +89,7 @@ public class SecurityConfig {
                 "http://54.180.144.87:8080",
                 "http://3.39.93.172:8080"
         ));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT","PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 
