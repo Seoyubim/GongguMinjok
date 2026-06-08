@@ -30,7 +30,9 @@ async function init() {
     ]);
 
     // 프로필 이미지
-    document.getElementById('profileImg').src = profile.profileImage || 'images/default-profile.png';
+    const profileImg = document.getElementById('profileImg');
+    profileImg.src = profile.profileImage || 'images/default-profile.png';
+    profileImg.onerror = () => { profileImg.src = 'images/default-profile.png'; };
 
     // 닉네임
     document.getElementById('profileNickname').textContent = profile.nickname;

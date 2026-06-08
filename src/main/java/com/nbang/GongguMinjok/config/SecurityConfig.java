@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
                                 "/",
                                 "/**/*.html",
@@ -48,9 +49,6 @@ public class SecurityConfig {
                                 "/api/auth/email/send",
                                 "/api/auth/email/verify"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/groupbuys").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/groupbuys/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/groupbuys/host/**").permitAll()
@@ -80,14 +78,20 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         // 와일드카드 대신 명시적 origin 지정
         config.setAllowedOrigins(List.of(
-                "http://3.39.93.172:8080",
+                "http://localhost:3000",
+                "http://localhost:5500",
                 "http://gongguminjok.com",
-                "http://www.gongguminjok.com",
                 "https://gongguminjok.com",
-                "https://www.gongguminjok.com"
+                "http://www.gongguminjok.com",
+                "https://www.gongguminjok.com",
+                "http://gongguminjok.com:8080",
+                "http://www.gongguminjok.com:8080",
+                "http://54.180.144.87:8080",
+                "http://3.39.93.172:8080"
         ));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
